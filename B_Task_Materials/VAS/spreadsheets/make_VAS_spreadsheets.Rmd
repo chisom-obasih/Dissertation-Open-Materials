@@ -1,0 +1,362 @@
+---
+title: "Make spreadsheets for 1-dimensional and 2-dimensional Visual Analog Scale (VAS) task"
+author: "Chisom Obasih"
+date: "Feb 2025"
+subtitle: "Make spreadsheets to use in Gorilla for 1-dimensional and 2-dimensional speech perception VAS task - 4 versions of each in which the orders of the blocks are counterbalanced"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+This template was last updated: Thurs, Feb 13, 2025
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE, message = FALSE
+)
+
+# helpful code to remember
+# str() to look at the structure of a dataframe
+# get_summary_stats(type = "common" or "mean_se") after group_by
+
+# helpful hotkeys to remember
+# cmd+shift+m = %>%
+# cmd+opt+i = new chunk
+```
+
+## Libraries
+
+```{r, data-libraries, results='hide'}
+#### Data Cleaning and Wrangling
+
+library(tidyverse)
+# includes dplyr, ggplot2, tidyr, readr, purr, tibble, stringr, forcats
+
+library(janitor)
+# helps clean data, including function clean_names() to clean column variable names
+
+library(data.table)
+# wide array of data wrangling functions for more efficient processing and visualization of tabled data
+
+library(lubridate)
+# more flexible specifications for date and time data
+
+
+#### Data Visualization
+
+library(ggthemes)
+# extra themes for ggplots and useful for customizing ggplot theme elements
+
+library(ggpubr)
+# makes publication ready ggplots, including function ggarrange() to concatenate multiple ggplots into one figure, annotate_figure() to add titles to concatenated plots, and easier functions for some ggplot geoms, including ggboxplot() and ggbarplot()
+# additional useful functions includes ggqqplot, for normality assumption Quantile-Quantile plot
+
+library(ggpmisc)
+# extension to ggplot to label plots with stat results, including function stat_fit_glance()
+
+library(cowplot)
+# supplement to ggplot, including function plot_grid() to concatenate multiple ggplots into a specified grid pattern
+
+library(extrafont)
+# additional fonts to use in themes beyond PostScript fonts
+
+library(sjPlot)
+# useful to plot regression model estimates with confidence intervals
+
+
+#### Data Analysis
+
+library(rstatix)
+# useful for pipe-friendly stats functions for basic statistical tests, including anova_test(), get_anova_table(), and t_test(), not to be confused with aov(), anova(), and t.test() in the standard stats package
+# additional useful functions include identify_outliers(), pairwise_t_test(), cohens_d(), levene_test()
+
+library(multcomp)
+# useful for running multiple comparisons in statistical tests like ANOVA and ANCOVA, including function glht() for planned comparisons
+
+library(ez) 
+# simple analysis and visualization of factorial experiment data, including function ezANOVA(), which includes ANOVA assupmtions checks
+
+library(BayesFactor)
+# useful for a range of Bayesian statistics functions
+
+library(lmerTest)
+# linear mixed-effect regression model fitting, includes lme4, useful for including degrees of freedom and p-values for model estimates in output
+# includes functions such as lmer(), ranef() to get BLUPs for random intercepts and random slopes, allFit()
+
+library(performance)
+# useful to get ICCs (intraclass correlation coefficients) for random effects of mixed-effeects models using an empty means model and the function icc()
+
+library(psycho)
+# useful for signal detection theory indices, specifically function dprime()
+
+library(misty)
+# useful for variable centering for linear regression models using function center()
+
+library(afex)
+# useful for getting p-values for fixed effects, and removing correlation parameters for categorical variables in mixed-effects models using function lmer_alt()
+
+library(emmeans)
+# Tukey test for post-hoc comparisons, especially to get the estimated marginal means (estimates for fixed effects if there were no random effects), using function emmeans()
+
+library(mixedpower)
+# useful for computing power for mixed-effects models
+
+library(MASS)
+# contains lda() and qda() functions for linear/quadratic discriminant analyses
+
+library(class)
+# contains knn() function and other classification functions
+
+#### Speech Analysis and Praat Wrappers
+
+library(wrassp)
+# Wrapper around libassp package (Advanced Speech Signal Processor library), which provides functionality for handling speech signal files in most common audio formats and for performing analyses common in phonetic science/speech science
+
+library(emuR)
+# EMU Speech Database Management System, can work with audio directly
+
+library(tuneR)
+# analysis of speech and music, can work with audio directly
+
+library(rPraat)
+# interface to praat, run any praat function script from r
+
+library(speakr)
+# another wrapper to praat, start praat, run praat scripts, plot praat objects, open files with praat
+
+library(readtextgrid)
+# read in praat text grid files into an r variable
+
+#### Other
+
+library(knitr)
+# helps customize chunk options in R notebook, including setting figure size and width for ggplot outputs, also includes function kable() for better table printing output
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+```
+
+------------------------------------------------------------------------
+
+## Set working directory to source file location
+
+```{r, working-directory}
+# this sets the working directory to the folder where this .rmd is saved - useful for open science data sharing, and this data analysis file can be saved to a top level folder that also contains the shared data folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+```
+
+## Read in data
+```{r, message = FALSE}
+# (template)
+
+# Set folder path to current working directory
+# Can alternatively directly input path to data folders using: folder.path <- "path/to/folder"
+folder.path <- getwd()
+
+library(readxl)
+# read in base spreadsheets that were made in excel
+# clean names replaces spaces and dashes with underscores in column names
+base <- read_excel("English_Japanese_VAS.xlsx") %>% clean_names()
+```
+
+
+```{r}
+# subset base dataframe into their word pairs, which includes the block display row
+# add a row at the end for mini-break display
+DT <- base %>% filter(pair == "indent-intent") %>% add_row(display = "mini-break")
+iI <- base %>% filter(pair == "reason-risen") %>% add_row(display = "mini-break")
+TTT <- base %>% filter(pair == "kata-katta") %>% add_row(display = "mini-break")
+OOO <- base %>% filter(pair == "toru-tooru") %>% add_row(display = "mini-break")
+```
+
+```{r}
+# make a function to process all the subsets in the same way
+
+make_full_subset <- function(subset){
+  # make a subset that takes all rows except the first one (block_display)
+  slice <- subset %>% slice_tail(n = -1)
+
+  # append the subset twice so that each trial and mini-break row is repeated 3 times
+  full <- rbind(subset, slice, slice) %>%
+    # change the last row of mini-break to be a full break
+    mutate(display = ifelse(row_number() == n(), "break_2D", display))
+
+  return(full)
+}
+```
+
+```{r}
+# make full subsets for all four word pairs
+DT_full <- make_full_subset(DT)
+iI_full <- make_full_subset(iI)
+TTT_full <- make_full_subset(TTT)
+OOO_full <- make_full_subset(OOO)
+```
+
+```{r}
+# make a function that makes counterbalanced spreadsheets where block order (within language) is counterbalanced, but the English blocks always come first, followed by the Japanese blocks
+
+# for the 2-dimensional spreadsheets
+make_2D_spreadsheet <- function(subset1, subset2, subset3, subset4, block_order_df){
+  spreadsheet <- rbind(subset1, subset2, subset3, subset4) %>%
+  # and for each, add a row with the display instructions at the start
+  add_row(display = "instructions_2D", .before = 1) %>%
+  # change the final row to be the end display
+  mutate(display = ifelse(row_number() == n(), "end", display)) %>%
+  # add a column for break duration where mini-breaks have a duration of 20000 ms and breaks have a duration of 60000 ms
+  mutate(break_duration = ifelse(display == "mini-break", 20000, ifelse(display == "break_2D", 60000,""))) %>%
+  # join with the block display dataframe
+  left_join(block_order_df)
+  
+  return(spreadsheet)
+}
+```
+
+```{r}
+# spreadsheet 1
+
+# create a small dataframe with a block_display column to display Block X of 4 in the right order to later join with the spreadsheet
+block_order_1 <- tibble(display = c("block_display", "block_display", "block_display", "block_display"), pair = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru"), block_display = c("Block 1 of 4", "Block 2 of 4", "Block 3 of 4", "Block 4 of 4"))
+
+spreadsheet1_2D <- make_2D_spreadsheet(DT_full, iI_full, TTT_full, OOO_full, block_order_1)
+
+```
+
+```{r}
+# spreadsheet 2
+
+# create a small dataframe with a block_display column to display Block X of 4 in the right order to later join with the spreadsheet
+block_order_2 <- tibble(display = c("block_display", "block_display", "block_display", "block_display"), pair = c("reason-risen", "indent-intent", "kata-katta", "toru-tooru"), block_display = c("Block 1 of 4", "Block 2 of 4", "Block 3 of 4", "Block 4 of 4"))
+
+spreadsheet2_2D <- make_2D_spreadsheet(iI_full, DT_full, TTT_full, OOO_full, block_order_2)
+```
+
+```{r}
+# spreadsheet 3
+
+# create a small dataframe with a block_display column to display Block X of 4 in the right order to later join with the spreadsheet
+block_order_3 <- tibble(display = c("block_display", "block_display", "block_display", "block_display"), pair = c("indent-intent", "reason-risen", "toru-tooru", "kata-katta"), block_display = c("Block 1 of 4", "Block 2 of 4", "Block 3 of 4", "Block 4 of 4"))
+
+spreadsheet3_2D <- make_2D_spreadsheet(DT_full, iI_full, OOO_full, TTT_full, block_order_3)
+```
+
+```{r}
+# spreadsheet 4
+
+# create a small dataframe with a block_display column to display Block X of 4 in the right order to later join with the spreadsheet
+block_order_4 <- tibble(display = c("block_display", "block_display", "block_display", "block_display"), pair = c("reason-risen", "indent-intent", "toru-tooru", "kata-katta"), block_display = c("Block 1 of 4", "Block 2 of 4", "Block 3 of 4", "Block 4 of 4"))
+
+spreadsheet4_2D <- make_2D_spreadsheet(iI_full, DT_full, OOO_full, TTT_full, block_order_4)
+```
+
+```{r}
+# now make the 1-dimensional version by choosing only those stimuli at the intermediate value of the second dimension (so when second_dim_step == 3)
+# however, for the 1-dimensional version, each token is repeated 4 times
+
+# so make a new function to make the 1D subsets
+
+make_1D_subset <- function(subset){
+  # make a 1D subset that keeps only the trials where second_dim_step == 3 + the block_display
+  # note: this takes away the mini-break rows
+  subset_1D <- subset %>% filter(display == "block_display" | second_dim_step == 3)
+  # make a slice that takes all rows except the first one (block_display)
+  slice <- subset_1D %>% slice_tail(n = -1) 
+
+  # append the slice three times so that each trial and break row is repeated 4 times
+  full <- rbind(subset_1D, slice, slice, slice) %>%
+    # add a row at the end for the break screen
+    add_row(display = "break_1D")
+
+
+  return(full)
+}
+```
+
+
+```{r}
+# make 1D subsets for all four word pairs
+DT_1D <- make_1D_subset(DT)
+iI_1D <- make_1D_subset(iI)
+TTT_1D <- make_1D_subset(TTT)
+OOO_1D <- make_1D_subset(OOO)
+```
+
+```{r}
+# make a function that makes counterbalanced spreadsheets where block order (within language) is counterbalanced, but the English blocks always come first, followed by the Japanese blocks
+
+# for the 1-dimensional spreadsheets
+# the main difference is that there are no mini-breaks and the break screen is only 30 seconds
+make_1D_spreadsheet <- function(subset1, subset2, subset3, subset4, block_order_df){
+  spreadsheet <- rbind(subset1, subset2, subset3, subset4) %>%
+  # and for each, add a row with the display instructions at the start
+  add_row(display = "instructions_1D", .before = 1) %>%
+  # change the final row to be the end display
+  mutate(display = ifelse(row_number() == n(), "end", display)) %>%
+  # add a column for break duration where breaks have a duration of 30000 ms
+  mutate(break_duration = ifelse(display == "break_1D", 30000,"")) %>%
+  # join with the block display dataframe
+  left_join(block_order_df)
+  
+  return(spreadsheet)
+}
+```
+
+
+```{r}
+# spreadsheet 1
+spreadsheet1_1D <- make_1D_spreadsheet(DT_1D, iI_1D, TTT_1D, OOO_1D, block_order_1)
+
+# spreadsheet 2
+spreadsheet2_1D <- make_1D_spreadsheet(iI_1D, DT_1D, TTT_1D, OOO_1D, block_order_2)
+
+# spreadsheet 3
+spreadsheet3_1D <- make_1D_spreadsheet(DT_1D, iI_1D, OOO_1D, TTT_1D, block_order_3)
+
+# spreadsheet 4
+spreadsheet4_1D <- make_1D_spreadsheet(iI_1D, DT_1D, OOO_1D, TTT_1D, block_order_4)
+```
+
+```{r}
+# save each as csv files
+# use the readr library function to write as CSV files that preserve non-alphabetic characters (just in case)
+library(readr)
+write_spreadsheet_csv <- function(spreadsheet){
+  # deparse(substitute()) resolves the variable name as a string
+  write_excel_csv(spreadsheet, file = paste0(deparse(substitute(spreadsheet)), ".csv"), na = "")
+}
+
+write_spreadsheet_csv(spreadsheet1_2D)
+write_spreadsheet_csv(spreadsheet2_2D)
+write_spreadsheet_csv(spreadsheet3_2D)
+write_spreadsheet_csv(spreadsheet4_2D)
+write_spreadsheet_csv(spreadsheet1_1D)
+write_spreadsheet_csv(spreadsheet2_1D)
+write_spreadsheet_csv(spreadsheet3_1D)
+write_spreadsheet_csv(spreadsheet4_1D)
+```
+
+------------------------------------------------------------------------
+
+
+
+
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r, sessionInfo, results='hide'}
+sessionInfo()
+```

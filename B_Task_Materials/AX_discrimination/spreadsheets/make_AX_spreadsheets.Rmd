@@ -1,0 +1,374 @@
+---
+title: "Make spreadsheets for AX discrimination task"
+author: "Chisom Obasih"
+date: "Feb 2025"
+subtitle: "Make the spreadsheets to use on Gorilla for the two conditions of the AX discrimination training task and the one condition of the AX discrimination testing task"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+This template was last updated: Thurs, Feb 13, 2025
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE, message = FALSE
+)
+
+# helpful code to remember
+# str() to look at the structure of a dataframe
+# get_summary_stats(type = "common" or "mean_se") after group_by
+
+# helpful hotkeys to remember
+# cmd+shift+m = %>%
+# cmd+opt+i = new chunk
+```
+
+## Libraries
+
+```{r, data-libraries, results='hide'}
+#### Data Cleaning and Wrangling
+
+library(tidyverse)
+# includes dplyr, ggplot2, tidyr, readr, purr, tibble, stringr, forcats
+
+library(janitor)
+# helps clean data, including function clean_names() to clean column variable names
+
+library(data.table)
+# wide array of data wrangling functions for more efficient processing and visualization of tabled data
+
+library(lubridate)
+# more flexible specifications for date and time data
+
+
+#### Data Visualization
+
+library(ggthemes)
+# extra themes for ggplots and useful for customizing ggplot theme elements
+
+library(ggpubr)
+# makes publication ready ggplots, including function ggarrange() to concatenate multiple ggplots into one figure, annotate_figure() to add titles to concatenated plots, and easier functions for some ggplot geoms, including ggboxplot() and ggbarplot()
+# additional useful functions includes ggqqplot, for normality assumption Quantile-Quantile plot
+
+library(ggpmisc)
+# extension to ggplot to label plots with stat results, including function stat_fit_glance()
+
+library(cowplot)
+# supplement to ggplot, including function plot_grid() to concatenate multiple ggplots into a specified grid pattern
+
+library(extrafont)
+# additional fonts to use in themes beyond PostScript fonts
+
+library(sjPlot)
+# useful to plot regression model estimates with confidence intervals
+
+
+#### Data Analysis
+
+library(rstatix)
+# useful for pipe-friendly stats functions for basic statistical tests, including anova_test(), get_anova_table(), and t_test(), not to be confused with aov(), anova(), and t.test() in the standard stats package
+# additional useful functions include identify_outliers(), pairwise_t_test(), cohens_d(), levene_test()
+
+library(multcomp)
+# useful for running multiple comparisons in statistical tests like ANOVA and ANCOVA, including function glht() for planned comparisons
+
+library(ez) 
+# simple analysis and visualization of factorial experiment data, including function ezANOVA(), which includes ANOVA assupmtions checks
+
+library(BayesFactor)
+# useful for a range of Bayesian statistics functions
+
+library(lmerTest)
+# linear mixed-effect regression model fitting, includes lme4, useful for including degrees of freedom and p-values for model estimates in output
+# includes functions such as lmer(), ranef() to get BLUPs for random intercepts and random slopes, allFit()
+
+library(performance)
+# useful to get ICCs (intraclass correlation coefficients) for random effects of mixed-effeects models using an empty means model and the function icc()
+
+library(psycho)
+# useful for signal detection theory indices, specifically function dprime()
+
+library(misty)
+# useful for variable centering for linear regression models using function center()
+
+library(afex)
+# useful for getting p-values for fixed effects, and removing correlation parameters for categorical variables in mixed-effects models using function lmer_alt()
+
+library(emmeans)
+# Tukey test for post-hoc comparisons, especially to get the estimated marginal means (estimates for fixed effects if there were no random effects), using function emmeans()
+
+library(mixedpower)
+# useful for computing power for mixed-effects models
+
+library(MASS)
+# contains lda() and qda() functions for linear/quadratic discriminant analyses
+
+library(class)
+# contains knn() function and other classification functions
+
+#### Speech Analysis and Praat Wrappers
+
+library(wrassp)
+# Wrapper around libassp package (Advanced Speech Signal Processor library), which provides functionality for handling speech signal files in most common audio formats and for performing analyses common in phonetic science/speech science
+
+library(emuR)
+# EMU Speech Database Management System, can work with audio directly
+
+library(tuneR)
+# analysis of speech and music, can work with audio directly
+
+library(rPraat)
+# interface to praat, run any praat function script from r
+
+library(speakr)
+# another wrapper to praat, start praat, run praat scripts, plot praat objects, open files with praat
+
+library(readtextgrid)
+# read in praat text grid files into an r variable
+
+#### Other
+
+library(knitr)
+# helps customize chunk options in R notebook, including setting figure size and width for ggplot outputs, also includes function kable() for better table printing output
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+```
+
+------------------------------------------------------------------------
+
+## Set working directory to source file location
+
+```{r, working-directory}
+# this sets the working directory to the folder where this .rmd is saved - useful for open science data sharing, and this data analysis file can be saved to a top level folder that also contains the shared data folder
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+```
+
+## Read in data
+
+```{r, message = FALSE}
+# (template)
+
+# Set folder path to current working directory
+# Can alternatively directly input path to data folders using: folder.path <- "path/to/folder"
+folder.path <- getwd()
+
+library(readxl)
+# read in base spreadsheets that were made in excel
+# clean names replaces spaces and dashes with underscores in column names
+training <- read_excel("discrimination-training-stimuli.xlsx") %>% clean_names()
+testing <- read_excel("discrimination-testing-stimuli.xlsx") %>% clean_names()
+```
+
+
+```{r}
+## training base spreadsheet
+
+# add column word_pair for each row using the value of word in row 1 and word in row 2, separated by a hyphen, then repeat that every two rows
+
+# also add a transliteration column that is a copy of the word column for Japanese words and a copy of the alt_writing column for Arabic words
+# also mutate orthography column to include hiragana (alt_writing) in parentheses  (note parentheses need to be from Japanese input) after the kanji, if the orthography isn't already typically in hiragana (only for the Japanese words)
+training <- training %>%
+  add_column(word_pair = NA, .after = "word") %>%
+  mutate(transliteration = ifelse(language == "Japanese", word, ifelse(language == "MSA", alt_writing, "")), .after = "word_pair") %>%
+  mutate(orthography = ifelse(language == "Japanese" & orthography != alt_writing, paste0(orthography, "（", alt_writing, "）"), orthography))
+
+for (x in 1:nrow(training)){
+  ## if this row's word_id is A, make word_pair the concatenation between this row's word and the next row's word
+  if (training$word_id[x] == "A"){
+    y = x + 1
+    training$word_pair[x] <- paste(training$word[x], training$word[y], sep = "-")
+  }
+  ## if this row's word_id is B, make word_pair the concatenation between the previous row's word and this row's word
+  if (training$word_id[x] == "B"){
+    y = x-1
+    training$word_pair[x] <- paste(training$word[y], training$word[x], sep = "-")
+  }
+}
+
+# pivot each wider so that contrasted pairs are on the same row
+training_wide <- training %>%
+  select(!(replacement)) %>%
+  pivot_wider(names_from = word_id, values_from = c(word, transliteration, alt_writing, orthography, gloss, pitch_accent, phoneme_identity, length)) %>%
+  # move columns around
+  relocate(phoneme_quality, .before = "phoneme_identity_A") %>%
+  relocate(language, .before = "gloss_A") %>%
+  relocate(c(segment_type, word_position, task), .after = "length_B")
+
+```
+
+
+```{r}
+## testing base spreadsheet
+
+# add column word_pair for each row using the value of word in row 1 and word in row 2, separated by a hyphen, then repeat that every two rows
+
+# also add a transliteration column that is a copy of the word column for Japanese words and a copy of the alt_writing column for Arabic words (but this spreadsheet for testing should just be all Japanese)
+# also mutate orthography column to include hiragana (alt_writing) in parentheses (note parentheses need to be from Japanese input) after the kanji, if the orthography isn't already typically in hiragana (only for the Japanese words, which should be all the words in the testing spreadsheet)
+testing <- testing %>%
+  add_column(word_pair = NA, .after = "word") %>%
+  mutate(transliteration = ifelse(language == "Japanese", word, ifelse(language == "MSA", alt_writing, "")), .after = "word_pair") %>%
+  mutate(orthography = ifelse(language == "Japanese" & orthography != alt_writing, paste0(orthography, "（", alt_writing, "）"), orthography))
+
+
+for (x in 1:nrow(testing)){
+  ## if this row's word_id is A, make word_pair the concatenation between this row's word and the next row's word
+  if (testing$word_id[x] == "A"){
+    y = x + 1
+    testing$word_pair[x] <- paste(testing$word[x], testing$word[y], sep = "-")
+  }
+  ## if this row's word_id is B, make word_pair the concatenation between the previous row's word and this row's word
+  if (testing$word_id[x] == "B"){
+    y = x-1
+    testing$word_pair[x] <- paste(testing$word[y], testing$word[x], sep = "-")
+  }
+}
+
+# pivot each wider so that contrasted pairs are on the same row
+testing_wide <- testing %>%
+  select(!(replacement)) %>%
+  pivot_wider(names_from = word_id, values_from = c(word, transliteration, alt_writing, orthography, gloss, pitch_accent, phoneme_identity, length)) %>%
+  # move columns around
+  relocate(phoneme_quality, .before = "phoneme_identity_A") %>%
+  relocate(language, .before = "gloss_A") %>%
+  relocate(c(segment_type, word_position, task), .after = "length_B")
+
+```
+
+```{r}
+# vector of trial types to add to the spreadsheets
+type_vector = c("AA", "BB", "AB", "BA")
+```
+
+
+```{r}
+# make a function for creating the spreadsheets from the wide format
+make_spreadsheets <- function(wide_data, uncount_num, type_vector, trials_per_block, total_blocks, break_dur){
+  new_spreadsheet <- wide_data %>%
+    uncount(uncount_num) %>% # repeat each row so that there's X copies
+    mutate(display = ifelse(task == "training", "training_trial", ifelse(task == "testing", "testing_trial", "")), .before = 1) %>%
+    # repeat the type_vector to fill out the type column down to the current number of rows in the dataframe
+    mutate(type = rep_len(type_vector, length.out = nrow(.)), .after = 1) %>%
+    mutate(signal = ifelse(type == "AA" | type == "BB", "same", "different"), .after = "type") %>%
+    mutate(sound_A_male = paste0("M_", word_A, ".mp3"), .after = "word_B") %>%
+    mutate(sound_A_female = paste0("F_", word_A, ".mp3"), .after = "sound_A_male") %>%
+    mutate(sound_B_male = paste0("M_", word_B, ".mp3"), .after = "sound_A_female") %>%
+    mutate(sound_B_female = paste0("F_", word_B, ".mp3"), .after = "sound_B_male") %>%
+    mutate(sound_1 = "", .after = "sound_B_female") %>%
+    mutate(sound_2 = "", .after = "sound_1") %>%
+    arrange(language, desc(signal)) %>%
+    # add a row with a break display and a row with the block display every X trials
+    group_by(group = (row_number()-1) %/% trials_per_block) %>%
+    group_modify(~ add_row(.x, display = c("break", "block_display"), .before = 1)) %>%
+    ungroup() %>% 
+    # add block number based on grouping number
+    mutate(block_num = (group + 1)) %>% 
+    # remove the grouping variable
+    select(-group) %>%
+    # remove the block number from just the break displays
+    mutate(block_num = ifelse(display == "break", "", block_num)) %>%
+    # make the first break the instructions display and add an end display at the end of the data frame
+    mutate(display = ifelse(row_number() == 1, "instructions", display)) %>%
+    add_row(display = "end") %>%
+    # add block_display column for the block display to read "Block x of y" with total number of blocks
+    mutate(block_display = ifelse(display == "block_display", paste0("Block ", block_num, " of ", total_blocks), "")) %>%
+    # now remove the block number from the rows with break_display (so that they are not randomized with the block trials)
+    mutate(block_num = ifelse(display == "block_display", "", block_num)) %>%
+    # rename block_num
+    rename(randomize_language_blocks = block_num) %>%
+    # add time limit for break screens
+    mutate(break_duration = ifelse(display == "break", break_dur, ""))
+    
+  return(new_spreadsheet)
+}
+```
+
+```{r}
+# make a function for the spreadsheets that were derived from other made spreadsheets
+make_derivative_spreadsheets <- function(spreadsheet, uncount_num, trials_per_block, total_blocks, break_dur){
+  new_spreadsheet <- spreadsheet %>%
+    filter(language == "Japanese") %>%
+    # remove randomize_language_blocks since it will be remade from block_num below
+    select(-randomize_language_blocks) %>%
+    uncount(uncount_num) %>% # repeat each row so that there's X copies
+    # add a row with a break display and a row with the block display every X trials
+    group_by(group = (row_number()-1) %/% trials_per_block) %>%
+    group_modify(~ add_row(.x, display = c("break", "block_display"), .before = 1)) %>%
+    ungroup() %>% 
+    # add block number based on grouping number
+    mutate(block_num = (group + 1), .after = "task") %>% 
+    # remove the grouping variable
+    select(-group) %>%
+    # remove the block number from just the break displays
+    mutate(block_num = ifelse(display == "break", "", block_num)) %>%
+    # make the first break the instructions display and add an end display at the end of the data frame
+    mutate(display = ifelse(row_number() == 1, "instructions", display)) %>%
+    add_row(display = "end") %>%
+    # add block display column for the block display to read "Block x of y" with total number of blocks
+    mutate(block_display = ifelse(display == "block_display", paste0("Block ", block_num, " of ", total_blocks), "")) %>%
+    # now remove the block number from the rows with break_display (so that they are not randomized with the block trials)
+    mutate(block_num = ifelse(display == "block_display", "", block_num)) %>%
+    # rename block_num
+    rename(randomize_language_blocks = block_num) %>%
+    # add time limit for break screens
+    mutate(break_duration = ifelse(display == "break", break_dur, ""))
+ 
+   return(new_spreadsheet)
+}
+```
+
+
+```{r}
+# spreadsheet for training, high LD condition
+training_high_LD <- make_spreadsheets(wide_data = training_wide, uncount_num = 8, type_vector = type_vector, trials_per_block = 36, break_dur = 20000, total_blocks = 8)
+
+# spreadsheet for training, low LD condition
+# low LD condition is only Japanese trials, repeated to match the number of trials in high LD condition
+training_low_LD <- make_derivative_spreadsheets(spreadsheet = training_high_LD, uncount_num = 2, trials_per_block = 36, break_dur = 20000, total_blocks = 8)
+
+# spreadsheet for testing, which is the same across all experimental groups
+testing_all_groups <- make_spreadsheets(wide_data = testing_wide, uncount_num = 4, type_vector = type_vector, trials_per_block = 25, break_dur = 15000, total_blocks = 4)
+
+# might change the testing to have double the number of trials, so this is the same as the testing spreadsheet but just doubled, and break duration is different
+testing_all_groups_long <- make_derivative_spreadsheets(spreadsheet = testing_all_groups, uncount_num = 2, trials_per_block = 50, total_blocks = 4, break_dur = 30000)
+
+```
+
+
+
+```{r}
+# save each as csv files
+# use the readr library function to write as CSV files that preserve non-alphabetic characters
+library(readr)
+write_excel_csv(training_high_LD, "training_high_LD.csv", na = "")
+write_excel_csv(training_low_LD, "training_low_LD.csv", na = "")
+write_excel_csv(testing_all_groups, "testing_all_groups.csv", na = "")
+write_excel_csv(testing_all_groups_long, "testing_all_groups_long.csv", na = "")
+```
+
+------------------------------------------------------------------------
+
+
+
+
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r, sessionInfo, results='hide'}
+sessionInfo()
+```
