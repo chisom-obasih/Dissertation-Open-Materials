@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.44 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.44 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.1865380347356504 
+            text = "" 
+        intervals [2]:
+            xmin = 2.1865380347356504 
+            xmax = 2.500429471843436 
+            text = "kako-1a" 
+        intervals [3]:
+            xmin = 2.500429471843436 
+            xmax = 3.581214760975924 
+            text = "" 
+        intervals [4]:
+            xmin = 3.581214760975924 
+            xmax = 3.941476524020087 
+            text = "kako-1b" 
+        intervals [5]:
+            xmin = 3.941476524020087 
+            xmax = 6.860531161631654 
+            text = "" 
+        intervals [6]:
+            xmin = 6.860531161631654 
+            xmax = 7.16015480614363 
+            text = "kako-2a" 
+        intervals [7]:
+            xmin = 7.16015480614363 
+            xmax = 8.244560475992953 
+            text = "" 
+        intervals [8]:
+            xmin = 8.244560475992953 
+            xmax = 8.622656979781876 
+            text = "kako-2b" 
+        intervals [9]:
+            xmin = 8.622656979781876 
+            xmax = 11.5880234892583 
+            text = "" 
+        intervals [10]:
+            xmin = 11.5880234892583 
+            xmax = 11.89478103006818 
+            text = "kako-3a" 
+        intervals [11]:
+            xmin = 11.89478103006818 
+            xmax = 13.043338334030759 
+            text = "" 
+        intervals [12]:
+            xmin = 13.043338334030759 
+            xmax = 13.432135682266539 
+            text = "kako-3b" 
+        intervals [13]:
+            xmin = 13.432135682266539 
+            xmax = 16.44 
+            text = "" 

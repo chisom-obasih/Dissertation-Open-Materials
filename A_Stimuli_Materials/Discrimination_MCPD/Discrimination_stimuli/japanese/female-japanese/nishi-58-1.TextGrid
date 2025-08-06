@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.22 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.22 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.2544208776595744 
+            text = "" 
+        intervals [2]:
+            xmin = 1.2544208776595744 
+            xmax = 1.6623824404761904 
+            text = "nishi-1a" 
+        intervals [3]:
+            xmin = 1.6623824404761904 
+            xmax = 2.8527395833333333 
+            text = "" 
+        intervals [4]:
+            xmin = 2.8527395833333333 
+            xmax = 3.2200304783950617 
+            text = "nishi-1b" 
+        intervals [5]:
+            xmin = 3.2200304783950617 
+            xmax = 5.368421409214092 
+            text = "" 
+        intervals [6]:
+            xmin = 5.368421409214092 
+            xmax = 5.75034375 
+            text = "nishi-2a" 
+        intervals [7]:
+            xmin = 5.75034375 
+            xmax = 6.960864583333333 
+            text = "" 
+        intervals [8]:
+            xmin = 6.960864583333333 
+            xmax = 7.349707175925926 
+            text = "nishi-2b" 
+        intervals [9]:
+            xmin = 7.349707175925926 
+            xmax = 9.840702795848822 
+            text = "" 
+        intervals [10]:
+            xmin = 9.840702795848822 
+            xmax = 10.245315972222222 
+            text = "nishi-3a" 
+        intervals [11]:
+            xmin = 10.245315972222222 
+            xmax = 11.432335416666666 
+            text = "" 
+        intervals [12]:
+            xmin = 11.432335416666666 
+            xmax = 11.820616847826086 
+            text = "nishi-3b" 
+        intervals [13]:
+            xmin = 11.820616847826086 
+            xmax = 14.22 
+            text = "" 

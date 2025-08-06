@@ -1,0 +1,8 @@
+Step 	 Duration 	 
+dur_1	0.100 
+dur_2	0.113 
+dur_3	0.126 
+dur_4	0.139 
+dur_5	0.153 
+dur_6	0.166 
+dur_7	0.179 

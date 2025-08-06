@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.8 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.8 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6314693796861712 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6314693796861712 
+            xmax = 2.1893268038944282 
+            text = "tosshin-1a" 
+        intervals [3]:
+            xmin = 2.1893268038944282 
+            xmax = 3.3105701371730665 
+            text = "" 
+        intervals [4]:
+            xmin = 3.3105701371730665 
+            xmax = 3.905310696866167 
+            text = "tosshin-1b" 
+        intervals [5]:
+            xmin = 3.905310696866167 
+            xmax = 6.502416487361785 
+            text = "" 
+        intervals [6]:
+            xmin = 6.502416487361785 
+            xmax = 7.0648843035056474 
+            text = "tosshin-2a" 
+        intervals [7]:
+            xmin = 7.0648843035056474 
+            xmax = 8.089309406136577 
+            text = "" 
+        intervals [8]:
+            xmin = 8.089309406136577 
+            xmax = 8.700186337604295 
+            text = "tosshin-2b" 
+        intervals [9]:
+            xmin = 8.700186337604295 
+            xmax = 11.69378583456199 
+            text = "" 
+        intervals [10]:
+            xmin = 11.69378583456199 
+            xmax = 12.226286103124416 
+            text = "tosshin-3a" 
+        intervals [11]:
+            xmin = 12.226286103124416 
+            xmax = 13.236845485116847 
+            text = "" 
+        intervals [12]:
+            xmin = 13.236845485116847 
+            xmax = 13.903047119811832 
+            text = "tosshin-3b" 
+        intervals [13]:
+            xmin = 13.903047119811832 
+            xmax = 16.8 
+            text = "" 

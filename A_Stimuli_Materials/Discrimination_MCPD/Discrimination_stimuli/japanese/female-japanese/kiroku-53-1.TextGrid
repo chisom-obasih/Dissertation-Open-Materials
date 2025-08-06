@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.08 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.08 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.5251909722222223 
+            text = "" 
+        intervals [2]:
+            xmin = 1.5251909722222223 
+            xmax = 2.02315625 
+            text = "kiroku-1a" 
+        intervals [3]:
+            xmin = 2.02315625 
+            xmax = 3.33909375 
+            text = "" 
+        intervals [4]:
+            xmin = 3.33909375 
+            xmax = 3.8913673007246374 
+            text = "kiroku-1b" 
+        intervals [5]:
+            xmin = 3.8913673007246374 
+            xmax = 6.0845208333333325 
+            text = "" 
+        intervals [6]:
+            xmin = 6.0845208333333325 
+            xmax = 6.59540625 
+            text = "kiroku-2a" 
+        intervals [7]:
+            xmin = 6.59540625 
+            xmax = 7.8488437499999995 
+            text = "" 
+        intervals [8]:
+            xmin = 7.8488437499999995 
+            xmax = 8.458673611111111 
+            text = "kiroku-2b" 
+        intervals [9]:
+            xmin = 8.458673611111111 
+            xmax = 10.80571875 
+            text = "" 
+        intervals [10]:
+            xmin = 10.80571875 
+            xmax = 11.306725 
+            text = "kiroku-3a" 
+        intervals [11]:
+            xmin = 11.306725 
+            xmax = 12.537996527777777 
+            text = "" 
+        intervals [12]:
+            xmin = 12.537996527777777 
+            xmax = 13.163380608974357 
+            text = "kiroku-3b" 
+        intervals [13]:
+            xmin = 13.163380608974357 
+            xmax = 16.08 
+            text = "" 

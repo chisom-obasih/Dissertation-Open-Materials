@@ -1,0 +1,82 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 19.44 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 19.44 
+        intervals: size = 17 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8889515398550722 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8889515398550722 
+            xmax = 2.5359294599246254 
+            text = "3aliim-1a" 
+        intervals [3]:
+            xmin = 2.5359294599246254 
+            xmax = 4.255375 
+            text = "" 
+        intervals [4]:
+            xmin = 4.255375 
+            xmax = 4.8709891734797095 
+            text = "3aliim-1b" 
+        intervals [5]:
+            xmin = 4.8709891734797095 
+            xmax = 6.23746875 
+            text = "" 
+        intervals [6]:
+            xmin = 6.23746875 
+            xmax = 6.9004609375 
+            text = "3aliim-2a" 
+        intervals [7]:
+            xmin = 6.9004609375 
+            xmax = 8.06353125 
+            text = "" 
+        intervals [8]:
+            xmin = 8.06353125 
+            xmax = 8.684880208333333 
+            text = "3aliim-2b" 
+        intervals [9]:
+            xmin = 8.684880208333333 
+            xmax = 10.094089858427118 
+            text = "" 
+        intervals [10]:
+            xmin = 10.094089858427118 
+            xmax = 10.789051190308767 
+            text = "3aliim-3a" 
+        intervals [11]:
+            xmin = 10.789051190308767 
+            xmax = 11.879424915923673 
+            text = "" 
+        intervals [12]:
+            xmin = 11.879424915923673 
+            xmax = 12.524333631104703 
+            text = "3aliim-3b" 
+        intervals [13]:
+            xmin = 12.524333631104703 
+            xmax = 13.889504552713314 
+            text = "" 
+        intervals [14]:
+            xmin = 13.889504552713314 
+            xmax = 14.601791790375945 
+            text = "3aliim-4a" 
+        intervals [15]:
+            xmin = 14.601791790375945 
+            xmax = 15.74750123875876 
+            text = "" 
+        intervals [16]:
+            xmin = 15.74750123875876 
+            xmax = 16.400110356509117 
+            text = "3aliim-4b" 
+        intervals [17]:
+            xmin = 16.400110356509117 
+            xmax = 19.44 
+            text = "" 

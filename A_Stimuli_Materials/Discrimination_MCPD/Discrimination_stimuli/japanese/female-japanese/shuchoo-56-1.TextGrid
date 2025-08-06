@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.3 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.3 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.4222899094478216 
+            text = "" 
+        intervals [2]:
+            xmin = 1.4222899094478216 
+            xmax = 2.042329861111111 
+            text = "shuchoo-1a" 
+        intervals [3]:
+            xmin = 2.042329861111111 
+            xmax = 3.203920138888889 
+            text = "" 
+        intervals [4]:
+            xmin = 3.203920138888889 
+            xmax = 3.8982649739583333 
+            text = "shuchoo-1b" 
+        intervals [5]:
+            xmin = 3.8982649739583333 
+            xmax = 5.989553407485875 
+            text = "" 
+        intervals [6]:
+            xmin = 5.989553407485875 
+            xmax = 6.6621328125 
+            text = "shuchoo-2a" 
+        intervals [7]:
+            xmin = 6.6621328125 
+            xmax = 7.7063854166666665 
+            text = "" 
+        intervals [8]:
+            xmin = 7.7063854166666665 
+            xmax = 8.433261757425742 
+            text = "shuchoo-2b" 
+        intervals [9]:
+            xmin = 8.433261757425742 
+            xmax = 10.714217210144927 
+            text = "" 
+        intervals [10]:
+            xmin = 10.714217210144927 
+            xmax = 11.301670138888888 
+            text = "shuchoo-3a" 
+        intervals [11]:
+            xmin = 11.301670138888888 
+            xmax = 12.445656249999999 
+            text = "" 
+        intervals [12]:
+            xmin = 12.445656249999999 
+            xmax = 13.15352420112782 
+            text = "shuchoo-3b" 
+        intervals [13]:
+            xmin = 13.15352420112782 
+            xmax = 15.3 
+            text = "" 

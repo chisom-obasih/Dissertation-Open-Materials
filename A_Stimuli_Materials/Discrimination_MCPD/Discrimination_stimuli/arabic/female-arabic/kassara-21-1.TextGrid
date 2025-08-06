@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.2 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.2 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.7223072916666666 
+            text = "" 
+        intervals [2]:
+            xmin = 1.7223072916666666 
+            xmax = 2.375440972222222 
+            text = "kassara-1a" 
+        intervals [3]:
+            xmin = 2.375440972222222 
+            xmax = 3.5181494447295276 
+            text = "" 
+        intervals [4]:
+            xmin = 3.5181494447295276 
+            xmax = 4.12476727296791 
+            text = "kassara-1b" 
+        intervals [5]:
+            xmin = 4.12476727296791 
+            xmax = 6.253247638613369 
+            text = "" 
+        intervals [6]:
+            xmin = 6.253247638613369 
+            xmax = 6.906083968050867 
+            text = "kassara-2a" 
+        intervals [7]:
+            xmin = 6.906083968050867 
+            xmax = 8.09423340070959 
+            text = "" 
+        intervals [8]:
+            xmin = 8.09423340070959 
+            xmax = 8.715294510572695 
+            text = "kassara-2b" 
+        intervals [9]:
+            xmin = 8.715294510572695 
+            xmax = 10.588685157091092 
+            text = "" 
+        intervals [10]:
+            xmin = 10.588685157091092 
+            xmax = 11.247298799178477 
+            text = "kassara-3a" 
+        intervals [11]:
+            xmin = 11.247298799178477 
+            xmax = 12.46292328108939 
+            text = "" 
+        intervals [12]:
+            xmin = 12.46292328108939 
+            xmax = 13.046431858728216 
+            text = "kassara-3b" 
+        intervals [13]:
+            xmin = 13.046431858728216 
+            xmax = 16.2 
+            text = "" 

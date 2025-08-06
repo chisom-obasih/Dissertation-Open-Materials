@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.98 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.98 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6164943367462508 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6164943367462508 
+            xmax = 1.9976203214130321 
+            text = "heya-1a" 
+        intervals [3]:
+            xmin = 1.9976203214130321 
+            xmax = 3.291332570312892 
+            text = "" 
+        intervals [4]:
+            xmin = 3.291332570312892 
+            xmax = 3.710034356284849 
+            text = "heya-1b" 
+        intervals [5]:
+            xmin = 3.710034356284849 
+            xmax = 6.889340366389623 
+            text = "" 
+        intervals [6]:
+            xmin = 6.889340366389623 
+            xmax = 7.226448983813199 
+            text = "heya-2a" 
+        intervals [7]:
+            xmin = 7.226448983813199 
+            xmax = 8.559141668670529 
+            text = "" 
+        intervals [8]:
+            xmin = 8.559141668670529 
+            xmax = 8.977843454642485 
+            text = "heya-2b" 
+        intervals [9]:
+            xmin = 8.977843454642485 
+            xmax = 12.33588798280695 
+            text = "" 
+        intervals [10]:
+            xmin = 12.33588798280695 
+            xmax = 12.65045111944742 
+            text = "heya-3a" 
+        intervals [11]:
+            xmin = 12.65045111944742 
+            xmax = 13.997582154277103 
+            text = "" 
+        intervals [12]:
+            xmin = 13.997582154277103 
+            xmax = 14.474258033691331 
+            text = "heya-3b" 
+        intervals [13]:
+            xmin = 14.474258033691331 
+            xmax = 16.98 
+            text = "" 

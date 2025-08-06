@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.88 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.88 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.204296875 
+            text = "" 
+        intervals [2]:
+            xmin = 2.204296875 
+            xmax = 2.9858667072287908 
+            text = "mattana-1a" 
+        intervals [3]:
+            xmin = 2.9858667072287908 
+            xmax = 3.966914689655674 
+            text = "" 
+        intervals [4]:
+            xmin = 3.966914689655674 
+            xmax = 4.621653311108219 
+            text = "mattana-1b" 
+        intervals [5]:
+            xmin = 4.621653311108219 
+            xmax = 6.286003696236559 
+            text = "" 
+        intervals [6]:
+            xmin = 6.286003696236559 
+            xmax = 7.0399947916666665 
+            text = "mattana-2a" 
+        intervals [7]:
+            xmin = 7.0399947916666665 
+            xmax = 8.101477591784148 
+            text = "" 
+        intervals [8]:
+            xmin = 8.101477591784148 
+            xmax = 8.737744582632448 
+            text = "mattana-2b" 
+        intervals [9]:
+            xmin = 8.737744582632448 
+            xmax = 10.46789453125 
+            text = "" 
+        intervals [10]:
+            xmin = 10.46789453125 
+            xmax = 11.208964962121213 
+            text = "mattana-3a" 
+        intervals [11]:
+            xmin = 11.208964962121213 
+            xmax = 12.207182291666665 
+            text = "" 
+        intervals [12]:
+            xmin = 12.207182291666665 
+            xmax = 12.89090093084444 
+            text = "mattana-3b" 
+        intervals [13]:
+            xmin = 12.89090093084444 
+            xmax = 14.88 
+            text = "" 

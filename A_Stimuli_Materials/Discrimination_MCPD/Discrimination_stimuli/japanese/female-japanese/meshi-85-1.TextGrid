@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.04 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.04 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.2096615131578947 
+            text = "" 
+        intervals [2]:
+            xmin = 1.2096615131578947 
+            xmax = 1.5893551136363635 
+            text = "meshi-1a" 
+        intervals [3]:
+            xmin = 1.5893551136363635 
+            xmax = 2.7841458333333335 
+            text = "" 
+        intervals [4]:
+            xmin = 2.7841458333333335 
+            xmax = 3.1686411790780142 
+            text = "meshi-1b " 
+        intervals [5]:
+            xmin = 3.1686411790780142 
+            xmax = 5.458400855654761 
+            text = "" 
+        intervals [6]:
+            xmin = 5.458400855654761 
+            xmax = 5.830756510416666 
+            text = "meshi-2a" 
+        intervals [7]:
+            xmin = 5.830756510416666 
+            xmax = 7.028072916666666 
+            text = "" 
+        intervals [8]:
+            xmin = 7.028072916666666 
+            xmax = 7.420147361111111 
+            text = "meshi-2b" 
+        intervals [9]:
+            xmin = 7.420147361111111 
+            xmax = 10.152005770383692 
+            text = "" 
+        intervals [10]:
+            xmin = 10.152005770383692 
+            xmax = 10.5351875 
+            text = "meshi-3a" 
+        intervals [11]:
+            xmin = 10.5351875 
+            xmax = 11.772317708333333 
+            text = "" 
+        intervals [12]:
+            xmin = 11.772317708333333 
+            xmax = 12.154502673303835 
+            text = "meshi-3b" 
+        intervals [13]:
+            xmin = 12.154502673303835 
+            xmax = 14.04 
+            text = "" 

@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.06 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.06 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6156060049019607 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6156060049019607 
+            xmax = 2.1621770833333334 
+            text = "ikoo-1a" 
+        intervals [3]:
+            xmin = 2.1621770833333334 
+            xmax = 3.5069466911764704 
+            text = "" 
+        intervals [4]:
+            xmin = 3.5069466911764704 
+            xmax = 4.059368923611111 
+            text = "ikoo-1b" 
+        intervals [5]:
+            xmin = 4.059368923611111 
+            xmax = 6.207421130952381 
+            text = "" 
+        intervals [6]:
+            xmin = 6.207421130952381 
+            xmax = 6.74514678030303 
+            text = "ikoo-2a" 
+        intervals [7]:
+            xmin = 6.74514678030303 
+            xmax = 8.026010416666667 
+            text = "" 
+        intervals [8]:
+            xmin = 8.026010416666667 
+            xmax = 8.61540259009009 
+            text = "ikoo-2b" 
+        intervals [9]:
+            xmin = 8.61540259009009 
+            xmax = 10.95 
+            text = "" 
+        intervals [10]:
+            xmin = 10.95 
+            xmax = 11.507572916666666 
+            text = "ikoo-3a" 
+        intervals [11]:
+            xmin = 11.507572916666666 
+            xmax = 12.81843005952381 
+            text = "" 
+        intervals [12]:
+            xmin = 12.81843005952381 
+            xmax = 13.413096726190476 
+            text = "ikoo-3b" 
+        intervals [13]:
+            xmin = 13.413096726190476 
+            xmax = 15.06 
+            text = "" 

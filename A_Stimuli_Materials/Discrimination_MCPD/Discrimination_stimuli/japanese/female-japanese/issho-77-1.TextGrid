@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.7 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.7 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.14235625 
+            text = "" 
+        intervals [2]:
+            xmin = 1.14235625 
+            xmax = 1.6051209935897437 
+            text = "issho-1a" 
+        intervals [3]:
+            xmin = 1.6051209935897437 
+            xmax = 2.927601902173913 
+            text = "" 
+        intervals [4]:
+            xmin = 2.927601902173913 
+            xmax = 3.424624710648148 
+            text = "issho-1b" 
+        intervals [5]:
+            xmin = 3.424624710648148 
+            xmax = 5.6341827651515155 
+            text = "" 
+        intervals [6]:
+            xmin = 5.6341827651515155 
+            xmax = 6.127635416666666 
+            text = "issho-2a" 
+        intervals [7]:
+            xmin = 6.127635416666666 
+            xmax = 7.416163194444444 
+            text = "" 
+        intervals [8]:
+            xmin = 7.416163194444444 
+            xmax = 7.920253170289855 
+            text = "issho-2b" 
+        intervals [9]:
+            xmin = 7.920253170289855 
+            xmax = 10.285822916666666 
+            text = "" 
+        intervals [10]:
+            xmin = 10.285822916666666 
+            xmax = 10.788349702380952 
+            text = "issho-3a" 
+        intervals [11]:
+            xmin = 10.788349702380952 
+            xmax = 12.123191789215685 
+            text = "" 
+        intervals [12]:
+            xmin = 12.123191789215685 
+            xmax = 12.646561197916666 
+            text = "issho-3b" 
+        intervals [13]:
+            xmin = 12.646561197916666 
+            xmax = 14.7 
+            text = "" 

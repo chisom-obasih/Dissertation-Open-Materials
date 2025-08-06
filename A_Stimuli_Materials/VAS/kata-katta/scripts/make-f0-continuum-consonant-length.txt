@@ -1,0 +1,714 @@
+#########################
+## Make F0 (pitch) continuum for consonant length contrast
+## Chisom Obasih
+## December 2024
+## Praat version: 6.4.12 (May 2, 2024)
+
+## This script was adapted as a combination of two scripts
+## Script 1: original script by Matthew Winn from December 2021 (see original comments below)
+## Script 2: original script by Ronny Bujok in January 2023 (see original comments below)
+
+## This script is intended to make a 5-step vowel-1-to-vowel-2 F0 drop continuum for each of the 7 steps of the stop consonant closure duration continuum
+## in order to make a 7 x 5 matrix of closure duration & V1-to-V2 F0 drop continua 
+## for the singleton-geminate contrast of /t/ vs. /tt/ in the Japanese words "kata" vs. "katta"
+
+#####
+## NOTABLE CHANGES (this script is almost entirely mostly changes)
+#####
+
+
+## most of the script, including the pitch tracking, f0 interpolation, printing to table, and drawing contours, are derived from Script 1
+## procedures dealing with extracting syllables and concatenating were derived from Script 2
+
+## added a lot of custom procedures
+
+## changed default settings of procedure initialize_pitch_settings to match the needs of my stimuli
+## created procedure adjust_pitch_object to be able pause, bring up pitch editor, and correct pitch candidates
+## created procedure extract_intervals based on Script 2
+
+
+
+
+###### Script 1 Orignal header comments
+###### Source: https://github.com/ListenLab/Praat/blob/master/Interpolate_F0_contour_v3.txt
+
+######################################################
+######################################################
+# Interpolate pitch contours of two sounds
+#
+# Note: the sounds have to have the same timing landmarks
+# i.e. two sounds that differ *only* by F0
+# not two different utterances
+#
+# tip: first make a pitch manipulation of one sound,
+# then run this script to interpolate
+# between the original and the manipulated person
+#
+# demo mode: use with sample sounds Room_A and Room_B
+#
+#
+#  Matthew Winn
+#  December 2021
+######################################################
+######################################################
+
+#####
+
+####### Script 2 Original header comments
+####### Source: https://hrbosker.github.io/resources/scripts/interpolate-f0/
+
+#____________________________________ HEADER __________________________________####
+# date:         31.01.2023, run in Praat 6.2.12 on Windows 11
+# author:       Ronny Bujok (adapted from Hans Rutger Bosker)
+# email:        Ronny.Bujok@mpi.nl
+# filename:     F0_stress continuum_interpolation.praat
+# project:      Audiovisual Perception of Lexical Stress
+# license:		CC BY-NC 4.0
+
+####################################################################################################################
+# This script takes recordings of segmentally identical, disyllabic minimal stress pairs with lexical stress on the first 
+# (strong-weak; SW) or second (weak-strong; WS) syllable (e.g., VOORnaam vs. voorNAAM) and interpolates their F0-contours linearly. 
+# The manipulated F0-contours are applied to the SW recording to create an F0-based lexical stress continuum.
+# Duration and Intensity are set to mean, ambiguous values.
+#
+# This script requires minimal pairs to match in their name. Stress pattern in input files is denoted with "_sw" or "_ws" 
+# (e.g., voornaam_sw.wav & voornaam_ws.wav). No other underscore characters are allowed.
+# Textgrids for each recording are required, with boundaries at word onset, second syllable onset and word offset.
+#
+# Note that the parameters for pitch estimation are set to match a male voice. When working with a female voice,
+# please adjust the arguments of the functions "Lengthen (overlap-add)" and "To Manipulation".
+####################################################################################################################
+
+
+
+
+form Enter settings for pitch interpolation
+
+	comment F0 *analysis* settings
+	comment (analysis of the current F0)
+	real minpitch 50
+	real maxpitch 500
+
+	natural number_of_steps 5
+
+		real pitch_timestep 0.01
+
+	optionmenu interpolation_method 2
+		option linear
+		option log
+
+	boolean remove_pitch_tiers 1
+
+	real buffer_silence_dur_in_ms 50
+
+	boolean remove_syllables_after_concatenation 1
+
+	comment Enter directory path for the new files (a folder that already exists)
+	sentence parent_directory /Users/chisomobasih/Desktop/continua/T_TT_dur_F0
+
+	comment Enter basic name for the folder of output files
+	sentence output_folder f0_continuum
+
+endform
+
+# initialize silence duration variable
+silence_dur = buffer_silence_dur_in_ms/1000
+
+## Note that whichever you want the origin sound to be should be physically higher in the Praat list
+## so if you want the other word to be the origin sound, copy the higher one to be lower down on the list and select the copy instead to be the second word
+pause select the two sounds that you want to interpolate
+	basename1$ = selected$("Sound",1)
+	basename2$ = selected$("Sound",2)
+
+
+
+
+
+
+
+################ extract syllable intervals ################
+
+
+# To interpolate F0 contours, recordings must be of equal length, or roughly the same timing landmarks
+# To make this easier, I will interpolate F0 contours separately for each syllable of kata/katta using the textgrid
+# The textgrid has labeled intervals for the first syllable, closure, and second syllable
+# So F0 contours will be interpolated separately between syllable 1 of the two words and syllable 2 of the two words
+
+# first, make 50ms of buffer silence (or whatever the duration of buffer silence is set to) to append on the front and back ends of each segment to aid in pitch tracking
+call make_silence silence_'buffer_silence_dur_in_ms'ms silence_dur
+
+# NOTE: the sound and the text grid MUST have the same names
+# it's easiest for naming down the line if this name is just the word by itself without any other pre- or postfixes
+
+
+# select the sound file and the corresponding textgrid and extract all intervals from tier 2 (named "syallbles")
+# this will extract syllable 1, closure, and syllable 2
+# and create copies of each with 50ms of silence pre- and post-appended
+
+# get values from singleton word
+call extract_intervals 'basename1$' 2
+
+# save duration and intensity outputs into variables
+# NOTE: syllable2 is .dur3/.int3 because it is third in the for loop (first is syllable1, second is closure, third is syllable2)
+dur_'basename1$'_syllable1 = extract_intervals.dur1
+dur_'basename1$'_syllable2 = extract_intervals.dur3
+
+
+int_'basename1$'_syllable1 = extract_intervals.int1
+int_'basename1$'_syllable2 = extract_intervals.int3
+
+#get values from geminate word 
+call extract_intervals 'basename2$' 2
+
+# save duration and intensity outputs into variables
+# NOTE: syllable2 is .dur3/.int3 because it is third in the for loop (first is syllable1, second is closure, third is syllable2)
+dur_'basename2$'_syllable1 = extract_intervals.dur1
+dur_'basename2$'_syllable2 = extract_intervals.dur3
+
+int_'basename2$'_syllable1 = extract_intervals.int1
+int_'basename2$'_syllable2 = extract_intervals.int3
+
+################ interpolate F0 by each syllable ################
+
+
+# pitch analysis
+call initialize_pitch_settings
+
+####### FIRST SYLLABLE #######
+# pause to manually select the first syllables of each word
+# these are saved into names that are used in the interpolate F0 procedure
+beginPause: "FIRST SYLLABLE f0 interpolation"
+	comment: "Select the sound objects for the"
+	comment: "BUFFERED FIRST SYLLABLE"
+	comment: "of the two words that you want to interpolate between."
+endPause: "Continue", 1
+name1$ = selected$("Sound",1)
+name2$ = selected$("Sound",2)
+
+
+# create pitch objects for the syllables
+call adjust_pitch_object 'name1$' 'name2$'
+
+
+# interpolate between them
+# this procedure should produce each step in the interpolation, remove the silences, and intensity match them to prepare them for concatenation
+call interpolate_f0_by_syllable syllable1
+
+####### CLOSURE #######
+# copy closure interval of the singleton word for concatenation down the line so that Praat concatenates the syllables and closure in the right order
+# I am choosing the closure from singleton word because all of these pitch interpolations are derived from the singleton word
+# and the closure duration will be interpolated into a continuum in another script to be run after this one anyway
+call copy_closure_interval 'basename1$'
+
+####### SECOND SYLLABLE #######
+# pause to manually select the second syllables of each word
+# these are saved into names that are used in the interpolate F0 procedure (and overwrite the previous names)
+beginPause: "SECOND SYLLABLE f0 interpolation"
+	comment: "Select the sound objects for the"
+	comment: "BUFFERED SECOND SYLLABLE"
+	comment: "of the two words that you want to interpolate between."
+endPause: "Continue", 1
+name1$ = selected$("Sound",1)
+name2$ = selected$("Sound",2)
+
+# create pitch objects for the syllables
+call adjust_pitch_object 'name1$' 'name2$'
+
+
+# interpolate between them
+call interpolate_f0_by_syllable syllable2
+
+################ concatenate ################
+# create the full word for each step by concatenating 50ms of presilence, syllable 1, closure from baseword1$, syllable2, and 50ms of postsilence (or whatever the duration of buffer silence is set to)
+# the duration of the closure will be interpolated into a continuum of closure duration in another script that needs to be run after this one
+
+call concatenate_syllables_and_save_files syllable1 syllable2
+
+# draw the contours with the duration of the full concatenated files (all files should be equivalent duration)
+selectObject: "Sound 'basename1$'_'basename2$'_F0_1"
+total_dur = Get end time
+call draw_contours total_dur
+
+
+# select the table
+# select Table F0_'basename1$'_'basename2$'_'interpolation_method$'
+
+
+## End
+
+#####
+#
+##
+###
+#####
+########
+#############
+# Procedures
+#############
+
+
+procedure copy_closure_interval .baseword$
+	selectObject: "Sound '.baseword$'_closure"
+	Copy... '.baseword$'_closure_copy
+endproc
+
+procedure make_silence .name$ .duration
+	#>> Wrapper for make sound function
+
+	# variables are: name, number of channels, start time, end time, sampling frequency, formula
+	# so the name is provided when the procedure is called
+	# single channel
+	# start time is 0 and end time is the supplied duration when procedure is called
+	# sampling rate is 44100 Hz
+	# and the formula is set to 0 to create silence
+	Create Sound from formula... '.name$' 1 0 '.duration' 44100 0
+endproc
+
+procedure extract_intervals .sound$ .tier
+	## extract labeled intervals (non-empty) from the specified sound on the specified tier when the procedure is called
+	selectObject: "TextGrid '.sound$'"
+	plusObject: "Sound '.sound$'"
+	Extract non-empty intervals: .tier, "no"
+	# do not preserve times
+
+	# select the extract intervals to be able to extract data and rename
+	# pause Select all the extracted sounds, then click continue
+	numberOfSelectedSounds = numberOfSelected ("Sound")
+
+	for thisSelectedSound to numberOfSelectedSounds
+		sound'thisSelectedSound' = selected("Sound",thisSelectedSound)
+	endfor
+
+	for thisSound from 1 to numberOfSelectedSounds
+    	# rename interval as a combination of the sound it came from and its interval name
+		select sound'thisSound'
+		intervalName$ = selected$("Sound")
+		newIntervalName$ = "'.sound$'_'intervalName$'"
+		Rename: "'newIntervalName$'"
+		
+		# get duration and intensity values of interval
+		.dur'thisSound' = Get total duration
+		temp_dur = Get total duration
+		.int'thisSound' = Get intensity (dB)
+		temp_int = Get intensity (dB)
+		
+		# Print to the info window
+		print Duration of 'newIntervalName$' is 'temp_dur:3' s 'newline$'
+		print Intensity of 'newIntervalName$' is 'temp_int:2' dB 'newline$'
+		print 'newline$'
+
+		# append each interval with 50ms of silence (or whatever duration of buffer silence is set to) on the front end and back end to aid in pitch tracking
+		selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+		Copy... silence_'buffer_silence_dur_in_ms'ms_copy
+		plusObject: "Sound 'newIntervalName$'"
+		plusObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+		Concatenate
+		Rename: "'newIntervalName$'_buffered"
+
+		selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms_copy"
+		Remove
+
+
+
+	endfor
+
+endproc
+
+procedure adjust_pitch_object .sound1$ .sound2$
+	# lets the user adjust the pitch candidates
+	 selectObject: "Sound '.sound1$'"
+	 plusObject: "Sound '.sound2$'"
+	 To Pitch (filtered ac): timestep, minpitch, maxpitch, max_num_candidates, "no", attenuation_at_ceiling, silence_threshold, voicing_threshold, octave_cost, octave_jump_cost, voiced_unvoiced_cost
+	 select Pitch '.sound1$'
+	 Edit
+	 editor Pitch '.sound1$'
+		 beginPause: "Check pitch object"
+			 comment: "Adjust the Pitch candidates to your liking."
+			 comment: "Ensure accuracy for voiced and unvoiced regions."
+			 comment: "Click Continue when finished."
+		 endPause: "Continue", 1
+		 Close
+	 endeditor
+	 select Pitch '.sound2$'
+	 Edit
+	 editor Pitch '.sound2$'
+		 beginPause: "Check pitch object"
+			 comment: "Adjust the Pitch candidates to your liking."
+			 comment: "Ensure accuracy for voiced and unvoiced regions."
+			 comment: "Click Continue when finished."
+		 endPause: "Continue", 1
+		 Close
+	 endeditor
+endproc
+
+
+procedure interpolate_f0_by_syllable .syllable_label$
+	# make manipulable object
+	selectObject: "Sound 'name1$'"
+	To Manipulation: pitch_timestep, minpitch, maxpitch
+
+	# extract the pitch tier
+	selectObject: "Manipulation 'name1$'"
+	Extract pitch tier
+	num_pitch_points = Get number of points
+
+	# Manipulation object is created with pulse points and pitch tier using raw autocorrelation
+	# my particular stimulus can only have pulses/pitch detected using filtered autocorrelation
+	# so using the regular manipulation function, num_pitch_points is 0 and the number of pulse points would also be zero
+	# to fix that, create a PitchTier from the (filtered ac) Pitch object, replace the pitch Tier on the Manipulation object
+	# then pause the script and manually add pulse points to the Manipulation object, and go from there
+	if num_pitch_points < 1
+		selectObject: "PitchTier 'name1$'"
+		Remove
+		selectObject: "Pitch 'name1$'"
+		Down to PitchTier
+		num_pitch_points = Get number of points
+		if num_pitch_points < 1
+			pause Something went wrong with the pitch tracking
+		endif
+		plusObject: "Manipulation 'name1$'"
+		Replace pitch tier
+
+		selectObject: "Manipulation 'name1$'"
+    	Extract pulses
+    	num_pulse_points = Get number of points
+    	if num_pulse_points < 1
+			selectObject: "PointProcess 'name1$'"
+			Remove
+    		selectObject: "Manipulation 'name1$'"
+			Edit
+			editor Manipulation 'name1$'
+				beginPause: "Add pulse points"
+            		comment: "Add missing pulse points."
+            		comment: "Click Continue when finished."
+        		endPause: "Continue", 1
+			Close
+			endeditor
+			Extract pulses
+		endif
+	endif
+	
+	# make such PitchTier is selected just in case if statement above needed to be done
+	selectObject: "PitchTier 'name1$'"
+	time_of_first_point = Get time from index: 1
+	time_of_last_point = Get time from index: num_pitch_points
+	num_pitch_timesteps = (time_of_last_point - time_of_first_point)/pitch_timestep
+	num_pitch_timesteps = round(num_pitch_timesteps)
+
+	# NOTE: this total duration will include the duration of buffer silence on each end
+	duration = Get end time
+
+	# Initialize the table of F0 values
+	Create Table with column names: "F0_'basename1$'_'basename2$'_'.syllable_label$'_'interpolation_method$'", 0, "sound1 sound2 syllable_label step_number time f0_1 f0_2 f0_interp method"
+	# initialize row number
+	row_number = 0
+
+	for step_number from 1 to number_of_steps
+
+		selectObject: "PitchTier 'name1$'"
+		Copy: "pitch_step_'step_number'"
+		Remove points between: 0, duration
+
+		
+		for pitch_time_index from 1 to num_pitch_timesteps
+			# get the time point from the original pitch tier
+				select PitchTier 'name1$'
+				# instead of drawing time points from PitchTier,
+				# do it analytically, so you don't skip over the unvoiced parts
+				time = time_of_first_point + (pitch_time_index-1)*pitch_timestep
+
+			# get the F0 values from each sound at that time point
+				selectObject: "Pitch 'name1$'"
+				f0_1 = Get value at time: time, "Hertz", "linear"
+				
+
+				selectObject: "Pitch 'name2$'"
+				f0_2 = Get value at time: time, "Hertz", "linear"
+
+			# interpolate
+			if interpolation_method$ = "linear"
+				f0_interp = f0_1 + ((f0_2 - f0_1) * (step_number-1)/(number_of_steps-1))
+			elsif interpolation_method$ = "log"
+				f0_interp = f0_1 * 10^(log10(f0_2/f0_1) * (step_number-1)/(number_of_steps-1) )
+			else
+				exit Interpolation method not recognized. Try "linear" or "log"
+			endif
+
+			# print values to table
+				select Table F0_'basename1$'_'basename2$'_'.syllable_label$'_'interpolation_method$'
+				Append row
+				row_number = row_number + 1
+
+				Set string value: row_number, "sound1", name1$
+				Set string value: row_number, "sound2", name2$
+				Set string value: row_number, "syllable_label", .syllable_label$
+				Set numeric value: row_number, "step_number", step_number
+				
+				Set numeric value: row_number, "time", 'time:3'
+				
+				if f0_1 != undefined
+					Set numeric value: row_number, "f0_1", 'f0_1:1'
+				else
+					Set string value: row_number, "f0_1", "NA"
+				endif
+				if f0_2 != undefined
+					Set numeric value: row_number, "f0_2", 'f0_2:1'
+				else
+					Set string value: row_number, "f0_2", "NA"
+				endif
+				if f0_interp != undefined
+					Set numeric value: row_number, "f0_interp", 'f0_interp:1'
+				else
+					Set string value: row_number, "f0_interp", "NA"
+				endif
+				Set string value: row_number, "method", interpolation_method$
+				
+
+
+			selectObject: "PitchTier pitch_step_'step_number'"
+			if f0_interp != undefined
+				Add point: time, f0_interp
+			endif
+		# end loop through time points
+		endfor
+
+
+		# impose on the manipulation object and resynthesize
+			selectObject: "Manipulation 'name1$'"
+			plusObject: "PitchTier pitch_step_'step_number'"
+			Replace pitch tier
+			selectObject: "Manipulation 'name1$'"
+			Get resynthesis (overlap-add)
+			Rename: "temp"
+		
+	
+		
+		
+		#### remove silence buffers
+		# extract, starting 50ms after start and ending 50ms before end (or whatever the duration of the silence buffer is set to)
+			Extract part: silence_dur, (duration - silence_dur), "rectangular", 1, "no"
+			# this extracts a rectangular duration with a relative width of 1 and does not preserve times
+			Rename: "'basename1$'_'basename2$'_'.syllable_label$'_F0_'step_number'"
+
+		# cleanup
+		selectObject: "Sound temp"
+		Remove
+		if remove_pitch_tiers == 1
+			select PitchTier pitch_step_'step_number'
+			Remove
+		endif
+
+		
+	endfor
+
+	# I personally want to keep these objects and save them as part of a collection manually
+	# select Pitch 'name1$'
+	# plus Pitch 'name2$'
+	# nocheck plus PointProcess 'name1$'
+	
+	# clean up these objects
+	select Manipulation 'name1$'
+	plus PitchTier 'name1$'
+	Remove
+endproc
+
+procedure concatenate_syllables_and_save_files .syllable_label_1$ .syllable_label_2$
+	
+	# copy buffer silence to after list of syllables so Praat concatenates everything in the right order
+	selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+	Copy... silence_'buffer_silence_dur_in_ms'ms_copy
+
+	# create folder to save output files
+	createFolder: "'parent_directory$'/'output_folder$'"
+	
+	for step_number from 1 to number_of_steps
+		selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+		plusObject: "Sound 'basename1$'_'basename2$'_'.syllable_label_1$'_F0_'step_number'"
+		plusObject: "Sound 'basename1$'_closure_copy"
+		plusObject: "Sound 'basename1$'_'basename2$'_'.syllable_label_2$'_F0_'step_number'"
+		plusObject: "Sound silence_'buffer_silence_dur_in_ms'ms_copy"
+
+		Concatenate recoverably
+		selectObject: "Sound chain"
+		Rename: "'basename1$'_'basename2$'_F0_'step_number'"
+		Save as WAV file... 'parent_directory$'/'output_folder$'/'basename1$'_'basename2$'_F0_'step_number'.wav
+		selectObject: "TextGrid chain"
+		Rename: "'basename1$'_'basename2$'_F0_'step_number'"
+		Save as text file... 'parent_directory$'/'output_folder$'/'basename1$'_'basename2$'_F0_'step_number'.TextGrid
+
+		# clean up
+		if remove_syllables_after_concatenation == 1
+			selectObject: "Sound 'basename1$'_'basename2$'_'.syllable_label_1$'_F0_'step_number'"
+			plusObject: "Sound 'basename1$'_'basename2$'_'.syllable_label_2$'_F0_'step_number'"
+			Remove
+		endif
+	endfor
+endproc
+
+procedure draw_contours .duration
+	Erase all
+	Line width: 2
+
+	# get y axis limits
+	call round_to minpitch 25 down
+	ylim_lower = round_to.output
+
+	call round_to maxpitch 25 up
+	ylim_upper = round_to.output
+	
+	call round_to .duration 0.1 up
+	xlim_upper = round_to.output
+
+	# make the pitch objects
+	selectObject: "Sound 'basename1$'_'basename2$'_F0_1"
+	   for step from 1 to number_of_steps
+	     plusObject: "Sound 'basename1$'_'basename2$'_F0_'step'"
+	   endfor
+	To Pitch (filtered ac): timestep, minpitch, maxpitch, max_num_candidates, "no", attenuation_at_ceiling, silence_threshold, voicing_threshold, octave_cost, octave_jump_cost, voiced_unvoiced_cost
+	
+	# draw the first step in the continuum in blue
+	Blue
+	Draw: 0, xlim_upper, ylim_lower, ylim_upper, "yes"
+
+	# draw the rest of the steps gradually changing to red
+	for step_number from 2 to number_of_steps
+		# create a color gradient between blue & red, based on the step number
+		redproportion = ('step_number'-1)/('number_of_steps'-1)
+			# create rgb blend (starts at blue, ends at red)
+			r = redproportion
+			g = 0.0
+			b = 1-redproportion
+		   Colour... {'r','g','b'}
+
+		selectObject: "Pitch 'basename1$'_'basename2$'_F0_'step_number'"
+		# draw without garnish
+		Draw: 0, xlim_upper, ylim_lower, ylim_upper, "no"
+	endfor
+
+	# cleanup
+	selectObject: "Pitch 'basename1$'_'basename2$'_F0_1"
+	for step from 1 to number_of_steps
+	plusObject: "Pitch 'basename1$'_'basename2$'_F0_'step'"
+	endfor
+	Remove
+
+endproc
+
+procedure round_to .number .nearest .direction$
+	if .direction$ == "up"
+		.output = ceiling(.number/.nearest) * .nearest
+	elsif .direction$ == "down"
+		.output = floor(.number/.nearest) * .nearest
+	endif
+endproc
+
+
+procedure initialize_pitch_settings
+	# pitch autocorrelation settings
+	
+    # timestep is auto
+	timestep = 0
+	max_num_candidates = 15
+    attenuation_at_ceiling = 0.03
+	silence_threshold = 0.09
+	voicing_threshold = 0.25
+	octave_cost = 0.055
+	octave_jump_cost = 0.35
+	voiced_unvoiced_cost = 0.14
+
+	#-----------------------------------------------------------#
+	# pitch settings info from Praat documentation:
+	#  https://www.fon.hum.uva.nl/praat/manual/Sound__To_Pitch__ac____.html
+	# based on Paul Boersma (1993): "Accurate short-term analysis of the 
+	#	fundamental frequency and the harmonics-to-noise ratio 
+	#	of a sampled sound." Proceedings of the Institute of 
+	#	Phonetic Sciences 17: 97–110. University of Amsterdam.
+
+
+endproc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # get the average duration of syllable 1 from the singleton and geminate words
+# # and set each syllable1 to the average duration
+# call manipulate_duration syllable1
+
+# # do the same for the closure interval
+# call manipulate_duration closure
+
+# # do the same for each syllable 2
+# call manipulate_duration syllable2
+
+# then create 50ms of buffer silence to postappend
+# call make_silence post_silence 0.050
+
+# # concatenate pre_silence, syllable1, closure, syllable2, and post_silence together
+# # for the singleton word
+# select Sound pre_silence
+# plusObject: "Sound 'basename1$'_syllable1_durmatched"
+# plusObject: "Sound 'basename1$'_closure_durmatched"
+# plusObject: "Sound 'basename1$'_syllable2_durmatched"
+# plusObject: "Sound post_silence"
+# Concatenate recoverably
+# select Sound chain
+# Rename: "'basename1$'_durmatched"
+# name1$ = selected$("Sound")
+# select TextGrid chain
+# Rename: "'basename1$'_durmatched"
+
+# # for the geminate word
+# select Sound pre_silence
+# plusObject: "Sound 'basename2$'_syllable1_durmatched"
+# plusObject: "Sound 'basename2$'_closure_durmatched"
+# plusObject: "Sound 'basename2$'_syllable2_durmatched"
+# plusObject: "Sound post_silence"
+# Concatenate recoverably
+# select Sound chain
+# Rename: "'basename2$'_durmatched"
+# name2$ = selected$("Sound")
+# select TextGrid chain
+# Rename: "'basename2$'_durmatched"
+
+
+
+
+# procedure manipulate_duration .interval_label$
+# 	# average the duration of equivalent intervals (syllables) using the supplied interval label when the procedure is called
+# 	# for the intervals with the same interval name for the two base sounds, take their durations and average them
+# 	.duration1 = 'basename1$'_'.interval_label$'_dur
+# 	.duration2 = 'basename2$'_'.interval_label$'_dur
+# 	averagedur_'.interval_label$' = ((.duration1 + .duration2)/2)
+# 	.average = ((.duration1 + .duration2)/2)
+# 	print Average duration for '.interval_label$' is '.average:3' s 'newline$'
+
+# 	# select the interval from the first sound and set its duration to the average duration
+# 	# this is done by multiplying the sound by a factor, which is determined by dividing the average duration with the original duration
+# 	selectObject: "Sound 'basename1$'_'.interval_label$'"
+# 	Lengthen (overlap-add)... minpitch maxpitch (.average/.duration1)
+# 	Rename: "'basename1$'_'.interval_label$'_durmatched"
+
+# 	# do the same for the interval from the second sound
+# 	selectObject: "Sound 'basename2$'_'.interval_label$'"
+# 	Lengthen (overlap-add)... minpitch maxpitch (.average/.duration2)
+# 	Rename: "'basename2$'_'.interval_label$'_durmatched"
+# endproc

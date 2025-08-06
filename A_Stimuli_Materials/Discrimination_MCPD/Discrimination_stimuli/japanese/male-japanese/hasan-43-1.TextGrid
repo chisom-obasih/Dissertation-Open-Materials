@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 17.76 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 17.76 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.7901672065636762 
+            text = "" 
+        intervals [2]:
+            xmin = 1.7901672065636762 
+            xmax = 2.2913150931305353 
+            text = "hasan-1a" 
+        intervals [3]:
+            xmin = 2.2913150931305353 
+            xmax = 3.559074833577138 
+            text = "" 
+        intervals [4]:
+            xmin = 3.559074833577138 
+            xmax = 4.141549350858795 
+            text = "hasan-1b" 
+        intervals [5]:
+            xmin = 4.141549350858795 
+            xmax = 6.6648389980735745 
+            text = "" 
+        intervals [6]:
+            xmin = 6.6648389980735745 
+            xmax = 7.154996799408704 
+            text = "hasan-2a" 
+        intervals [7]:
+            xmin = 7.154996799408704 
+            xmax = 8.397718910972229 
+            text = "" 
+        intervals [8]:
+            xmin = 8.397718910972229 
+            xmax = 9.024153769180801 
+            text = "hasan-2b" 
+        intervals [9]:
+            xmin = 9.024153769180801 
+            xmax = 11.58667731956032 
+            text = "" 
+        intervals [10]:
+            xmin = 11.58667731956032 
+            xmax = 12.129587530007749 
+            text = "hasan-3a" 
+        intervals [11]:
+            xmin = 12.129587530007749 
+            xmax = 13.24280830887602 
+            text = "" 
+        intervals [12]:
+            xmin = 13.24280830887602 
+            xmax = 13.875837218223632 
+            text = "hasan-3b" 
+        intervals [13]:
+            xmin = 13.875837218223632 
+            xmax = 17.76 
+            text = "" 

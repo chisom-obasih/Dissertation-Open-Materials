@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.18 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.18 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.0497109375 
+            text = "" 
+        intervals [2]:
+            xmin = 2.0497109375 
+            xmax = 2.656068366026256 
+            text = "watara-1a" 
+        intervals [3]:
+            xmin = 2.656068366026256 
+            xmax = 4.126613666620935 
+            text = "" 
+        intervals [4]:
+            xmin = 4.126613666620935 
+            xmax = 4.65985502695187 
+            text = "watara-1b" 
+        intervals [5]:
+            xmin = 4.65985502695187 
+            xmax = 6.309739764492753 
+            text = "" 
+        intervals [6]:
+            xmin = 6.309739764492753 
+            xmax = 6.8817314757590555 
+            text = "watara-2a" 
+        intervals [7]:
+            xmin = 6.8817314757590555 
+            xmax = 8.33542087249746 
+            text = "" 
+        intervals [8]:
+            xmin = 8.33542087249746 
+            xmax = 8.844805153463302 
+            text = "watara-2b" 
+        intervals [9]:
+            xmin = 8.844805153463302 
+            xmax = 10.48062788990631 
+            text = "" 
+        intervals [10]:
+            xmin = 10.48062788990631 
+            xmax = 11.020144762140553 
+            text = "watara-3a" 
+        intervals [11]:
+            xmin = 11.020144762140553 
+            xmax = 12.430863180362307 
+            text = "" 
+        intervals [12]:
+            xmin = 12.430863180362307 
+            xmax = 12.98616379088 
+            text = "watara-3b" 
+        intervals [13]:
+            xmin = 12.98616379088 
+            xmax = 15.18 
+            text = "" 

@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.76 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.76 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8876783071867933 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8876783071867933 
+            xmax = 2.521639156266599 
+            text = "3alim-1a" 
+        intervals [3]:
+            xmin = 2.521639156266599 
+            xmax = 3.6781703965150587 
+            text = "" 
+        intervals [4]:
+            xmin = 3.6781703965150587 
+            xmax = 4.278432330029161 
+            text = "3alim-1b" 
+        intervals [5]:
+            xmin = 4.278432330029161 
+            xmax = 5.760914872348338 
+            text = "" 
+        intervals [6]:
+            xmin = 5.760914872348338 
+            xmax = 6.342221165856732 
+            text = "3alim-2a" 
+        intervals [7]:
+            xmin = 6.342221165856732 
+            xmax = 7.527842969759408 
+            text = "" 
+        intervals [8]:
+            xmin = 7.527842969759408 
+            xmax = 7.980672147673555 
+            text = "3alim-2b" 
+        intervals [9]:
+            xmin = 7.980672147673555 
+            xmax = 9.646250027151488 
+            text = "" 
+        intervals [10]:
+            xmin = 9.646250027151488 
+            xmax = 10.200175951762748 
+            text = "3alim-3a" 
+        intervals [11]:
+            xmin = 10.200175951762748 
+            xmax = 11.326397104736168 
+            text = "" 
+        intervals [12]:
+            xmin = 11.326397104736168 
+            xmax = 11.798181922656024 
+            text = "3alim-3b" 
+        intervals [13]:
+            xmin = 11.798181922656024 
+            xmax = 14.76 
+            text = "" 

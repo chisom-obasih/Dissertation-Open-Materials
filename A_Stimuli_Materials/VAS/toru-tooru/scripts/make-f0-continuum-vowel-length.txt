@@ -1,0 +1,505 @@
+#########################
+## Make F0 (pitch) continuum for vowel length contrast
+## Chisom Obasih
+## January 2025
+## Praat version: 6.4.12 (May 2, 2024)
+
+
+
+## This script was adapted from the script below that interpolates f0 between two words
+## Original script by Matthew Winn from December 2021 
+## (see original comments below)
+
+
+## This script is intended to make a 5-step V1-to-V2 F0 contour continuum for each of the 7 steps of the vowel duration continuum
+## in order to make a 7 x 5 matrix of vowel duration & V1-to-V2 F0 drop continua 
+## for the vowel length contrast of /o/ vs. /oo/ in the Japanese words "toru" vs. "tooru"
+
+#####
+## NOTABLE CHANGES
+#####
+
+
+## most of the script, including the pitch tracking, f0 interpolation, printing to table, and drawing contours, are derived from the Original script
+
+
+## I added a lot of custom procedures
+
+## created a procedure to run the interpolation script again by choosing another set of two words
+## with the option to include other continuum information in the naming scheme
+## changed default settings of procedure initialize_pitch_settings to match the needs of my stimuli
+## created procedure adjust_pitch_object to be able pause, bring up pitch editor, and correct pitch candidates
+## added opportunity to fix pulse points of manipulation object
+## created procedure select2sounds (derived from another Matt Winn script) manually select the base and reference sounds separately
+## added pause forms to indicate which word is the base word and which is the reference word for naming purposes, including option to reverse step naming scheme
+## created procedures to save files in different subfolders depending on the origin word
+## added lines to save table and Praat picture as files
+
+
+
+
+
+###### Orignal header comments
+###### Source: https://github.com/ListenLab/Praat/blob/master/Interpolate_F0_contour_v3.txt
+
+######################################################
+######################################################
+# Interpolate pitch contours of two sounds
+#
+# Note: the sounds have to have the same timing landmarks
+# i.e. two sounds that differ *only* by F0
+# not two different utterances
+#
+# tip: first make a pitch manipulation of one sound,
+# then run this script to interpolate
+# between the original and the manipulated person
+#
+# demo mode: use with sample sounds Room_A and Room_B
+#
+#
+#  Matthew Winn
+#  December 2021
+######################################################
+######################################################
+
+
+form Enter settings for pitch interpolation
+
+	comment F0 *analysis* settings
+	comment (analysis of the current F0)
+	real minpitch 50
+	real maxpitch 500
+
+	natural number_of_steps 5
+
+		real pitch_timestep 0.01
+
+	optionmenu interpolation_method 2
+		option linear
+		option log
+
+	boolean remove_pitch_tiers 1
+
+	comment Enter directory path for the new files (a folder that already exists)
+	sentence parent_directory /Users/chisomobasih/Desktop/continua/O_OO_dur_F0/dur_F0
+
+	comment Enter the word for one end of the continuum (e.g., bit)
+	sentence word_1 toru
+
+    comment Enter the word for the other end of the continuum (e.g., pit)
+    sentence word_2 tooru
+
+    comment Is there othrogonal continuum information already in the sound filenames?
+	boolean other_continuum_info 1
+
+    comment Note that you will have the option to change which word is the
+    comment origin word and which is the reference word later in the script.
+
+endform
+
+# makes at least one pitch continuum
+call make_pitch_continuum
+
+# asks the user if they would like to make another
+call make_another
+
+# continues to make another pitch continuum and ask the user if they would like to make another until the user says no
+while another = 1
+    call make_pitch_continuum
+    call make_another
+endwhile
+
+# finish the script with a line in the info window stating the script is done
+appendInfoLine: "The script has finished."
+
+
+## End
+
+#####
+#
+##
+###
+#####
+########
+#############
+# Procedures
+#############
+
+## create a pause form here that will ask the user if they want to make another continuum and where to save
+## pause form will also have a "Done" button (or option) to exit the script when the user no longer wants to make continua
+## pause form will make user choose the origin word and reference word and then use that to automatically save to the correct subfolder based on origin word
+## pause form will also ask the user if there is other continuum information in the sound file names to take into account
+## this is for my purposes since I'm making more continua out of singular steps from a separate continuum
+## the variable is other_continuum_info
+## and if other_continuum_info = 1, then do something that is defined in interpolate_f0
+procedure make_another
+    beginPause: "Make another continuum?"
+        comment: "Do you have another pair of words you would like to interpolate?"
+        comment: "Check the box if there is orthogonal continuum information in the sound filename"
+        boolean: "other continuum info", 1
+    another = endPause: "Yes", "No, I'm done", 1, 2
+endproc
+
+
+procedure make_pitch_continuum
+
+    # pause select two sounds - should also choose which subfolder to save to
+    call select2sounds
+
+    
+    # interpolate pitch between the two selected sounds
+    call interpolate_f0
+
+    # save audio files and table into a subfolder named of the origin word
+    call save_files
+
+    # draw the contours of the just made continuum (all files should be equivalent duration)
+    selectObject: "Sound 'name1$'_F0_1"
+    total_dur = Get end time
+    call draw_contours total_dur
+
+
+
+endproc
+
+procedure select2sounds
+    beginPause: "Select sounds"
+        comment: "Select the sound that serves as the origin (base) sound (e.g., bit)."
+    endPause: "Continue", 1
+    name1$ = selected$("Sound")
+
+    beginPause: "Select sounds"
+        comment: "Select the sound that serves as the reference sound (e.g., pit)."
+    endPause: "Continue", 1
+    name2$ = selected$("Sound")
+
+    beginPause: "Sound names"
+        comment: "Confirm which word is the origin and which is the reference."
+        comment: "These choices will be used for the naming of the output files."
+        optionMenu: "Origin word", 1
+            option: "'word_1$'"
+            option: "'word_2$'"
+        optionMenu: "Reference word", 2
+            option: "'word_1$'"
+            option: "'word_2$'"
+        comment: "Do you need to reverse the steps in the naming scheme?"
+        boolean: "Reverse", 0
+    endPause: "Continue", 1
+
+
+
+endproc
+
+
+procedure interpolate_f0
+
+    # pitch analysis
+    call initialize_pitch_settings
+
+    # adjust the pitch objects to match the voiced and unvoiced segments as much as possible
+    # the proper Pitch objects are created in this procedure
+    call adjust_pitch_object 'name1$' 'name2$'
+
+    # create PitchTiers from the Pitch objects to replace the pitch tier of the manipulation object that will be made below
+    selectObject: "Pitch 'name1$'"
+    Down to PitchTier
+
+	# make manipulable object
+	selectObject: "Sound 'name1$'"
+	To Manipulation: pitch_timestep, minpitch, maxpitch
+
+    # replace with the PitchTier that was just made, just in case
+    plusObject: "PitchTier 'name1$'"
+    Replace pitch tier
+
+	# extract information from the pitch tier
+	selectObject: "PitchTier 'name1$'"
+	num_pitch_points = Get number of points
+	time_of_first_point = Get time from index: 1
+	time_of_last_point = Get time from index: num_pitch_points
+	num_pitch_timesteps = (time_of_last_point - time_of_first_point)/pitch_timestep
+	num_pitch_timesteps = round(num_pitch_timesteps)
+
+	duration = Get end time
+
+    # check the Manipulation object to make sure that the pulse placements are where they need to be
+    select Manipulation 'name1$'
+        Edit
+		editor Manipulation 'name1$'
+			beginPause: "Check pulse points"
+            	comment: "Adjust pulse points to make sure pitch is not wonky."
+            	comment: "Click Continue when finished."
+        	endPause: "Continue", 1
+		Close
+		endeditor
+
+    # if there is other continuum infomation already in the filename of the origin and reference sounds, add that information to the table name
+    # my filenames from the duration continua are formatted as such 
+    # [origin word]_origin_[reference word]_dur_[step_number]
+    # so I am looking to extract "dur_[step_number]" for the current pair of words we're working on to include in the table name
+    # with the assumption that I will be working on similiar pairs of files at different steps of the duration continuum
+    if other_continuum_info = 1
+        # this assumes that the other continuum step information is in the filename AFTER the reference word and an underscore
+        other_continuum_prefix$ = extractWord$("'name1$'", "'reference_word$'_")
+        table_name$ = "'other_continuum_prefix$'_F0_'origin_word$'_origin_'reference_word$'_'interpolation_method$'"
+    else
+        # if not, don't include that information
+        table_name$ = "F0_'origin_word$'_origin_'reference_word$'_'interpolation_method$'"
+        other_continuum_prefix$ = "NA"
+    endif
+
+    # create a variable that starts with the maximum number of steps
+	# as the for loop iterates, this variable will decrease by 1
+	# and can be used as an alternative naming scheme
+	thisStep_rev = number_of_steps
+
+	# Initialize the table of F0 values
+	Create Table with column names: "'table_name$'", 0, "sound1 sound2 duration_step f0_step_number time f0_1 f0_2 f0_interp method"
+	# initialize row number
+	row_number = 0
+
+	for step_number from 1 to number_of_steps
+
+        # if the reverse order option was chosen in the pause form, use thisStep_rev for naming scheme
+		# if not, use normal naming scheme
+        if reverse = 1
+            thisStep = thisStep_rev
+        else
+            thisStep = step_number
+        endif
+
+
+		selectObject: "PitchTier 'name1$'"
+		Copy: "pitch_step_'thisStep'"
+		Remove points between: 0, duration
+
+		
+		for pitch_time_index from 1 to num_pitch_timesteps
+			# get the time point from the original pitch tier
+				select PitchTier 'name1$'
+				# instead of drawing time points from PitchTier,
+				# do it analytically, so you don't skip over the unvoiced parts
+				time = time_of_first_point + (pitch_time_index-1)*pitch_timestep
+
+			# get the F0 values from each sound at that time point
+				selectObject: "Pitch 'name1$'"
+				f0_1 = Get value at time: time, "Hertz", "linear"
+				
+
+				selectObject: "Pitch 'name2$'"
+				f0_2 = Get value at time: time, "Hertz", "linear"
+
+			# interpolate
+			if interpolation_method$ = "linear"
+				f0_interp = f0_1 + ((f0_2 - f0_1) * (step_number-1)/(number_of_steps-1))
+			elsif interpolation_method$ = "log"
+				f0_interp = f0_1 * 10^(log10(f0_2/f0_1) * (step_number-1)/(number_of_steps-1) )
+			else
+				exit Interpolation method not recognized. Try "linear" or "log"
+			endif
+
+			# print values to table
+				select Table 'table_name$'
+				Append row
+				row_number = row_number + 1
+
+				Set string value: row_number, "sound1", name1$
+				Set string value: row_number, "sound2", name2$
+                Set string value: row_number, "duration_step", other_continuum_prefix$
+				Set numeric value: row_number, "f0_step_number", thisStep
+				
+				Set numeric value: row_number, "time", 'time:3'
+				
+				if f0_1 != undefined
+					Set numeric value: row_number, "f0_1", 'f0_1:1'
+				else
+					Set string value: row_number, "f0_1", "NA"
+				endif
+				if f0_2 != undefined
+					Set numeric value: row_number, "f0_2", 'f0_2:1'
+				else
+					Set string value: row_number, "f0_2", "NA"
+				endif
+				if f0_interp != undefined
+					Set numeric value: row_number, "f0_interp", 'f0_interp:1'
+				else
+					Set string value: row_number, "f0_interp", "NA"
+				endif
+				Set string value: row_number, "method", interpolation_method$
+				
+
+
+			selectObject: "PitchTier pitch_step_'thisStep'"
+			if f0_interp != undefined
+				Add point: time, f0_interp
+			endif
+
+        
+		# end loop through time points
+		endfor
+
+
+		# impose on the manipulation object and resynthesize
+			selectObject: "Manipulation 'name1$'"
+			plusObject: "PitchTier pitch_step_'thisStep'"
+			Replace pitch tier
+			selectObject: "Manipulation 'name1$'"
+			Get resynthesis (overlap-add)
+            # just adding the F0 step number because this script is used on files that are already part of a duration continuum
+            # so there is duration continuum information already in the name for name1$
+			Rename: "'name1$'_F0_'thisStep'"
+		
+	
+		# cleanup
+		if remove_pitch_tiers == 1
+			select PitchTier pitch_step_'thisStep'
+			Remove
+		endif
+
+        # reduce thisStep_rev by 1 - should end at Step 1 for the last iteration of the for loop
+		thisStep_rev = thisStep_rev - 1
+		
+	endfor
+
+	# clean up these objects
+	select Pitch 'name1$'
+	plus Pitch 'name2$'
+	plus Manipulation 'name1$'
+	plus PitchTier 'name1$'
+	Remove
+endproc
+
+
+procedure adjust_pitch_object .sound1$ .sound2$
+	# lets the user adjust the pitch candidates
+	 selectObject: "Sound '.sound1$'"
+	 plusObject: "Sound '.sound2$'"
+	 To Pitch (filtered ac): timestep, minpitch, maxpitch, max_num_candidates, "no", attenuation_at_ceiling, silence_threshold, voicing_threshold, octave_cost, octave_jump_cost, voiced_unvoiced_cost
+	 select Pitch '.sound1$'
+	 Edit
+	 editor Pitch '.sound1$'
+		 beginPause: "Check pitch object"
+			 comment: "Adjust the Pitch candidates to your liking."
+			 comment: "Ensure accuracy for voiced and unvoiced regions."
+			 comment: "Click Continue when finished."
+		 endPause: "Continue", 1
+		 Close
+	 endeditor
+	 select Pitch '.sound2$'
+	 Edit
+	 editor Pitch '.sound2$'
+		 beginPause: "Check pitch object"
+			 comment: "Adjust the Pitch candidates to your liking."
+			 comment: "Ensure accuracy for voiced and unvoiced regions."
+			 comment: "Click Continue when finished."
+		 endPause: "Continue", 1
+		 Close
+	 endeditor
+endproc
+
+
+procedure save_files
+	
+	# create folder to save output files
+    subfolder$ = "'origin_word$'_origin"
+	createFolder: "'parent_directory$'/'subfolder$'"
+
+    selectObject: "Table 'table_name$'"
+    Save as comma-separated file... 'parent_directory$'/'subfolder$'/'table_name$'.csv
+	
+	for step_number from 1 to number_of_steps
+		selectObject: "Sound 'name1$'_F0_'step_number'"
+		Save as WAV file... 'parent_directory$'/'subfolder$'/'name1$'_F0_'step_number'.wav
+		
+	endfor
+endproc
+
+procedure draw_contours .duration
+	Erase all
+	Line width: 2
+
+	# get y axis limits
+	call round_to minpitch 25 down
+	ylim_lower = round_to.output
+
+	call round_to maxpitch 25 up
+	ylim_upper = round_to.output
+	
+	call round_to .duration 0.1 up
+	xlim_upper = round_to.output
+
+	# make the pitch objects
+	selectObject: "Sound 'name1$'_F0_1"
+	   for step from 1 to number_of_steps
+	     plusObject: "Sound 'name1$'_F0_'step'"
+	   endfor
+	To Pitch (filtered ac): timestep, minpitch, maxpitch, max_num_candidates, "no", attenuation_at_ceiling, silence_threshold, voicing_threshold, octave_cost, octave_jump_cost, voiced_unvoiced_cost
+	
+	# draw the first step in the continuum in blue
+	Blue
+	Draw: 0, xlim_upper, ylim_lower, ylim_upper, "yes"
+
+	# draw the rest of the steps gradually changing to red
+	for step_number from 2 to number_of_steps
+		# create a color gradient between blue & red, based on the step number
+		redproportion = ('step_number'-1)/('number_of_steps'-1)
+			# create rgb blend (starts at blue, ends at red)
+			r = redproportion
+			g = 0.0
+			b = 1-redproportion
+		   Colour... {'r','g','b'}
+
+		selectObject: "Pitch 'name1$'_F0_'step_number'"
+		# draw without garnish
+		Draw: 0, xlim_upper, ylim_lower, ylim_upper, "no"
+	endfor
+    Save as 600-dpi PNG file... 'parent_directory$'/'subfolder$'/'table_name$'.png
+
+	# cleanup
+	selectObject: "Pitch 'name1$'_F0_1"
+	for step from 1 to number_of_steps
+	plusObject: "Pitch 'name1$'_F0_'step'"
+	endfor
+	Remove
+
+endproc
+
+procedure round_to .number .nearest .direction$
+	if .direction$ == "up"
+		.output = ceiling(.number/.nearest) * .nearest
+	elsif .direction$ == "down"
+		.output = floor(.number/.nearest) * .nearest
+	endif
+endproc
+
+
+procedure initialize_pitch_settings
+	# pitch autocorrelation settings
+	
+    # timestep is auto
+	timestep = 0
+	max_num_candidates = 15
+    attenuation_at_ceiling = 0.03
+	silence_threshold = 0.09
+	voicing_threshold = 0.50
+	octave_cost = 0.055
+	octave_jump_cost = 0.35
+	voiced_unvoiced_cost = 0.14
+
+	#-----------------------------------------------------------#
+	# pitch settings info from Praat documentation:
+	#  https://www.fon.hum.uva.nl/praat/manual/Sound__To_Pitch__ac____.html
+	# based on Paul Boersma (1993): "Accurate short-term analysis of the 
+	#	fundamental frequency and the harmonics-to-noise ratio 
+	#	of a sampled sound." Proceedings of the Institute of 
+	#	Phonetic Sciences 17: 97–110. University of Amsterdam.
+
+
+endproc
+
+
+
+
+
+
+

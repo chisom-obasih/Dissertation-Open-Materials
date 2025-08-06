@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.66 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.66 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.2215824695375128 
+            text = "" 
+        intervals [2]:
+            xmin = 1.2215824695375128 
+            xmax = 1.6766802493442183 
+            text = "isso-1a" 
+        intervals [3]:
+            xmin = 1.6766802493442183 
+            xmax = 2.7245524482268846 
+            text = "" 
+        intervals [4]:
+            xmin = 2.7245524482268846 
+            xmax = 3.25231289875903 
+            text = "isso-1b" 
+        intervals [5]:
+            xmin = 3.25231289875903 
+            xmax = 5.830988282222948 
+            text = "" 
+        intervals [6]:
+            xmin = 5.830988282222948 
+            xmax = 6.2478425511215265 
+            text = "isso-2a" 
+        intervals [7]:
+            xmin = 6.2478425511215265 
+            xmax = 7.5189355601904575 
+            text = "" 
+        intervals [8]:
+            xmin = 7.5189355601904575 
+            xmax = 8.031398606359353 
+            text = "isso-2b" 
+        intervals [9]:
+            xmin = 8.031398606359353 
+            xmax = 10.647167829500862 
+            text = "" 
+        intervals [10]:
+            xmin = 10.647167829500862 
+            xmax = 11.075495151671879 
+            text = "isso-3a" 
+        intervals [11]:
+            xmin = 11.075495151671879 
+            xmax = 12.307625607004981 
+            text = "" 
+        intervals [12]:
+            xmin = 12.307625607004981 
+            xmax = 12.785669493356563 
+            text = "isso-3b" 
+        intervals [13]:
+            xmin = 12.785669493356563 
+            xmax = 15.66 
+            text = "" 

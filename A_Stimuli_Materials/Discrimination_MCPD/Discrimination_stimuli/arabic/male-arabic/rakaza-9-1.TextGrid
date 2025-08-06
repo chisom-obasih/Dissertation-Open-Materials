@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.58 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.58 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 3.5016025323560487 
+            text = "" 
+        intervals [2]:
+            xmin = 3.5016025323560487 
+            xmax = 4.085757481857983 
+            text = "rakaza-1a" 
+        intervals [3]:
+            xmin = 4.085757481857983 
+            xmax = 5.046875051537202 
+            text = "" 
+        intervals [4]:
+            xmin = 5.046875051537202 
+            xmax = 5.6512499929675295 
+            text = "rakaza-1b" 
+        intervals [5]:
+            xmin = 5.6512499929675295 
+            xmax = 7.117748459228824 
+            text = "" 
+        intervals [6]:
+            xmin = 7.117748459228824 
+            xmax = 7.674756321899622 
+            text = "rakaza-2a" 
+        intervals [7]:
+            xmin = 7.674756321899622 
+            xmax = 8.689119791666666 
+            text = "" 
+        intervals [8]:
+            xmin = 8.689119791666666 
+            xmax = 9.243294936700563 
+            text = "rakaza-2b" 
+        intervals [9]:
+            xmin = 9.243294936700563 
+            xmax = 10.828903641857506 
+            text = "" 
+        intervals [10]:
+            xmin = 10.828903641857506 
+            xmax = 11.458187395288649 
+            text = "rakaza-3a" 
+        intervals [11]:
+            xmin = 11.458187395288649 
+            xmax = 12.49545486111111 
+            text = "" 
+        intervals [12]:
+            xmin = 12.49545486111111 
+            xmax = 13.087388371973736 
+            text = "rakaza-3b" 
+        intervals [13]:
+            xmin = 13.087388371973736 
+            xmax = 14.58 
+            text = "" 

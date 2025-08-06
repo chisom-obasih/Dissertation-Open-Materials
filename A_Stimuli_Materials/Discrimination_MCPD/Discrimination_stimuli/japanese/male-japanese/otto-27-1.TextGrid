@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.82 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.82 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8386548032173184 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8386548032173184 
+            xmax = 2.2458988859475935 
+            text = "otto-1a" 
+        intervals [3]:
+            xmin = 2.2458988859475935 
+            xmax = 3.4319958011916376 
+            text = "" 
+        intervals [4]:
+            xmin = 3.4319958011916376 
+            xmax = 3.973989764237077 
+            text = "otto-1b" 
+        intervals [5]:
+            xmin = 3.973989764237077 
+            xmax = 5.931926265999369 
+            text = "" 
+        intervals [6]:
+            xmin = 5.931926265999369 
+            xmax = 6.327192581590518 
+            text = "otto-2a" 
+        intervals [7]:
+            xmin = 6.327192581590518 
+            xmax = 7.480952866148616 
+            text = "" 
+        intervals [8]:
+            xmin = 7.480952866148616 
+            xmax = 8.025941270978837 
+            text = "otto-2b" 
+        intervals [9]:
+            xmin = 8.025941270978837 
+            xmax = 10.294781575572483 
+            text = "" 
+        intervals [10]:
+            xmin = 10.294781575572483 
+            xmax = 10.66609235688538 
+            text = "otto-3a" 
+        intervals [11]:
+            xmin = 10.66609235688538 
+            xmax = 12.004292311925793 
+            text = "" 
+        intervals [12]:
+            xmin = 12.004292311925793 
+            xmax = 12.567247367464702 
+            text = "otto-3b" 
+        intervals [13]:
+            xmin = 12.567247367464702 
+            xmax = 14.82 
+            text = "" 

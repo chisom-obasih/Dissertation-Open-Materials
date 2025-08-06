@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.7 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.7 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.1743159722222223 
+            text = "" 
+        intervals [2]:
+            xmin = 1.1743159722222223 
+            xmax = 1.5184181547619047 
+            text = "kaze-1a" 
+        intervals [3]:
+            xmin = 1.5184181547619047 
+            xmax = 2.6649479166666667 
+            text = "" 
+        intervals [4]:
+            xmin = 2.6649479166666667 
+            xmax = 3.0337448168276975 
+            text = "kaze-1b" 
+        intervals [5]:
+            xmin = 3.0337448168276975 
+            xmax = 5.4025590277777775 
+            text = "" 
+        intervals [6]:
+            xmin = 5.4025590277777775 
+            xmax = 5.768855902777777 
+            text = "kaze-2a" 
+        intervals [7]:
+            xmin = 5.768855902777777 
+            xmax = 7.00559375 
+            text = "" 
+        intervals [8]:
+            xmin = 7.00559375 
+            xmax = 7.388151463963964 
+            text = "kaze-2b" 
+        intervals [9]:
+            xmin = 7.388151463963964 
+            xmax = 10.243118055555554 
+            text = "" 
+        intervals [10]:
+            xmin = 10.243118055555554 
+            xmax = 10.603160416666666 
+            text = "kaze-3a" 
+        intervals [11]:
+            xmin = 10.603160416666666 
+            xmax = 11.80171875 
+            text = "" 
+        intervals [12]:
+            xmin = 11.80171875 
+            xmax = 12.188272395833334 
+            text = "kaze-3b" 
+        intervals [13]:
+            xmin = 12.188272395833334 
+            xmax = 14.7 
+            text = "" 

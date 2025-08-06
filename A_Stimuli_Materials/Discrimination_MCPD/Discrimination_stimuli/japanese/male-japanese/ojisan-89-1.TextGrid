@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.44 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.44 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.044384399665775 
+            text = "" 
+        intervals [2]:
+            xmin = 2.044384399665775 
+            xmax = 2.5593569414368953 
+            text = "ojisan-1a" 
+        intervals [3]:
+            xmin = 2.5593569414368953 
+            xmax = 3.899678396358766 
+            text = "" 
+        intervals [4]:
+            xmin = 3.899678396358766 
+            xmax = 4.5075148391050055 
+            text = "ojisan-1b" 
+        intervals [5]:
+            xmin = 4.5075148391050055 
+            xmax = 6.759654218343528 
+            text = "" 
+        intervals [6]:
+            xmin = 6.759654218343528 
+            xmax = 7.274626760114648 
+            text = "ojisan-2a" 
+        intervals [7]:
+            xmin = 7.274626760114648 
+            xmax = 8.646463551542713 
+            text = "" 
+        intervals [8]:
+            xmin = 8.646463551542713 
+            xmax = 9.269073796716812 
+            text = "ojisan-2b" 
+        intervals [9]:
+            xmin = 9.269073796716812 
+            xmax = 11.648448644506812 
+            text = "" 
+        intervals [10]:
+            xmin = 11.648448644506812 
+            xmax = 12.159200099869972 
+            text = "ojisan-3a" 
+        intervals [11]:
+            xmin = 12.159200099869972 
+            xmax = 13.699055108394033 
+            text = "" 
+        intervals [12]:
+            xmin = 13.699055108394033 
+            xmax = 14.323775896772112 
+            text = "ojisan-3b" 
+        intervals [13]:
+            xmin = 14.323775896772112 
+            xmax = 16.44 
+            text = "" 

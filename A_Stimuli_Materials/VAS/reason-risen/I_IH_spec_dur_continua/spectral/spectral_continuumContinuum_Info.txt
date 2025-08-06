@@ -1,0 +1,96 @@
+reason_1 manipulation landmark (start) = 0.03301461325270849
+reason_1 manipulation landmark (end) = 0.2722693638859052
+risen_1 manipulation landmark (start) = 0.04094860166288738
+risen_1 manipulation landmark (end) = 0.16606549596582817
+Formant continuum script information
+
+Number of steps:
+7
+
+Number of formants analyzed
+3
+
+Maximum frequency for formant analysis
+3800
+
+Which formants were modified
+F1: 1
+F2: 1
+F3: 1
+F4: 0
+F5: 0
+
+Overrode bands to be the following:
+F1 bw: 70
+F2 bw: 85
+F3 bw: 140
+F4 bw: 160
+F5 bw: 250
+
+Pitch analysis range
+75
+250
+
+Crossover frequency to restore high frequencies from original sound
+3800
+
+Width of crossover frequency filter
+500
+
+upper limit of low frequencies restored from original sound:
+120
+filter width for low-frequency restoration
+80
+
+Final intensity of outputs
+70
+
+Original sampling frequency
+44100
+
+LPC order (number of poles)
+8
+
+Resample rate for LPC (freq range of the LPC poles)
+7600
+
+Sound selection info
+
+Base sound selection (decomposed into source & filter)
+reason_1
+
+Comparison sound selection (comparing formant tracks)
+risen_1
+
+Start of manipulation in base sound reason_1
+0.03301461325270849
+
+End of manipulation in base sound reason_1
+0.2722693638859052
+
+Start of manipulation in comparison sound risen_1
+0.04094860166288738
+
+End of manipulation in comparison sound risen_1
+0.16606549596582817
+
+Blend/overlap duration between leading, manipulated, and trailing segments
+0
+
+Original intensity of manipulated portion
+58.666570411376554
+
+Method of frequency interpolation
+Bark frequency scale
+
+
+Destination for output files
+Parent directory for file folders:
+/Users/chisomobasih/Desktop/continua/I_IH_spec_dur
+
+Folder with the output from the formant manipulation scipt
+spectral_continuum
+
+Base name for the output sound files
+I_IH_spec_
+

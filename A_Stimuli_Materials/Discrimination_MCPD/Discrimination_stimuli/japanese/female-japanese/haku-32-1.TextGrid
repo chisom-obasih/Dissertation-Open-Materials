@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.04 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.04 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6872635535037879 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6872635535037879 
+            xmax = 2.0893746891131846 
+            text = "haku-1a" 
+        intervals [3]:
+            xmin = 2.0893746891131846 
+            xmax = 3.243343197857391 
+            text = "" 
+        intervals [4]:
+            xmin = 3.243343197857391 
+            xmax = 3.6614854420860956 
+            text = "haku-1b" 
+        intervals [5]:
+            xmin = 3.6614854420860956 
+            xmax = 5.838539938340807 
+            text = "" 
+        intervals [6]:
+            xmin = 5.838539938340807 
+            xmax = 6.223324264318119 
+            text = "haku-2a" 
+        intervals [7]:
+            xmin = 6.223324264318119 
+            xmax = 7.362425820451753 
+            text = "" 
+        intervals [8]:
+            xmin = 7.362425820451753 
+            xmax = 7.735596290650406 
+            text = "haku-2b" 
+        intervals [9]:
+            xmin = 7.735596290650406 
+            xmax = 10.256763280015797 
+            text = "" 
+        intervals [10]:
+            xmin = 10.256763280015797 
+            xmax = 10.639823623569987 
+            text = "haku-3a" 
+        intervals [11]:
+            xmin = 10.639823623569987 
+            xmax = 11.821614866826183 
+            text = "" 
+        intervals [12]:
+            xmin = 11.821614866826183 
+            xmax = 12.218455729166665 
+            text = "haku-3b" 
+        intervals [13]:
+            xmin = 12.218455729166665 
+            xmax = 14.04 
+            text = "" 

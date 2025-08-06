@@ -1,0 +1,96 @@
+#!/bin/bash
+# This script was created to convert webm audio recordings collected using Gorilla.sc to wav audio using ffmpeg through the MacOS terminal
+## This code was created using the help of ChatGPT
+
+# This script assumes multiple subdirectories in a top-level directory,
+# where each subdirectory has a folder named "uploads" that contains the original webm files and a folder named "converted" to house the converted wav files
+
+## This script uses ffmpeg to convert folders of .webm files to .wav files
+## uncomment to check if ffmpeg is installed
+
+# ffmpeg -version
+
+## if installed, it will show which version
+## if not installed, it will say "ffmpeg: program not found"
+## we can install through homebrew, but first uncomment to check if homebrew is installed
+
+# brew --version
+
+## if installed, it will show which version
+## if not installed, install homebrew (find steps online)
+
+## uncomment to install ffmpeg through homebrew
+
+# brew install ffmpeg
+
+## after installation, uncomment to double check ffmpeg was installed properly
+# ffmpeg -version
+
+# change current directory to the location of the script
+cd "${0%/*}"
+
+## This script assumes multiple subdirectories in the top-level folder the script lives in
+## The script also assumes that the subdirectories are all structured such that 
+## each have the original .webm files in a subfolder called "uploads"
+## and have a subfolder called "converted" to hold the converted output files
+
+
+# Define the top-level directory (which is the current directory)
+top_level_dir="$(realpath "$(dirname "$0")")"
+## dirname returns the absolute path (not a relative path like ".") of the file $0, which is this file (the script)
+## and realpath resolves symbolic links and returns an actual absolute path
+
+
+# Loop through each subdirectory in the top-level directory
+
+for subdir in "$top_level_dir"/*/; do
+
+    # Change to the subdirectory
+    cd "$subdir" || exit 1  # Exit if 'cd' fails
+
+    ## within each subdirectory, define the input and output folders relative to the subdirectory
+    ## folder with webm files
+    input_dir="./uploads"
+
+    ## folder to save wav files
+    output_dir="./converted"
+
+    # Loop through all .webm files in the specified folder
+    for file in "$input_dir"/*.webm; do
+  
+        # Extract filename without extension
+        filename=$(basename "$file" .webm)
+
+        # Set the output filename
+        ## Participant recordings are labelled using the format: 
+        ## [Experiment ID]-[Experiment Version]-[Participant Private ID]-[Task]-[Tree Node Key]-[Schedule ID]-[the recording file prefix]-[Trial Number]-[Screen Counter].[File Type]
+	## I only want the recording file prefix, trial number, and screen counter,
+        ## so I want to remove everything up to and including the 6th dash using shell expansion
+        output_filename="${filename#*-*-*-*-*-*-}"
+
+        # Set the output file path
+        output_file="$output_dir/$output_filename.wav"
+
+
+        # Convert the .webm file to .wav using ffmpeg
+        ## -i specifies the input file for the ffmpeg command, from the path stored in the file variable for the current iteration fo the for loop
+        ## -vn means audio-only conversion (do not process video stream), which shouldn't be a problem but just in case
+        ## the audio codec will likely be the default for wav files, which is pcm_s16le
+        ## -ar is the sampling rate, set to 48kHz (same as the original webm sampling rate)
+        ## -ac sets the output to mono audio (1 channel)
+
+        ffmpeg -i "$file" -vn -ar 48000 -ac 1 "$output_file"
+
+    done
+
+    # cd back to the top-level directory
+    cd "$top_level_dir" || exit 1  # Exit if 'cd' fails
+
+done
+## first code referenced from stackoverflow
+### for %f in (*.webm) do ffmpeg -i "%f" -ar 48000 "converted/%~nf_converted.wav"
+## -i is the input filename in the for loop, which is stored in %f
+## then the command converts all .webm files in folder to .wav files with 48 kHz sampling rate (same as original webm)
+## %~nf references the filename without the extension 
+## the output file is in the folder "converted" with the same filename as before with "_converted" attached to the end
+

@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 17.94 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 17.94 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8464280328039724 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8464280328039724 
+            xmax = 2.465001293122326 
+            text = "kaecchau-1a" 
+        intervals [3]:
+            xmin = 2.465001293122326 
+            xmax = 3.7633823504255375 
+            text = "" 
+        intervals [4]:
+            xmin = 3.7633823504255375 
+            xmax = 4.491845416301879 
+            text = "kaecchau-1b" 
+        intervals [5]:
+            xmin = 4.491845416301879 
+            xmax = 7.0425914986915 
+            text = "" 
+        intervals [6]:
+            xmin = 7.0425914986915 
+            xmax = 7.662937175228532 
+            text = "kaecchau-2a" 
+        intervals [7]:
+            xmin = 7.662937175228532 
+            xmax = 9.171302873948761 
+            text = "" 
+        intervals [8]:
+            xmin = 9.171302873948761 
+            xmax = 9.866090031670236 
+            text = "kaecchau-2b" 
+        intervals [9]:
+            xmin = 9.866090031670236 
+            xmax = 12.69651807906238 
+            text = "" 
+        intervals [10]:
+            xmin = 12.69651807906238 
+            xmax = 13.30445684206867 
+            text = "kaecchau-3a" 
+        intervals [11]:
+            xmin = 13.30445684206867 
+            xmax = 14.651725679188853 
+            text = "" 
+        intervals [12]:
+            xmin = 14.651725679188853 
+            xmax = 15.317861509804771 
+            text = "kaecchau-3b" 
+        intervals [13]:
+            xmin = 15.317861509804771 
+            xmax = 17.94 
+            text = "" 

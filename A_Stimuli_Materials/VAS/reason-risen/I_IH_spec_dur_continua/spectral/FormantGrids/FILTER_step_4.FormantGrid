@@ -1,0 +1,904 @@
+File type = "ooTextFile"
+Object class = "FormantGrid"
+
+xmin = 0 
+xmax = 0.6687074829931973 
+formants: size = 3 
+formants [1]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 30 
+    points [1]:
+        number = 0.03301461325270849 
+        value = 350.7602931209053 
+    points [2]:
+        number = 0.04126477706764631 
+        value = 351.6070912250641 
+    points [3]:
+        number = 0.049514940882584124 
+        value = 366.10707232739026 
+    points [4]:
+        number = 0.05776510469752195 
+        value = 374.5812736157556 
+    points [5]:
+        number = 0.06601526851245976 
+        value = 377.51416320594353 
+    points [6]:
+        number = 0.07426543232739757 
+        value = 380.8240572674341 
+    points [7]:
+        number = 0.0825155961423354 
+        value = 384.733983120049 
+    points [8]:
+        number = 0.09076575995727322 
+        value = 389.5180179361979 
+    points [9]:
+        number = 0.09901592377221104 
+        value = 393.4766594139387 
+    points [10]:
+        number = 0.10726608758714885 
+        value = 396.0355390762331 
+    points [11]:
+        number = 0.11551625140208667 
+        value = 397.4500891236569 
+    points [12]:
+        number = 0.12376641521702449 
+        value = 399.19652848831544 
+    points [13]:
+        number = 0.13201657903196232 
+        value = 402.62666627568126 
+    points [14]:
+        number = 0.14026674284690013 
+        value = 406.2152321694067 
+    points [15]:
+        number = 0.14851690666183795 
+        value = 410.549620434307 
+    points [16]:
+        number = 0.15676707047677577 
+        value = 414.62940791426024 
+    points [17]:
+        number = 0.16501723429171358 
+        value = 417.89624872644515 
+    points [18]:
+        number = 0.1732673981066514 
+        value = 420.89317880647127 
+    points [19]:
+        number = 0.18151756192158922 
+        value = 423.9721610108815 
+    points [20]:
+        number = 0.18976772573652703 
+        value = 427.22414375903014 
+    points [21]:
+        number = 0.19801788955146485 
+        value = 429.8030327503745 
+    points [22]:
+        number = 0.20626805336640266 
+        value = 430.7538480600467 
+    points [23]:
+        number = 0.21451821718134048 
+        value = 429.84467371723963 
+    points [24]:
+        number = 0.2227683809962783 
+        value = 427.70650626843724 
+    points [25]:
+        number = 0.23101854481121614 
+        value = 423.86641116295056 
+    points [26]:
+        number = 0.23926870862615396 
+        value = 416.9182879756271 
+    points [27]:
+        number = 0.24751887244109178 
+        value = 407.27028383088333 
+    points [28]:
+        number = 0.2557690362560296 
+        value = 394.44939444613016 
+    points [29]:
+        number = 0.2640192000709674 
+        value = 377.2564557565705 
+    points [30]:
+        number = 0.2722693638859052 
+        value = 373.894258405288 
+formants [2]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 30 
+    points [1]:
+        number = 0.03301461325270849 
+        value = 1309.0098682417524 
+    points [2]:
+        number = 0.04126477706764631 
+        value = 1309.6372823208208 
+    points [3]:
+        number = 0.049514940882584124 
+        value = 1378.3341568770973 
+    points [4]:
+        number = 0.05776510469752195 
+        value = 1505.4561064392615 
+    points [5]:
+        number = 0.06601526851245976 
+        value = 1642.6224658446783 
+    points [6]:
+        number = 0.07426543232739757 
+        value = 1800.03190262455 
+    points [7]:
+        number = 0.0825155961423354 
+        value = 1999.1750828137278 
+    points [8]:
+        number = 0.09076575995727322 
+        value = 2189.1523869085718 
+    points [9]:
+        number = 0.09901592377221104 
+        value = 2292.2082690387474 
+    points [10]:
+        number = 0.10726608758714885 
+        value = 2357.8024242267825 
+    points [11]:
+        number = 0.11551625140208667 
+        value = 2400.284491229256 
+    points [12]:
+        number = 0.12376641521702449 
+        value = 2454.211343820009 
+    points [13]:
+        number = 0.13201657903196232 
+        value = 2489.542432709131 
+    points [14]:
+        number = 0.14026674284690013 
+        value = 2495.5665046767595 
+    points [15]:
+        number = 0.14851690666183795 
+        value = 2502.4322430041857 
+    points [16]:
+        number = 0.15676707047677577 
+        value = 2496.598506468579 
+    points [17]:
+        number = 0.16501723429171358 
+        value = 2477.8545218235377 
+    points [18]:
+        number = 0.1732673981066514 
+        value = 2460.739346957685 
+    points [19]:
+        number = 0.18151756192158922 
+        value = 2450.2168136259365 
+    points [20]:
+        number = 0.18976772573652703 
+        value = 2461.3539771159294 
+    points [21]:
+        number = 0.19801788955146485 
+        value = 2449.142786854669 
+    points [22]:
+        number = 0.20626805336640266 
+        value = 2419.1998224773765 
+    points [23]:
+        number = 0.21451821718134048 
+        value = 2369.5762448884993 
+    points [24]:
+        number = 0.2227683809962783 
+        value = 2329.951653379234 
+    points [25]:
+        number = 0.23101854481121614 
+        value = 2262.613994895942 
+    points [26]:
+        number = 0.23926870862615396 
+        value = 2208.1193566289953 
+    points [27]:
+        number = 0.24751887244109178 
+        value = 2152.3221954886617 
+    points [28]:
+        number = 0.2557690362560296 
+        value = 2105.783137741426 
+    points [29]:
+        number = 0.2640192000709674 
+        value = 2101.1642614506004 
+    points [30]:
+        number = 0.2722693638859052 
+        value = 2116.5188308323413 
+formants [3]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 30 
+    points [1]:
+        number = 0.03301461325270849 
+        value = 2448.0663501225667 
+    points [2]:
+        number = 0.04126477706764631 
+        value = 2451.6802054253462 
+    points [3]:
+        number = 0.049514940882584124 
+        value = 2491.3236073636485 
+    points [4]:
+        number = 0.05776510469752195 
+        value = 2574.5098177952077 
+    points [5]:
+        number = 0.06601526851245976 
+        value = 2651.226697652454 
+    points [6]:
+        number = 0.07426543232739757 
+        value = 2700.194869432247 
+    points [7]:
+        number = 0.0825155961423354 
+        value = 2750.0026269147734 
+    points [8]:
+        number = 0.09076575995727322 
+        value = 2808.2873243545127 
+    points [9]:
+        number = 0.09901592377221104 
+        value = 2874.0060791424153 
+    points [10]:
+        number = 0.10726608758714885 
+        value = 2931.0606614109524 
+    points [11]:
+        number = 0.11551625140208667 
+        value = 2992.015018565559 
+    points [12]:
+        number = 0.12376641521702449 
+        value = 3013.9620584995428 
+    points [13]:
+        number = 0.13201657903196232 
+        value = 3109.1929727014244 
+    points [14]:
+        number = 0.14026674284690013 
+        value = 3167.3016190927146 
+    points [15]:
+        number = 0.14851690666183795 
+        value = 3173.5619013744786 
+    points [16]:
+        number = 0.15676707047677577 
+        value = 3143.7707408672995 
+    points [17]:
+        number = 0.16501723429171358 
+        value = 3137.0768400115885 
+    points [18]:
+        number = 0.1732673981066514 
+        value = 3133.2049313669327 
+    points [19]:
+        number = 0.18151756192158922 
+        value = 3135.127100149672 
+    points [20]:
+        number = 0.18976772573652703 
+        value = 3125.117283403489 
+    points [21]:
+        number = 0.19801788955146485 
+        value = 3103.85254215391 
+    points [22]:
+        number = 0.20626805336640266 
+        value = 3098.973817199805 
+    points [23]:
+        number = 0.21451821718134048 
+        value = 3094.8020337018925 
+    points [24]:
+        number = 0.2227683809962783 
+        value = 3104.8750652251247 
+    points [25]:
+        number = 0.23101854481121614 
+        value = 3099.2364340114405 
+    points [26]:
+        number = 0.23926870862615396 
+        value = 3088.0922457407332 
+    points [27]:
+        number = 0.24751887244109178 
+        value = 3075.006458424297 
+    points [28]:
+        number = 0.2557690362560296 
+        value = 3067.1487279298663 
+    points [29]:
+        number = 0.2640192000709674 
+        value = 3080.504266842184 
+    points [30]:
+        number = 0.2722693638859052 
+        value = 3084.6611493966175 
+bandwidths: size = 3 
+bandwidths [1]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 67 
+    points [1]:
+        number = 0.004353741496598626 
+        value = 70 
+    points [2]:
+        number = 0.014353741496598627 
+        value = 70 
+    points [3]:
+        number = 0.02435374149659863 
+        value = 70 
+    points [4]:
+        number = 0.03435374149659863 
+        value = 70 
+    points [5]:
+        number = 0.044353741496598625 
+        value = 70 
+    points [6]:
+        number = 0.05435374149659863 
+        value = 70 
+    points [7]:
+        number = 0.06435374149659863 
+        value = 70 
+    points [8]:
+        number = 0.07435374149659862 
+        value = 70 
+    points [9]:
+        number = 0.08435374149659863 
+        value = 70 
+    points [10]:
+        number = 0.09435374149659863 
+        value = 70 
+    points [11]:
+        number = 0.10435374149659862 
+        value = 70 
+    points [12]:
+        number = 0.11435374149659863 
+        value = 70 
+    points [13]:
+        number = 0.12435374149659863 
+        value = 70 
+    points [14]:
+        number = 0.13435374149659862 
+        value = 70 
+    points [15]:
+        number = 0.14435374149659863 
+        value = 70 
+    points [16]:
+        number = 0.15435374149659864 
+        value = 70 
+    points [17]:
+        number = 0.16435374149659862 
+        value = 70 
+    points [18]:
+        number = 0.17435374149659863 
+        value = 70 
+    points [19]:
+        number = 0.18435374149659864 
+        value = 70 
+    points [20]:
+        number = 0.19435374149659862 
+        value = 70 
+    points [21]:
+        number = 0.20435374149659863 
+        value = 70 
+    points [22]:
+        number = 0.21435374149659864 
+        value = 70 
+    points [23]:
+        number = 0.22435374149659862 
+        value = 70 
+    points [24]:
+        number = 0.23435374149659863 
+        value = 70 
+    points [25]:
+        number = 0.24435374149659864 
+        value = 70 
+    points [26]:
+        number = 0.2543537414965986 
+        value = 70 
+    points [27]:
+        number = 0.2643537414965986 
+        value = 70 
+    points [28]:
+        number = 0.27435374149659864 
+        value = 70 
+    points [29]:
+        number = 0.28435374149659864 
+        value = 70 
+    points [30]:
+        number = 0.29435374149659865 
+        value = 70 
+    points [31]:
+        number = 0.3043537414965986 
+        value = 70 
+    points [32]:
+        number = 0.3143537414965986 
+        value = 70 
+    points [33]:
+        number = 0.3243537414965986 
+        value = 70 
+    points [34]:
+        number = 0.33435374149659863 
+        value = 70 
+    points [35]:
+        number = 0.34435374149659864 
+        value = 70 
+    points [36]:
+        number = 0.35435374149659865 
+        value = 70 
+    points [37]:
+        number = 0.36435374149659866 
+        value = 70 
+    points [38]:
+        number = 0.3743537414965986 
+        value = 70 
+    points [39]:
+        number = 0.3843537414965986 
+        value = 70 
+    points [40]:
+        number = 0.39435374149659863 
+        value = 70 
+    points [41]:
+        number = 0.40435374149659864 
+        value = 70 
+    points [42]:
+        number = 0.41435374149659865 
+        value = 70 
+    points [43]:
+        number = 0.42435374149659866 
+        value = 70 
+    points [44]:
+        number = 0.4343537414965986 
+        value = 70 
+    points [45]:
+        number = 0.4443537414965986 
+        value = 70 
+    points [46]:
+        number = 0.45435374149659863 
+        value = 70 
+    points [47]:
+        number = 0.46435374149659864 
+        value = 70 
+    points [48]:
+        number = 0.47435374149659865 
+        value = 70 
+    points [49]:
+        number = 0.48435374149659866 
+        value = 70 
+    points [50]:
+        number = 0.4943537414965986 
+        value = 70 
+    points [51]:
+        number = 0.5043537414965986 
+        value = 70 
+    points [52]:
+        number = 0.5143537414965986 
+        value = 70 
+    points [53]:
+        number = 0.5243537414965986 
+        value = 70 
+    points [54]:
+        number = 0.5343537414965986 
+        value = 70 
+    points [55]:
+        number = 0.5443537414965987 
+        value = 70 
+    points [56]:
+        number = 0.5543537414965987 
+        value = 70 
+    points [57]:
+        number = 0.5643537414965987 
+        value = 70 
+    points [58]:
+        number = 0.5743537414965987 
+        value = 70 
+    points [59]:
+        number = 0.5843537414965987 
+        value = 70 
+    points [60]:
+        number = 0.5943537414965986 
+        value = 70 
+    points [61]:
+        number = 0.6043537414965986 
+        value = 70 
+    points [62]:
+        number = 0.6143537414965986 
+        value = 70 
+    points [63]:
+        number = 0.6243537414965986 
+        value = 70 
+    points [64]:
+        number = 0.6343537414965986 
+        value = 70 
+    points [65]:
+        number = 0.6443537414965986 
+        value = 70 
+    points [66]:
+        number = 0.6543537414965986 
+        value = 70 
+    points [67]:
+        number = 0.6643537414965986 
+        value = 70 
+bandwidths [2]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 67 
+    points [1]:
+        number = 0.004353741496598626 
+        value = 85 
+    points [2]:
+        number = 0.014353741496598627 
+        value = 85 
+    points [3]:
+        number = 0.02435374149659863 
+        value = 85 
+    points [4]:
+        number = 0.03435374149659863 
+        value = 85 
+    points [5]:
+        number = 0.044353741496598625 
+        value = 85 
+    points [6]:
+        number = 0.05435374149659863 
+        value = 85 
+    points [7]:
+        number = 0.06435374149659863 
+        value = 85 
+    points [8]:
+        number = 0.07435374149659862 
+        value = 85 
+    points [9]:
+        number = 0.08435374149659863 
+        value = 85 
+    points [10]:
+        number = 0.09435374149659863 
+        value = 85 
+    points [11]:
+        number = 0.10435374149659862 
+        value = 85 
+    points [12]:
+        number = 0.11435374149659863 
+        value = 85 
+    points [13]:
+        number = 0.12435374149659863 
+        value = 85 
+    points [14]:
+        number = 0.13435374149659862 
+        value = 85 
+    points [15]:
+        number = 0.14435374149659863 
+        value = 85 
+    points [16]:
+        number = 0.15435374149659864 
+        value = 85 
+    points [17]:
+        number = 0.16435374149659862 
+        value = 85 
+    points [18]:
+        number = 0.17435374149659863 
+        value = 85 
+    points [19]:
+        number = 0.18435374149659864 
+        value = 85 
+    points [20]:
+        number = 0.19435374149659862 
+        value = 85 
+    points [21]:
+        number = 0.20435374149659863 
+        value = 85 
+    points [22]:
+        number = 0.21435374149659864 
+        value = 85 
+    points [23]:
+        number = 0.22435374149659862 
+        value = 85 
+    points [24]:
+        number = 0.23435374149659863 
+        value = 85 
+    points [25]:
+        number = 0.24435374149659864 
+        value = 85 
+    points [26]:
+        number = 0.2543537414965986 
+        value = 85 
+    points [27]:
+        number = 0.2643537414965986 
+        value = 85 
+    points [28]:
+        number = 0.27435374149659864 
+        value = 85 
+    points [29]:
+        number = 0.28435374149659864 
+        value = 85 
+    points [30]:
+        number = 0.29435374149659865 
+        value = 85 
+    points [31]:
+        number = 0.3043537414965986 
+        value = 85 
+    points [32]:
+        number = 0.3143537414965986 
+        value = 85 
+    points [33]:
+        number = 0.3243537414965986 
+        value = 85 
+    points [34]:
+        number = 0.33435374149659863 
+        value = 85 
+    points [35]:
+        number = 0.34435374149659864 
+        value = 85 
+    points [36]:
+        number = 0.35435374149659865 
+        value = 85 
+    points [37]:
+        number = 0.36435374149659866 
+        value = 85 
+    points [38]:
+        number = 0.3743537414965986 
+        value = 85 
+    points [39]:
+        number = 0.3843537414965986 
+        value = 85 
+    points [40]:
+        number = 0.39435374149659863 
+        value = 85 
+    points [41]:
+        number = 0.40435374149659864 
+        value = 85 
+    points [42]:
+        number = 0.41435374149659865 
+        value = 85 
+    points [43]:
+        number = 0.42435374149659866 
+        value = 85 
+    points [44]:
+        number = 0.4343537414965986 
+        value = 85 
+    points [45]:
+        number = 0.4443537414965986 
+        value = 85 
+    points [46]:
+        number = 0.45435374149659863 
+        value = 85 
+    points [47]:
+        number = 0.46435374149659864 
+        value = 85 
+    points [48]:
+        number = 0.47435374149659865 
+        value = 85 
+    points [49]:
+        number = 0.48435374149659866 
+        value = 85 
+    points [50]:
+        number = 0.4943537414965986 
+        value = 85 
+    points [51]:
+        number = 0.5043537414965986 
+        value = 85 
+    points [52]:
+        number = 0.5143537414965986 
+        value = 85 
+    points [53]:
+        number = 0.5243537414965986 
+        value = 85 
+    points [54]:
+        number = 0.5343537414965986 
+        value = 85 
+    points [55]:
+        number = 0.5443537414965987 
+        value = 85 
+    points [56]:
+        number = 0.5543537414965987 
+        value = 85 
+    points [57]:
+        number = 0.5643537414965987 
+        value = 85 
+    points [58]:
+        number = 0.5743537414965987 
+        value = 85 
+    points [59]:
+        number = 0.5843537414965987 
+        value = 85 
+    points [60]:
+        number = 0.5943537414965986 
+        value = 85 
+    points [61]:
+        number = 0.6043537414965986 
+        value = 85 
+    points [62]:
+        number = 0.6143537414965986 
+        value = 85 
+    points [63]:
+        number = 0.6243537414965986 
+        value = 85 
+    points [64]:
+        number = 0.6343537414965986 
+        value = 85 
+    points [65]:
+        number = 0.6443537414965986 
+        value = 85 
+    points [66]:
+        number = 0.6543537414965986 
+        value = 85 
+    points [67]:
+        number = 0.6643537414965986 
+        value = 85 
+bandwidths [3]:
+    xmin = 0 
+    xmax = 0.6687074829931973 
+    points: size = 67 
+    points [1]:
+        number = 0.004353741496598626 
+        value = 140 
+    points [2]:
+        number = 0.014353741496598627 
+        value = 140 
+    points [3]:
+        number = 0.02435374149659863 
+        value = 140 
+    points [4]:
+        number = 0.03435374149659863 
+        value = 140 
+    points [5]:
+        number = 0.044353741496598625 
+        value = 140 
+    points [6]:
+        number = 0.05435374149659863 
+        value = 140 
+    points [7]:
+        number = 0.06435374149659863 
+        value = 140 
+    points [8]:
+        number = 0.07435374149659862 
+        value = 140 
+    points [9]:
+        number = 0.08435374149659863 
+        value = 140 
+    points [10]:
+        number = 0.09435374149659863 
+        value = 140 
+    points [11]:
+        number = 0.10435374149659862 
+        value = 140 
+    points [12]:
+        number = 0.11435374149659863 
+        value = 140 
+    points [13]:
+        number = 0.12435374149659863 
+        value = 140 
+    points [14]:
+        number = 0.13435374149659862 
+        value = 140 
+    points [15]:
+        number = 0.14435374149659863 
+        value = 140 
+    points [16]:
+        number = 0.15435374149659864 
+        value = 140 
+    points [17]:
+        number = 0.16435374149659862 
+        value = 140 
+    points [18]:
+        number = 0.17435374149659863 
+        value = 140 
+    points [19]:
+        number = 0.18435374149659864 
+        value = 140 
+    points [20]:
+        number = 0.19435374149659862 
+        value = 140 
+    points [21]:
+        number = 0.20435374149659863 
+        value = 140 
+    points [22]:
+        number = 0.21435374149659864 
+        value = 140 
+    points [23]:
+        number = 0.22435374149659862 
+        value = 140 
+    points [24]:
+        number = 0.23435374149659863 
+        value = 140 
+    points [25]:
+        number = 0.24435374149659864 
+        value = 140 
+    points [26]:
+        number = 0.2543537414965986 
+        value = 140 
+    points [27]:
+        number = 0.2643537414965986 
+        value = 140 
+    points [28]:
+        number = 0.27435374149659864 
+        value = 140 
+    points [29]:
+        number = 0.28435374149659864 
+        value = 140 
+    points [30]:
+        number = 0.29435374149659865 
+        value = 140 
+    points [31]:
+        number = 0.3043537414965986 
+        value = 140 
+    points [32]:
+        number = 0.3143537414965986 
+        value = 140 
+    points [33]:
+        number = 0.3243537414965986 
+        value = 140 
+    points [34]:
+        number = 0.33435374149659863 
+        value = 140 
+    points [35]:
+        number = 0.34435374149659864 
+        value = 140 
+    points [36]:
+        number = 0.35435374149659865 
+        value = 140 
+    points [37]:
+        number = 0.36435374149659866 
+        value = 140 
+    points [38]:
+        number = 0.3743537414965986 
+        value = 140 
+    points [39]:
+        number = 0.3843537414965986 
+        value = 140 
+    points [40]:
+        number = 0.39435374149659863 
+        value = 140 
+    points [41]:
+        number = 0.40435374149659864 
+        value = 140 
+    points [42]:
+        number = 0.41435374149659865 
+        value = 140 
+    points [43]:
+        number = 0.42435374149659866 
+        value = 140 
+    points [44]:
+        number = 0.4343537414965986 
+        value = 140 
+    points [45]:
+        number = 0.4443537414965986 
+        value = 140 
+    points [46]:
+        number = 0.45435374149659863 
+        value = 140 
+    points [47]:
+        number = 0.46435374149659864 
+        value = 140 
+    points [48]:
+        number = 0.47435374149659865 
+        value = 140 
+    points [49]:
+        number = 0.48435374149659866 
+        value = 140 
+    points [50]:
+        number = 0.4943537414965986 
+        value = 140 
+    points [51]:
+        number = 0.5043537414965986 
+        value = 140 
+    points [52]:
+        number = 0.5143537414965986 
+        value = 140 
+    points [53]:
+        number = 0.5243537414965986 
+        value = 140 
+    points [54]:
+        number = 0.5343537414965986 
+        value = 140 
+    points [55]:
+        number = 0.5443537414965987 
+        value = 140 
+    points [56]:
+        number = 0.5543537414965987 
+        value = 140 
+    points [57]:
+        number = 0.5643537414965987 
+        value = 140 
+    points [58]:
+        number = 0.5743537414965987 
+        value = 140 
+    points [59]:
+        number = 0.5843537414965987 
+        value = 140 
+    points [60]:
+        number = 0.5943537414965986 
+        value = 140 
+    points [61]:
+        number = 0.6043537414965986 
+        value = 140 
+    points [62]:
+        number = 0.6143537414965986 
+        value = 140 
+    points [63]:
+        number = 0.6243537414965986 
+        value = 140 
+    points [64]:
+        number = 0.6343537414965986 
+        value = 140 
+    points [65]:
+        number = 0.6443537414965986 
+        value = 140 
+    points [66]:
+        number = 0.6543537414965986 
+        value = 140 
+    points [67]:
+        number = 0.6643537414965986 
+        value = 140 

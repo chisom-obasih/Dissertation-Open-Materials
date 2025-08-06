@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.56 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.56 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8248214018616942 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8248214018616942 
+            xmax = 2.4003116158975724 
+            text = "shiteiru-1a" 
+        intervals [3]:
+            xmin = 2.4003116158975724 
+            xmax = 3.6794009073154808 
+            text = "" 
+        intervals [4]:
+            xmin = 3.6794009073154808 
+            xmax = 4.302639217712414 
+            text = "shiteiru-1b" 
+        intervals [5]:
+            xmin = 4.302639217712414 
+            xmax = 6.791812565511323 
+            text = "" 
+        intervals [6]:
+            xmin = 6.791812565511323 
+            xmax = 7.379868068063269 
+            text = "shiteiru-2a" 
+        intervals [7]:
+            xmin = 7.379868068063269 
+            xmax = 8.771232374238906 
+            text = "" 
+        intervals [8]:
+            xmin = 8.771232374238906 
+            xmax = 9.419601261667973 
+            text = "shiteiru-2b" 
+        intervals [9]:
+            xmin = 9.419601261667973 
+            xmax = 11.875405715455827 
+            text = "" 
+        intervals [10]:
+            xmin = 11.875405715455827 
+            xmax = 12.449705015869666 
+            text = "shiteiru-3a" 
+        intervals [11]:
+            xmin = 12.449705015869666 
+            xmax = 13.756827122169575 
+            text = "" 
+        intervals [12]:
+            xmin = 13.756827122169575 
+            xmax = 14.440516765519385 
+            text = "shiteiru-3b" 
+        intervals [13]:
+            xmin = 14.440516765519385 
+            xmax = 16.56 
+            text = "" 

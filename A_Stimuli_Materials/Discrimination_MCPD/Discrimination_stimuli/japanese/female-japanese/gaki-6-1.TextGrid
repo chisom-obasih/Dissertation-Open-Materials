@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.3 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.3 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6797134755884668 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6797134755884668 
+            xmax = 2.0728036159890113 
+            text = "gaki-1a" 
+        intervals [3]:
+            xmin = 2.0728036159890113 
+            xmax = 3.5141293130346565 
+            text = "" 
+        intervals [4]:
+            xmin = 3.5141293130346565 
+            xmax = 4.014790661596138 
+            text = "gaki-1b" 
+        intervals [5]:
+            xmin = 4.014790661596138 
+            xmax = 6.138846945731194 
+            text = "" 
+        intervals [6]:
+            xmin = 6.138846945731194 
+            xmax = 6.518782044485937 
+            text = "gaki-2a" 
+        intervals [7]:
+            xmin = 6.518782044485937 
+            xmax = 7.787338246852991 
+            text = "" 
+        intervals [8]:
+            xmin = 7.787338246852991 
+            xmax = 8.217529956922002 
+            text = "gaki-2b" 
+        intervals [9]:
+            xmin = 8.217529956922002 
+            xmax = 10.598491408784067 
+            text = "" 
+        intervals [10]:
+            xmin = 10.598491408784067 
+            xmax = 10.970342454005852 
+            text = "gaki-3a" 
+        intervals [11]:
+            xmin = 10.970342454005852 
+            xmax = 12.197818966684574 
+            text = "" 
+        intervals [12]:
+            xmin = 12.197818966684574 
+            xmax = 12.64809744920817 
+            text = "gaki-3b" 
+        intervals [13]:
+            xmin = 12.64809744920817 
+            xmax = 15.3 
+            text = "" 

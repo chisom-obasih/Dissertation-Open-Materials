@@ -1,0 +1,69 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 0.7524717445540681 
+tiers? <exists> 
+size = 3 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 0.7524717445540681 
+        intervals: size = 1 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.7524717445540681 
+            text = "indent-2" 
+    item [2]:
+        class = "IntervalTier" 
+        name = "segments" 
+        xmin = 0 
+        xmax = 0.7524717445540681 
+        intervals: size = 6 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.02368833884750409 
+            text = "" 
+        intervals [2]:
+            xmin = 0.02368833884750409 
+            xmax = 0.2262698412698413 
+            text = "[In]" 
+        intervals [3]:
+            xmin = 0.2262698412698413 
+            xmax = 0.2581750317702872 
+            text = "closure" 
+        intervals [4]:
+            xmin = 0.2581750317702872 
+            xmax = 0.2788185941043084 
+            text = "VOT" 
+        intervals [5]:
+            xmin = 0.2788185941043084 
+            xmax = 0.3238185941043084 
+            text = "F0 pertubation" 
+        intervals [6]:
+            xmin = 0.3238185941043084 
+            xmax = 0.7524717445540681 
+            text = "" 
+    item [3]:
+        class = "TextTier" 
+        name = "points" 
+        xmin = 0 
+        xmax = 0.7524717445540681 
+        points: size = 5 
+        points [1]:
+            number = 0.20758177780203327 
+            mark = "CL gesutre" 
+        points [2]:
+            number = 0.2581750317702872 
+            mark = "B" 
+        points [3]:
+            number = 0.2788185941043084 
+            mark = "V-alt" 
+        points [4]:
+            number = 0.28336267349364325 
+            mark = "V-orig" 
+        points [5]:
+            number = 0.3238185941043084 
+            mark = "VP" 

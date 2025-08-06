@@ -1,0 +1,102 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 0.47643482320283503 
+tiers? <exists> 
+size = 4 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 0.47643482320283503 
+        intervals: size = 1 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.47643482320283503 
+            text = "kata-1b" 
+    item [2]:
+        class = "IntervalTier" 
+        name = "syllables" 
+        xmin = 0 
+        xmax = 0.47643482320283503 
+        intervals: size = 5 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.04075963718820862 
+            text = "" 
+        intervals [2]:
+            xmin = 0.04075963718820862 
+            xmax = 0.15774788703360132 
+            text = "syllable1" 
+        intervals [3]:
+            xmin = 0.15774788703360132 
+            xmax = 0.2573382404108028 
+            text = "closure" 
+        intervals [4]:
+            xmin = 0.2573382404108028 
+            xmax = 0.351188856494979 
+            text = "syllable2" 
+        intervals [5]:
+            xmin = 0.351188856494979 
+            xmax = 0.47643482320283503 
+            text = "" 
+    item [3]:
+        class = "IntervalTier" 
+        name = "segments" 
+        xmin = 0 
+        xmax = 0.47643482320283503 
+        intervals: size = 7 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.04075963718820862 
+            text = "" 
+        intervals [2]:
+            xmin = 0.04075963718820862 
+            xmax = 0.08679728259867633 
+            text = "VOT" 
+        intervals [3]:
+            xmin = 0.08679728259867633 
+            xmax = 0.15774788703360132 
+            text = "V1" 
+        intervals [4]:
+            xmin = 0.15774788703360132 
+            xmax = 0.2573382404108028 
+            text = "closure" 
+        intervals [5]:
+            xmin = 0.2573382404108028 
+            xmax = 0.26563936271025823 
+            text = "VOT" 
+        intervals [6]:
+            xmin = 0.26563936271025823 
+            xmax = 0.351188856494979 
+            text = "V2" 
+        intervals [7]:
+            xmin = 0.351188856494979 
+            xmax = 0.47643482320283503 
+            text = "" 
+    item [4]:
+        class = "TextTier" 
+        name = "points" 
+        xmin = 0 
+        xmax = 0.47643482320283503 
+        points: size = 6 
+        points [1]:
+            number = 0.04075963718820862 
+            mark = "B" 
+        points [2]:
+            number = 0.08679728259867633 
+            mark = "V" 
+        points [3]:
+            number = 0.15774788703360132 
+            mark = "C" 
+        points [4]:
+            number = 0.2573382404108028 
+            mark = "B" 
+        points [5]:
+            number = 0.26563936271025823 
+            mark = "V" 
+        points [6]:
+            number = 0.351188856494979 
+            mark = "C" 

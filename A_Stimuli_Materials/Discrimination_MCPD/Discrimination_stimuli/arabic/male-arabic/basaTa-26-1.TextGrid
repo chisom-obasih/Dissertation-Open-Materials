@@ -1,0 +1,82 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.38 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.38 
+        intervals: size = 17 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.5945368055555555 
+            text = "" 
+        intervals [2]:
+            xmin = 1.5945368055555555 
+            xmax = 2.1799359993187943 
+            text = "basaTa-1a" 
+        intervals [3]:
+            xmin = 2.1799359993187943 
+            xmax = 3.5027656689157536 
+            text = "" 
+        intervals [4]:
+            xmin = 3.5027656689157536 
+            xmax = 4.087527035656681 
+            text = "basaTa-1b" 
+        intervals [5]:
+            xmin = 4.087527035656681 
+            xmax = 5.2559487241602065 
+            text = "" 
+        intervals [6]:
+            xmin = 5.2559487241602065 
+            xmax = 5.891456645240814 
+            text = "basaTa-2a" 
+        intervals [7]:
+            xmin = 5.891456645240814 
+            xmax = 7.03747423245614 
+            text = "" 
+        intervals [8]:
+            xmin = 7.03747423245614 
+            xmax = 7.622378415686612 
+            text = "basaTa-2b" 
+        intervals [9]:
+            xmin = 7.622378415686612 
+            xmax = 8.762905208333333 
+            text = "" 
+        intervals [10]:
+            xmin = 8.762905208333333 
+            xmax = 9.238119543650793 
+            text = "basaTa-3a" 
+        intervals [11]:
+            xmin = 9.238119543650793 
+            xmax = 10.027683035714286 
+            text = "" 
+        intervals [12]:
+            xmin = 10.027683035714286 
+            xmax = 10.616115591770406 
+            text = "basaTa-3b" 
+        intervals [13]:
+            xmin = 10.616115591770406 
+            xmax = 13.386071572580645 
+            text = "" 
+        intervals [14]:
+            xmin = 13.386071572580645 
+            xmax = 13.921027069378479 
+            text = "basaTa-4a" 
+        intervals [15]:
+            xmin = 13.921027069378479 
+            xmax = 14.760752976190476 
+            text = "" 
+        intervals [16]:
+            xmin = 14.760752976190476 
+            xmax = 15.331140645138117 
+            text = "basaTa-4b" 
+        intervals [17]:
+            xmin = 15.331140645138117 
+            xmax = 16.38 
+            text = "" 

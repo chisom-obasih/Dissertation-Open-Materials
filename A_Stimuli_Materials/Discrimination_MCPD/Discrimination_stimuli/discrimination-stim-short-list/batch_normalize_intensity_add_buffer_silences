@@ -1,0 +1,306 @@
+#########################
+## Batch processing of all sounds in a directory (intensity, add buffer silences, adjust filenames, save)
+## Chisom Obasih
+## January 2025
+## Praat version: 6.4.12 (May 2, 2024)
+
+## This script is adapted from the script below that scales intensity of all sounds in a directory
+## Original script by Matthew B. Winn from March 2020
+## (see original comments below)
+
+## This script additionally adds functions/options for other batch processing 
+## such as adding buffer silences, adjusting filenames, and saving as both wav and mp3 files
+
+#####
+## NOTABLE CHANGES
+#####
+
+## added output directory to form to save files in a different place than the retrieval folder
+## changed saving procedure to save to the user suppplied output folder
+## added option in pause window of userSelectSave to also save as mp3 
+## added if statement in save sounds to save wav files and mp3 files into separate subfolders if user selected to save mp3 files
+## otherwise if not, the output files are saved in the top level of the output folder the user supplied
+
+## in the form, I added user options to add buffer silences to the beginning and end of sound files
+## and an option to specify the duration of overlap when concatenating the buffer silences
+## within the procedure saveSounds
+## I added functions to concatenate with overlap buffer silences at the start and end of the sound after adjusting the intensity
+## I did these under if statements to account for if the user does not want to buffer silence and/or concatenate with overlap
+
+## IMPORTANT NOTE: I also added a function specific to my needs to adjust the filenames to remove the position tags that were appended to the filenames
+## the filenames going into the script were formatted as: [speaker_sex]_[word]-[number]-[letter].wav
+## the position tag is the -[number]-[letter]
+## for example, in the name F_ana-1b.wav, the position tag is -1b
+## so I added functions to rename the processed sounds without the position tag
+## so for example, after adjusting the intensity and adding buffer silences, the file would just be named F_ana.wav
+## in the saveSounds procedure, I am saving the sounds as wav (and mp3 files) with the new name
+## the script might break if using input filenames that don't match this naming scheme
+
+
+
+###### Orignal header comments
+###### Source: https://github.com//ListenLab/Praat/blob/master/Scale_intensity_all_sounds_in_folder_v1.txt
+
+# # ## ### ##### ########  #############  ##################### 
+## Scale intensity of all sounds in a Directory
+##### Check for clipped extrema
+# Give an option to lower the output level 
+# until none of the sounds are clipped
+#
+## Matthew B. Winn
+## March 2020
+#
+## NOTE: It helps to have the Praat info window open as you run this script,
+###### as it will update info for you as it proceeds. 
+#
+## Once the script is done and you choose to save the files, 
+#### Look in the original sound directory - 
+#### there you will find a new sub-folder of normalized sounds. 
+##################################
+##################### 
+############# 
+######## 
+#####
+###
+##
+#
+#
+form Input Enter specifications for batch processing
+    comment Enter desired intensity (dB):
+    	real intensity 67
+    comment Enter directory where the ORIGINAL sound files will be retrieved:
+    	sentence soundDir /Users/chisomobasih/Exp-Research/Dissertation/stimuli-collection/discrimination-dictation-stimuli/discrimination-stim-short-list
+	comment Enter directory to save the output files (full path)
+		sentence output_folder /Users/chisomobasih/Exp-Research/Dissertation/discrimination_task/final_discrimination_stim
+    comment Enter filename to which the info should be written (without extension)
+    	sentence outFile discrimination_stim_intensity_info
+    
+    comment Enter the duration of buffer silence added to the start and end of sounds
+    comment (If you do not want to add any buffer silence, enter 0)
+        real buffer_silence_dur_in_ms 50
+    
+    comment Specify duration of concatenation overlap for buffer silence
+    comment (Enter 0 if you do not want any overlap or if you entered 0 above)
+        real overlap_in_ms 2
+endform
+
+# initialize silence duration variables into seconds
+silence_dur = buffer_silence_dur_in_ms/1000
+overlap_dur = overlap_in_ms/1000
+
+# if buffer silence is desired, make silence
+if buffer_silence_dur_in_ms > 0
+	call make_silence silence_'buffer_silence_dur_in_ms'ms silence_dur
+endif
+call changeIntensities
+
+
+procedure changeIntensities
+	clearinfo
+	clippedSounds = 0
+
+	# Reads in a list of files
+	Create Strings as file list... list 'soundDir$'/*.wav
+	numberOfFiles = Get number of strings
+
+	# make a list of each sound in the directory
+	for thisFile to numberOfFiles
+    	select Strings list
+    	fileName$ = Get string... thisFile
+    	name$ = fileName$ - ".wav"
+
+    	# Reads in all sound (wav) files
+		Read from file... 'soundDir$'/'name$'.wav
+
+    	# get intensity of the original sound
+		old_Int = Get intensity (dB)
+		print 'name$' was 'old_Int:1'   
+
+    	# scale it to the user-defined intensity
+		Scale intensity... 'intensity'
+		int_diff = 'intensity' - 'old_Int'
+		print & adjusted by 'int_diff:2' to get 'intensity:1' 'tab$'
+
+    	# Check to see if it clips
+		max = Get absolute extremum... 0 0 Sinc70
+		if max >= 1
+			clippedSounds = clippedSounds + 1
+			print CLIPPED
+		endif
+
+		# wrap to the next line
+		print 'newline$'
+	
+		# Remove the sound object from the objects list 
+		Remove
+	endfor
+
+	# decide whether you want to save the files
+	call userSelectSave
+endproc
+
+procedure userSelectSave
+	choice = 1
+
+	beginPause ("'clippedSounds' sounds have been clipped (see info window for details)")
+	comment ("'clippedSounds' sounds have been clipped")
+	comment ("Do you want to save the files?")
+       optionMenu ("Choice", choice)
+          option ("Yes - save the sounds")
+          option ("No - Quit")
+          option ("Lower level by 1 dB and measure again")
+          option ("Lower level by 2 dB and measure again")
+          option ("Lower level by 3 dB and measure again")
+          option ("Lower level by 4 dB and measure again")
+          option ("Lower level by 5 dB and measure again")
+	
+	comment ("If choosing to save, do you want to save mp3 files in addition to wav files?")
+		boolean: "save_as_mp3_also", 1
+
+       comment ("Then click Continue.")
+
+endPause ("Continue", 1)
+ 	if choice = 1
+ 		call saveSounds
+
+ 	elif choice = 2
+ 		select all
+ 		Remove
+ 	else
+ 	 	select all
+ 		Remove
+ 		# lower by 5 is the 7th choice, lower by 4 is the 6th choice;
+ 		# adjustment is the choice # minus 2 
+	 	intAdjustment = choice-2
+	 	intensity = intensity-(intAdjustment)
+	 	call changeIntensities
+	endif
+endproc
+
+procedure saveSounds
+
+	if save_as_mp3_also = 1
+		# make two subfolders
+		wav_directory$ = "'output_folder$'" + "/wav"
+		mp3_directory$ = "'output_folder$'" + "/mp3"
+
+		createDirectory: wav_directory$
+		createDirectory: mp3_directory$
+	else
+		# otherwise, the output will just be the supplied output_folder
+		wav_directory$ = "'output_folder$'"
+	endif
+
+	# first deletes any existing output file
+	filedelete 'wav_directory$'/'outFile$'.txt
+
+	# creates simple header		
+	# fileappend Step 'tab$' Duration 'tab$' 'newline$'
+
+	# make a list of each sound in the directory
+	for thisFile to numberOfFiles
+		select Strings list
+		fileName$ = Get string... thisFile
+		name$ = fileName$ - ".wav"
+
+		# Reads in the sound (wav) file
+		Read from file... 'soundDir$'/'name$'.wav
+
+		# scale it to the user-defined intensity (updated to reflect clip-adjustment changes)
+		Scale intensity... 'intensity'
+
+        # adjust filename to remove position tag (so excludes the hyphen and everything after it)
+        # this chunk of code finds the index of the hyphen in the string of the filename
+        # then saves into a new name everything to the left of (one below) the index of the hyphen
+
+        hyphen_index = index(name$, "-")
+        cutoff_index = hyphen_index - 1
+        new_name$ = left$(name$, cutoff_index)
+
+        # if buffer silence is desired, concatenate
+        if buffer_silence_dur_in_ms > 0
+            # concatenate buffer silence with overlap at start and end of sound
+            # copy buffer silence to after list of syllables so Praat concatenates everything in the right order
+            selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+            Copy... silence_'buffer_silence_dur_in_ms'ms_copy
+
+            # if overlap is desired, concatenate with overlap, else, just concatenate
+            if overlap_in_ms > 0
+            
+                selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+                plusObject: "Sound 'name$'"
+                plusObject: "Sound silence_'buffer_silence_dur_in_ms'ms_copy"
+
+                Concatenate with overlap... overlap_dur
+            elif
+                selectObject: "Sound silence_'buffer_silence_dur_in_ms'ms"
+                plusObject: "Sound 'name$'"
+                plusObject: "Sound silence_'buffer_silence_dur_in_ms'ms_copy"
+
+                Concatenate
+            endif
+		
+
+            selectObject: "Sound chain"
+            Rename: "'new_name$'"
+        
+        # if buffer silence is not desired, just rename intensity adjusted sound
+        elif buffer_silence_dur_in_ms = 0
+            selectObject: "Sound 'name$'"
+            Rename: "'new_name$'"
+        endif
+
+        
+        
+
+        selectObject: "Sound 'new_name$'"
+		# save it [with new name]
+		Save as WAV file... 'wav_directory$'/'new_name$'.wav
+
+		# also save it as mp3 if that was selected [with new name]
+		if save_as_mp3_also = 1
+			Save as highest quality MP3 file... 'mp3_directory$'/'new_name$'.mp3
+		endif
+        
+        # remove both original name and updated name objects and copy of silence buffer
+        # if no silence buffer was added, then the original file was just renamed so there would be no copy, nor buffer silence copy
+        # so don't break the script if these objects are not found
+        selectObject: "Sound 'new_name$'"
+        nocheck plusObject: "Sound 'name$'"
+        nocheck plusObject: "Sound silence_'buffer_silence_dur_in_ms'ms_copy"
+		Remove
+	endfor
+	
+	# this saves the file in the top level folder whether or not wav and mp3 subfolders have been created
+	call saveInfoWindow "'output_folder$'" 'outFile$'
+
+	select Strings list
+	Remove
+endproc
+
+procedure make_silence .name$ .duration
+	#>> Wrapper for make sound function
+    
+	# variables are: name, number of channels, start time, end time, sampling frequency, formula
+	# so the name is provided when the procedure is called
+	# single channel
+	# start time is 0 and end time is the supplied duration when procedure is called
+	# sampling rate is 48000 Hz
+	# and the formula is set to 0 to create silence
+	Create Sound from formula... '.name$' 1 0 '.duration' 48000 0
+endproc
+
+procedure saveInfoWindow outputDirectory$ outputFileName$
+	filedelete 'outputDirectory$'/'outputFileName$'.txt
+	fappendinfo 'outputDirectory$'/'outputFileName$'.txt
+endproc
+
+# 
+# 
+## 
+### 
+##### 
+######## 
+############# 
+##################### 
+################################## DONE

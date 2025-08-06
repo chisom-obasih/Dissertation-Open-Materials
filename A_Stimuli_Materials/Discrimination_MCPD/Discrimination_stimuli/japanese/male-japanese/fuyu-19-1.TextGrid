@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 19.86 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 19.86 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.1773272069325804 
+            text = "" 
+        intervals [2]:
+            xmin = 2.1773272069325804 
+            xmax = 2.4886276408295407 
+            text = "fuyu-1a" 
+        intervals [3]:
+            xmin = 2.4886276408295407 
+            xmax = 3.67288788115135 
+            text = "" 
+        intervals [4]:
+            xmin = 3.67288788115135 
+            xmax = 4.134157867144656 
+            text = "fuyu-1b" 
+        intervals [5]:
+            xmin = 4.134157867144656 
+            xmax = 7.947634151481927 
+            text = "" 
+        intervals [6]:
+            xmin = 7.947634151481927 
+            xmax = 8.240756457852058 
+            text = "fuyu-2a" 
+        intervals [7]:
+            xmin = 8.240756457852058 
+            xmax = 9.526260497632077 
+            text = "" 
+        intervals [8]:
+            xmin = 9.526260497632077 
+            xmax = 10.005708611152212 
+            text = "fuyu-2b" 
+        intervals [9]:
+            xmin = 10.005708611152212 
+            xmax = 14.53510242181501 
+            text = "" 
+        intervals [10]:
+            xmin = 14.53510242181501 
+            xmax = 14.837313791948555 
+            text = "fuyu-3a" 
+        intervals [11]:
+            xmin = 14.837313791948555 
+            xmax = 15.993384311240595 
+            text = "" 
+        intervals [12]:
+            xmin = 15.993384311240595 
+            xmax = 16.452382031293048 
+            text = "fuyu-3b" 
+        intervals [13]:
+            xmin = 16.452382031293048 
+            xmax = 19.86 
+            text = "" 

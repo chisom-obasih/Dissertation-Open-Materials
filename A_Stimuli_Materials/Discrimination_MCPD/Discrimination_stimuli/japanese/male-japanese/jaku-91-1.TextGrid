@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.64 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.64 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.3210241570380967 
+            text = "" 
+        intervals [2]:
+            xmin = 1.3210241570380967 
+            xmax = 1.6987126085652502 
+            text = "jaku-1a" 
+        intervals [3]:
+            xmin = 1.6987126085652502 
+            xmax = 3.039027462016497 
+            text = "" 
+        intervals [4]:
+            xmin = 3.039027462016497 
+            xmax = 3.5303873489576265 
+            text = "jaku-1b" 
+        intervals [5]:
+            xmin = 3.5303873489576265 
+            xmax = 5.8338843222743995 
+            text = "" 
+        intervals [6]:
+            xmin = 5.8338843222743995 
+            xmax = 6.234585175573652 
+            text = "jaku-2a" 
+        intervals [7]:
+            xmin = 6.234585175573652 
+            xmax = 7.3421023013544175 
+            text = "" 
+        intervals [8]:
+            xmin = 7.3421023013544175 
+            xmax = 7.986767279621582 
+            text = "jaku-2b" 
+        intervals [9]:
+            xmin = 7.986767279621582 
+            xmax = 10.690252205169287 
+            text = "" 
+        intervals [10]:
+            xmin = 10.690252205169287 
+            xmax = 11.114122835700128 
+            text = "jaku-3a" 
+        intervals [11]:
+            xmin = 11.114122835700128 
+            xmax = 12.252269948232197 
+            text = "" 
+        intervals [12]:
+            xmin = 12.252269948232197 
+            xmax = 12.817885098297467 
+            text = "jaku-3b" 
+        intervals [13]:
+            xmin = 12.817885098297467 
+            xmax = 14.64 
+            text = "" 

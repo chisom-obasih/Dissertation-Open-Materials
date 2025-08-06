@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 13.98 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 13.98 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.8530416666666665 
+            text = "" 
+        intervals [2]:
+            xmin = 1.8530416666666665 
+            xmax = 2.250039737654321 
+            text = "moto-1a" 
+        intervals [3]:
+            xmin = 2.250039737654321 
+            xmax = 3.5129479166666666 
+            text = "" 
+        intervals [4]:
+            xmin = 3.5129479166666666 
+            xmax = 3.8446297881170484 
+            text = "moto-1b" 
+        intervals [5]:
+            xmin = 3.8446297881170484 
+            xmax = 5.805739583333333 
+            text = "" 
+        intervals [6]:
+            xmin = 5.805739583333333 
+            xmax = 6.1591741071428565 
+            text = "moto-2a" 
+        intervals [7]:
+            xmin = 6.1591741071428565 
+            xmax = 7.40033125 
+            text = "" 
+        intervals [8]:
+            xmin = 7.40033125 
+            xmax = 7.726203534644195 
+            text = "moto-2b" 
+        intervals [9]:
+            xmin = 7.726203534644195 
+            xmax = 10.015052083333334 
+            text = "" 
+        intervals [10]:
+            xmin = 10.015052083333334 
+            xmax = 10.456954861111111 
+            text = "moto-3a" 
+        intervals [11]:
+            xmin = 10.456954861111111 
+            xmax = 11.6495 
+            text = "" 
+        intervals [12]:
+            xmin = 11.6495 
+            xmax = 11.985903273809523 
+            text = "moto-3b" 
+        intervals [13]:
+            xmin = 11.985903273809523 
+            xmax = 13.98 
+            text = "" 

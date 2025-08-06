@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 16.2 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 16.2 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.5490116367717224 
+            text = "" 
+        intervals [2]:
+            xmin = 1.5490116367717224 
+            xmax = 2.0370178335175746 
+            text = "haken-1a" 
+        intervals [3]:
+            xmin = 2.0370178335175746 
+            xmax = 3.2435342916932344 
+            text = "" 
+        intervals [4]:
+            xmin = 3.2435342916932344 
+            xmax = 3.7910534392617516 
+            text = "haken-1b" 
+        intervals [5]:
+            xmin = 3.7910534392617516 
+            xmax = 6.430504032662191 
+            text = "" 
+        intervals [6]:
+            xmin = 6.430504032662191 
+            xmax = 6.922477759462887 
+            text = "haken-2a" 
+        intervals [7]:
+            xmin = 6.922477759462887 
+            xmax = 8.207539426966466 
+            text = "" 
+        intervals [8]:
+            xmin = 8.207539426966466 
+            xmax = 8.866149416070625 
+            text = "haken-2b" 
+        intervals [9]:
+            xmin = 8.866149416070625 
+            xmax = 11.647625699676482 
+            text = "" 
+        intervals [10]:
+            xmin = 11.647625699676482 
+            xmax = 12.135631896422334 
+            text = "haken-3a" 
+        intervals [11]:
+            xmin = 12.135631896422334 
+            xmax = 13.272075133225735 
+            text = "" 
+        intervals [12]:
+            xmin = 13.272075133225735 
+            xmax = 13.914815002110515 
+            text = "haken-3b" 
+        intervals [13]:
+            xmin = 13.914815002110515 
+            xmax = 16.2 
+            text = "" 

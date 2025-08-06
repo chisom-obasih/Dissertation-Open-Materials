@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 17.1 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 17.1 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.584045386904762 
+            text = "" 
+        intervals [2]:
+            xmin = 1.584045386904762 
+            xmax = 2.2569678819444445 
+            text = "juutaku-1a" 
+        intervals [3]:
+            xmin = 2.2569678819444445 
+            xmax = 3.6725062499999996 
+            text = "" 
+        intervals [4]:
+            xmin = 3.6725062499999996 
+            xmax = 4.400985751915709 
+            text = "juutaku-1b" 
+        intervals [5]:
+            xmin = 4.400985751915709 
+            xmax = 6.613606249999999 
+            text = "" 
+        intervals [6]:
+            xmin = 6.613606249999999 
+            xmax = 7.3701840277777775 
+            text = "juutaku-2a" 
+        intervals [7]:
+            xmin = 7.3701840277777775 
+            xmax = 8.59990625 
+            text = "" 
+        intervals [8]:
+            xmin = 8.59990625 
+            xmax = 9.356348674242422 
+            text = "juutaku-2b" 
+        intervals [9]:
+            xmin = 9.356348674242422 
+            xmax = 12.068377664728683 
+            text = "" 
+        intervals [10]:
+            xmin = 12.068377664728683 
+            xmax = 12.818364583333333 
+            text = "juutaku-3a" 
+        intervals [11]:
+            xmin = 12.818364583333333 
+            xmax = 14.006119791666666 
+            text = "" 
+        intervals [12]:
+            xmin = 14.006119791666666 
+            xmax = 14.800355232939632 
+            text = "juutaku-3b" 
+        intervals [13]:
+            xmin = 14.800355232939632 
+            xmax = 17.1 
+            text = "" 

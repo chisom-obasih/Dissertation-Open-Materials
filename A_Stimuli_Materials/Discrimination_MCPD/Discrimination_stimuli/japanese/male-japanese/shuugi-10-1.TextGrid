@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 19.44 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 19.44 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.29954649345626 
+            text = "" 
+        intervals [2]:
+            xmin = 2.29954649345626 
+            xmax = 2.8184665414774885 
+            text = "shuugi-1a" 
+        intervals [3]:
+            xmin = 2.8184665414774885 
+            xmax = 4.3883701379602575 
+            text = "" 
+        intervals [4]:
+            xmin = 4.3883701379602575 
+            xmax = 5.017698706837066 
+            text = "shuugi-1b" 
+        intervals [5]:
+            xmin = 5.017698706837066 
+            xmax = 8.239440682829384 
+            text = "" 
+        intervals [6]:
+            xmin = 8.239440682829384 
+            xmax = 8.77124172495043 
+            text = "shuugi-2a" 
+        intervals [7]:
+            xmin = 8.77124172495043 
+            xmax = 10.04057959624108 
+            text = "" 
+        intervals [8]:
+            xmin = 10.04057959624108 
+            xmax = 10.688309585260486 
+            text = "shuugi-2b" 
+        intervals [9]:
+            xmin = 10.688309585260486 
+            xmax = 14.27087150001042 
+            text = "" 
+        intervals [10]:
+            xmin = 14.27087150001042 
+            xmax = 14.741947855660896 
+            text = "shuugi-3a" 
+        intervals [11]:
+            xmin = 14.741947855660896 
+            xmax = 16.086856064909753 
+            text = "" 
+        intervals [12]:
+            xmin = 16.086856064909753 
+            xmax = 16.708824065729523 
+            text = "shuugi-3b" 
+        intervals [13]:
+            xmin = 16.708824065729523 
+            xmax = 19.44 
+            text = "" 

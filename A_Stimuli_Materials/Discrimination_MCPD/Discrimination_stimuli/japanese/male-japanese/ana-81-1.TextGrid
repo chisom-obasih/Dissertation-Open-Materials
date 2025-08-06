@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 13.92 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 13.92 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.4633840380250434 
+            text = "" 
+        intervals [2]:
+            xmin = 1.4633840380250434 
+            xmax = 1.7796355869115705 
+            text = "ana-1a" 
+        intervals [3]:
+            xmin = 1.7796355869115705 
+            xmax = 3.0594416147380112 
+            text = "" 
+        intervals [4]:
+            xmin = 3.0594416147380112 
+            xmax = 3.4791936705328563 
+            text = "ana-1b" 
+        intervals [5]:
+            xmin = 3.4791936705328563 
+            xmax = 5.828230746736478 
+            text = "" 
+        intervals [6]:
+            xmin = 5.828230746736478 
+            xmax = 6.10614877454585 
+            text = "ana-2a" 
+        intervals [7]:
+            xmin = 6.10614877454585 
+            xmax = 7.250778655211202 
+            text = "" 
+        intervals [8]:
+            xmin = 7.250778655211202 
+            xmax = 7.647530598359754 
+            text = "ana-2b" 
+        intervals [9]:
+            xmin = 7.647530598359754 
+            xmax = 10.256068378750097 
+            text = "" 
+        intervals [10]:
+            xmin = 10.256068378750097 
+            xmax = 10.58381998395977 
+            text = "ana-3a" 
+        intervals [11]:
+            xmin = 10.58381998395977 
+            xmax = 11.687032428356197 
+            text = "" 
+        intervals [12]:
+            xmin = 11.687032428356197 
+            xmax = 12.09336775177404 
+            text = "ana-3b" 
+        intervals [13]:
+            xmin = 12.09336775177404 
+            xmax = 13.92 
+            text = "" 

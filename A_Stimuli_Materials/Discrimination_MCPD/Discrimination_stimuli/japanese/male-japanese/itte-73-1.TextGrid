@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.78 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.78 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6192242367355227 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6192242367355227 
+            xmax = 2.0608501382940667 
+            text = "itte-1a" 
+        intervals [3]:
+            xmin = 2.0608501382940667 
+            xmax = 3.305907232722132 
+            text = "" 
+        intervals [4]:
+            xmin = 3.305907232722132 
+            xmax = 3.85420605736245 
+            text = "itte-1b" 
+        intervals [5]:
+            xmin = 3.85420605736245 
+            xmax = 6.4016349006571005 
+            text = "" 
+        intervals [6]:
+            xmin = 6.4016349006571005 
+            xmax = 6.828326592984196 
+            text = "itte-2a" 
+        intervals [7]:
+            xmin = 6.828326592984196 
+            xmax = 7.933874687059716 
+            text = "" 
+        intervals [8]:
+            xmin = 7.933874687059716 
+            xmax = 8.501374637854754 
+            text = "itte-2b" 
+        intervals [9]:
+            xmin = 8.501374637854754 
+            xmax = 11.2206350541828 
+            text = "" 
+        intervals [10]:
+            xmin = 11.2206350541828 
+            xmax = 11.653727121894802 
+            text = "itte-3a" 
+        intervals [11]:
+            xmin = 11.653727121894802 
+            xmax = 12.761376702701273 
+            text = "" 
+        intervals [12]:
+            xmin = 12.761376702701273 
+            xmax = 13.350211238112665 
+            text = "itte-3b" 
+        intervals [13]:
+            xmin = 13.350211238112665 
+            xmax = 15.78 
+            text = "" 

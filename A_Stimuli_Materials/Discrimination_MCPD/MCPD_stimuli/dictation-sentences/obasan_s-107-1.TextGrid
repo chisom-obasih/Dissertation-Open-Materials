@@ -1,0 +1,42 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 14.52 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 14.52 
+        intervals: size = 7 
+        intervals [1]:
+            xmin = 0 
+            xmax = 0.8566215277777778 
+            text = "" 
+        intervals [2]:
+            xmin = 0.8566215277777778 
+            xmax = 2.7030885416666663 
+            text = "obasan_s-1" 
+        intervals [3]:
+            xmin = 2.7030885416666663 
+            xmax = 4.7638645833333335 
+            text = "" 
+        intervals [4]:
+            xmin = 4.7638645833333335 
+            xmax = 6.714246527777777 
+            text = "obasan_s-2" 
+        intervals [5]:
+            xmin = 6.714246527777777 
+            xmax = 9.48690625 
+            text = "" 
+        intervals [6]:
+            xmin = 9.48690625 
+            xmax = 11.571975694444443 
+            text = "obasan_s-3" 
+        intervals [7]:
+            xmin = 11.571975694444443 
+            xmax = 14.52 
+            text = "" 

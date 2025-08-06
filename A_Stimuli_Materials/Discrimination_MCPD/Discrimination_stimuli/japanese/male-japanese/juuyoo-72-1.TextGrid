@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 17.16 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 17.16 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.3392354201269865 
+            text = "" 
+        intervals [2]:
+            xmin = 1.3392354201269865 
+            xmax = 1.9595708934188578 
+            text = "juuyoo-1a" 
+        intervals [3]:
+            xmin = 1.9595708934188578 
+            xmax = 3.2163760048104457 
+            text = "" 
+        intervals [4]:
+            xmin = 3.2163760048104457 
+            xmax = 3.977807484289768 
+            text = "juuyoo-1b" 
+        intervals [5]:
+            xmin = 3.977807484289768 
+            xmax = 6.406674564250584 
+            text = "" 
+        intervals [6]:
+            xmin = 6.406674564250584 
+            xmax = 7.0191914001416995 
+            text = "juuyoo-2a" 
+        intervals [7]:
+            xmin = 7.0191914001416995 
+            xmax = 8.23499279822031 
+            text = "" 
+        intervals [8]:
+            xmin = 8.23499279822031 
+            xmax = 9.079310730262879 
+            text = "juuyoo-2b" 
+        intervals [9]:
+            xmin = 9.079310730262879 
+            xmax = 12.086164704384153 
+            text = "" 
+        intervals [10]:
+            xmin = 12.086164704384153 
+            xmax = 12.714134946685364 
+            text = "juuyoo-3a" 
+        intervals [11]:
+            xmin = 12.714134946685364 
+            xmax = 14.104423565174232 
+            text = "" 
+        intervals [12]:
+            xmin = 14.104423565174232 
+            xmax = 14.893952147217368 
+            text = "juuyoo-3b" 
+        intervals [13]:
+            xmin = 14.893952147217368 
+            xmax = 17.16 
+            text = "" 

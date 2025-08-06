@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 12.6 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 12.6 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.6422733516483516 
+            text = "" 
+        intervals [2]:
+            xmin = 1.6422733516483516 
+            xmax = 2.324727458723095 
+            text = "sakata-1a" 
+        intervals [3]:
+            xmin = 2.324727458723095 
+            xmax = 3.32205551079232 
+            text = "" 
+        intervals [4]:
+            xmin = 3.32205551079232 
+            xmax = 3.9602291379349417 
+            text = "sakata-1b" 
+        intervals [5]:
+            xmin = 3.9602291379349417 
+            xmax = 5.1753978174603175 
+            text = "" 
+        intervals [6]:
+            xmin = 5.1753978174603175 
+            xmax = 5.810084536913867 
+            text = "sakata-2a" 
+        intervals [7]:
+            xmin = 5.810084536913867 
+            xmax = 6.929077001633987 
+            text = "" 
+        intervals [8]:
+            xmin = 6.929077001633987 
+            xmax = 7.533480190587959 
+            text = "sakata-2b" 
+        intervals [9]:
+            xmin = 7.533480190587959 
+            xmax = 8.694098636831276 
+            text = "" 
+        intervals [10]:
+            xmin = 8.694098636831276 
+            xmax = 9.325464598581119 
+            text = "sakata-3a" 
+        intervals [11]:
+            xmin = 9.325464598581119 
+            xmax = 10.449857753794527 
+            text = "" 
+        intervals [12]:
+            xmin = 10.449857753794527 
+            xmax = 11.073120782172134 
+            text = "sakata-3b" 
+        intervals [13]:
+            xmin = 11.073120782172134 
+            xmax = 12.6 
+            text = "" 

@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.24 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.24 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 2.03017979013746 
+            text = "" 
+        intervals [2]:
+            xmin = 2.03017979013746 
+            xmax = 2.6110980385629845 
+            text = "kaataba-1a" 
+        intervals [3]:
+            xmin = 2.6110980385629845 
+            xmax = 3.984559211067451 
+            text = "" 
+        intervals [4]:
+            xmin = 3.984559211067451 
+            xmax = 4.50170399908698 
+            text = "kaataba-1b" 
+        intervals [5]:
+            xmin = 4.50170399908698 
+            xmax = 6.091009731209009 
+            text = "" 
+        intervals [6]:
+            xmin = 6.091009731209009 
+            xmax = 6.645259078010207 
+            text = "kaataba-2a" 
+        intervals [7]:
+            xmin = 6.645259078010207 
+            xmax = 7.786895218668111 
+            text = "" 
+        intervals [8]:
+            xmin = 7.786895218668111 
+            xmax = 8.268094965367897 
+            text = "kaataba-2b" 
+        intervals [9]:
+            xmin = 8.268094965367897 
+            xmax = 9.861960306798766 
+            text = "" 
+        intervals [10]:
+            xmin = 9.861960306798766 
+            xmax = 10.47186649177247 
+            text = "kaataba-3a" 
+        intervals [11]:
+            xmin = 10.47186649177247 
+            xmax = 11.643022402129436 
+            text = "" 
+        intervals [12]:
+            xmin = 11.643022402129436 
+            xmax = 12.198431266392562 
+            text = "kaataba-3b" 
+        intervals [13]:
+            xmin = 12.198431266392562 
+            xmax = 15.24 
+            text = "" 

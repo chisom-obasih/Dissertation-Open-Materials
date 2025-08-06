@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 15.96 
+tiers? <exists> 
+size = 1 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 15.96 
+        intervals: size = 13 
+        intervals [1]:
+            xmin = 0 
+            xmax = 1.5352291666666664 
+            text = "" 
+        intervals [2]:
+            xmin = 1.5352291666666664 
+            xmax = 1.9930104166666667 
+            text = "itai-1a" 
+        intervals [3]:
+            xmin = 1.9930104166666667 
+            xmax = 3.2567395833333332 
+            text = "" 
+        intervals [4]:
+            xmin = 3.2567395833333332 
+            xmax = 3.7028145833333332 
+            text = "itai-1b" 
+        intervals [5]:
+            xmin = 3.7028145833333332 
+            xmax = 6.26644494047619 
+            text = "" 
+        intervals [6]:
+            xmin = 6.26644494047619 
+            xmax = 6.71266875 
+            text = "itai-2a" 
+        intervals [7]:
+            xmin = 6.71266875 
+            xmax = 8.009170705782312 
+            text = "" 
+        intervals [8]:
+            xmin = 8.009170705782312 
+            xmax = 8.436966889880953 
+            text = "itai-2b" 
+        intervals [9]:
+            xmin = 8.436966889880953 
+            xmax = 11.383977213541666 
+            text = "" 
+        intervals [10]:
+            xmin = 11.383977213541666 
+            xmax = 11.796630208333333 
+            text = "itai-3a" 
+        intervals [11]:
+            xmin = 11.796630208333333 
+            xmax = 12.95253125 
+            text = "" 
+        intervals [12]:
+            xmin = 12.95253125 
+            xmax = 13.39252625 
+            text = "itai-3b" 
+        intervals [13]:
+            xmin = 13.39252625 
+            xmax = 15.96 
+            text = "" 
