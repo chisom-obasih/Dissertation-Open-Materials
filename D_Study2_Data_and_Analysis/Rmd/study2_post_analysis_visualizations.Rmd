@@ -1,0 +1,1974 @@
+---
+title: "Study 2 Post-Analysis Visualizations"
+author: "Chisom Obasih"
+date: "June 2025"
+subtitle: "Visualizations and tables after runnning logistic curvefitter and Bayesian and generalized linear mixed-effects models"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: console
+---
+## Libraries
+
+Add more libraries from personal template as necessary
+
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+
+
+library(ggforce) # for the function geom_arc
+library(brms) # for brms summary functions
+library(bayestestR) # for brms output
+library(insight) # for help with brms and bayestestR
+library(broom.mixed) # for help with tidy output of mixed effects models
+library(sjPlot) # alternative table and plotting method for regression models
+library(parameters) # also helps with brms and bayestestR
+library(ggdist)
+library(tidybayes)
+library(performance)
+library(emmeans) # my new best friend
+library(glmmTMB)
+library(ggeffects) # alt to emmeans (I think)
+library(marginaleffects) # alt to emmeans
+library(modelbased) # another alt
+
+
+library(flextable)
+library(ftExtra)
+library(patchwork) # putting graphs together
+library(modelsummary)
+library(gt)
+library(gtsummary)
+library(cowplot)
+```
+
+------------------------------------------------------------------------
+
+## Read in data
+
+```{r read-data, message = FALSE}
+
+# load in Rdata that contains most if not all the dataframes for post-analysis data, should be in the current wd
+load(file = "Rdata/study2_post_analysis_visualization_workspace.Rdata")
+
+# load in models
+brm.vas.fit <- readRDS("Rdata/brm-vas-fit-1.Rds")
+brm.vas.fit.complex <- readRDS("Rdata/brm-vas-fit-2.Rds")
+
+```
+
+```{r save-data-to-use-in-manuscript}
+# after doing the post-analysis visualizations and data summarizing, these are the dataframes, etc. that need to be loaded into the R environment to knit the Rmd files within the Rproj for my dissertation
+
+# these paths are to save figures and the Rdata file with the directory for my dissertation Rproj
+save.figures.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/figure"
+
+save.tables.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/table"
+
+save.data.file <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/data/study2_data.Rdata"
+
+
+# run this every time I make a new table/plot that will be used directly in the Rmd file of the chapter
+save(ft.st2.proc,
+     ft.estimates.grouped,
+     ft.continua,
+     ft.vas.fixed,
+     ft.vas.random,
+     ft.dprime.fixed,
+     ft.dprime.random,
+     ft.rt.fixed,
+     ft.rt.random,
+     ft.vas.fixed.full,
+     ft.dprime.full,
+     ft.rt.full,
+     file = save.data.file)
+
+
+# save all the stuff made in this file in case session restarts
+
+save(bright_seven,
+     tol_eight,
+     day_colors,
+     vas_lang_colors,
+     ax_lang_colors,
+     cond_colors,
+     st2_procedure,
+     st2_proc_colnames,
+     continua.table.1d,
+     new_line_continua_header,
+     estimates_summary_pair,
+     estimates_summary_pair_wide,
+     estimates_summary_pair_wide_day,
+     summary_headers,
+     estimate_labels,
+     normal_examples,
+     noisy_examples,
+     vas.plot.grid,
+     mld.a.hist,
+     mld.p.hist,
+     mld.patch,
+     df.id.lang,
+     df.id.pair,
+     plain.p,
+     arrow.p,
+     vas.patch,
+     vas.cleaned.parameters,
+     brm_vas_fixed_bayestest,
+     vas_parameter_labels,
+     brm_vas_headers,
+     brm_vas_summary,
+     brm_vas_rescor,
+     brm_vas_r2,
+     brm_vas_random,
+     brm_vas_random_all,
+     vas_random_headers,
+     emm.slope,
+     emp.slope.df,
+     emp.slope,
+     emm.var,
+     emp.var.df,
+     emp.var,
+     p.vas,
+     vas_coef,
+     vas_slope_coef,
+     vas_var_coef,
+     tmb_dprime_summary,
+     dprime_tidy_fixed,
+     test_dprime_effect_labels,
+     dprime_headers,
+     dprime_random,
+     dprime_random_headers,
+     dprime_ran_slopes,
+     p.means,
+     dprime_ran_slopes_vas,
+     dprime_by_zslope,
+     dprime_by_zvar,
+     number_facets,
+     d.slope,
+     d.var,
+     dprime.plot,
+     d.slope.lang,
+     d.var.lang,
+     dprime.plot.lang,
+     rt_fixed,
+     rt_labels,
+     rt_headers,
+     lm_rt_summary,
+     rt_model_fit,
+     rt_random,
+     rt_random_headers,
+     exp.rt.ran.slopes,
+     rt.means,
+     rt_ran_slopes_vas,
+     rt_by_zslope,
+     rt_by_zvar,
+     rt.slope,
+     rt.var,
+     rt.plot,
+     file = "Rdata/st2-post-analysis-active-working-space.Rdata")
+```
+
+```{r reload-rdata}
+
+# if session restarts, load in the data made here - be careful with this
+load(file = save.data.file)
+load(file = "Rdata/st2-post-analysis-active-working-space.Rdata")
+```
+
+
+```{r plot-themes}
+# set consistent colors to use in plots
+
+# bright seven from ggpubfigs
+# https://github.com/JLSteenwyk/ggpubfigs?tab=readme-ov-file#color-palettes
+bright_seven <- c("#4477AA", "#228833", "#AA3377", "#BBBBBB", "#66CCEE", "#CCBB44", "#EE6677")
+tol_eight <- c("#332288", "#117733", "#44AA99", "#88CCEE", "#DDCC77", "#CC6677", "#AA4499", "#882255")
+
+# when setting within ggplot, use scale_*_manual(values = named_vector)
+# when comparing day
+day_colors = c("Day 1" = "#882255", "Day 2" = "#117733")
+
+# when comparing language
+vas_lang_colors = c("English" = "#AA4499", "Japanese" = "#4477AA")
+ax_lang_colors = c("Japanese" = "#4477AA", "MSA" = "#CCBB44") # need another color for MSA
+
+
+# when comparing ax_condition
+cond_colors = c("Low LD" =  "#66CCEE", "High LD" = "#332288")
+
+# when looking at slope vs response var, maybe just change shape? maybe don't need to do anything different
+```
+
+```{r flextable-settings}
+# get_flextable_defaults()
+
+# set_table_properties(layout = "autofit", align = "center", opts_word = list("keep_with_next" = T)) %>% 
+    
+    
+set_flextable_defaults(font.family = "Times New Roman", eastasia.family = "MS Mincho", line_spacing = 1.2, table.layout = "fixed", big.mark = "", split = FALSE, "")
+```
+--------------------
+
+## in methodology section
+done
+```{r st2-proc-table}
+# table that describes procedure for study 2
+st2_proc_colnames = c("task_order" = "Task Order", "day" = "Day", "task" = "Task", "purpose" = "Purpose", "duration" = "Approximate duration (mins)")
+
+st2_procedure <- data.frame(
+  task_order = c(1, 2, 3, 4, 5, 6, 7),
+  day = c(1, 1, 1, 1, 2, 2, 2),
+  task = c("Consent form, system and headphone checks", 
+           "Pre-training L1 and L2 VAS", 
+           "AX discrimination pre-test",
+           "AX discrimination training session",
+           "AX discrimination post-test",
+           "Post-training L1 and L2 VAS",
+           "LDQ"),
+  purpose = c("Obtain consent, ensure browser auto plays audio and volume is set to comfortable listening level, ensure participant is wearing wired binaural headphones",
+              "Measure pre-training L1 and L2 speech categorization gradiency",
+              "Measure pre-training sensitivity to L2 phonemic contrasts",
+              "Perceptual learning of L2 phonemic contrasts with low or high linguistic diversity (LD)",
+              "Measure post-training sensitivity to L2 phonemic contrasts",
+              "Measure post-training L1 and L2 speech categorization gradiency ",
+              "Measure experiential linguistic diversity from active and passive use of and exposure to known and unknown languages"),
+  duration = c("5", "8-10", "8-10", "20-30", "8-10", "8-10", "10-25")) 
+
+ft.st2.proc <- flextable(st2_procedure) %>%
+  labelizor(part = "header", labels = st2_proc_colnames) %>%
+  align(j = c("duration", "task_order", "day"), part = "body", align = "center") %>%
+  align(part = "header", align = "left") %>%
+  valign(part = "body", valign = "top") %>%
+  hline() %>%
+  bold(part = "header") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4, 5), width = c(0.7, 0.5, 1.2, 2.5, 1.2)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: VAS = Visual Analog Scale; LDQ = Linguistic Diversity Questionnaire",
+    "")))
+ft.st2.proc
+save_as_image(res = 300, ft.st2.proc, paste(save.tables.path, "st2-ft-proc.png", sep = "/"))
+```
+
+done
+```{r participant-demographics}
+# I just need these numbers to add in text, no tables
+# only the 80 with MLD data - also includes condition so can count how many people were in each condition
+# this is for how many people were in each condition
+summary(aggregate_interim)
+# lowLD n = 42; highLD n = 38
+get_summary_stats(aggregate_interim, show = c("min", "max", "median", "mean", "sd"))
+# age min-max: 19-41 (I think I just put 19-40?), median = 32, mean = 31.3, sd = 5.6
+
+
+# figure out how many people had non-zero scores
+MLD_scores %>%
+  mutate(MLD_A_binary = ifelse(MLD_A != 0, 1, 0),
+         MLD_P_binary = ifelse(MLD_P != 0, 1, 0),
+         MLD_both_binary = ifelse(MLD_A != 0 & MLD_P != 0, 1, 0)) %>%
+  summarize(n_a = sum(MLD_A_binary), n_p = sum(MLD_P_binary), n_both = sum(MLD_both_binary))
+  
+# n_a   n_p   n_both
+# 18	  23	  8	
+```
+
+
+VAS 1D continua table - done
+```{r vas-continua-characteristics}
+continua.table.1d <- import("../../VAS/continua-table-1d.xlsx")
+
+new_line_continua_header <- c(
+  "indent-intent /d/-/t/"	= "indent-intent\\\n/d/-/t/",
+  "reason-risen /i/-/ɪ/" = "reason-risen\\\n/i/-/ɪ/", 
+  "kata-katta /t/-/tt/" = "kata-katta\\\n/t/-/tt/",	
+  "toru-tooru /o/-/oː/" = "toru-tooru\\\n/o/-/oː/"
+)
+
+ft.continua <- continua.table.1d %>%
+  flextable() %>%
+  labelizor(labels = new_line_continua_header, part = "header") %>%
+  colformat_md(part = "header") %>%
+  bold(part = "header") %>%
+  bold(part = "body", i = c(1, 9)) %>%
+  width(j = c(1, 2, 3, 4, 5), width = 1.2) %>%
+  footnote(part = "body", i = c(1, 9, 9, 9), j = c(3, 3, 4, 5), ref_symbols = c("1", "2", "3", "4"), value = as_paragraph_md(c(
+    "Values at vowel midpoint",
+    "Vowel duration includes [ɹ]",
+    "Max F0 of first syllable/min F0 of second syllable",
+    "F0 at start of first syllable/F0 at end of first syllable/F0 at end of second syllable"
+  ))) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Note for the *toru*-*tooru* continuum**: The pitch accent of *toru* is HL while the pitch accent of *tooru* is HLL, so the F0 landmarks occur at different time points between the two words. F0 was interpolated between the words at each of the primary dimension duration steps, which resulted in slightly different, though comparable, F0 values across the different duration continua. The Secondary Dimension Step 3 pitch contour values reported here are from the Duration Step 4 continuum.",
+    "")))
+ft.continua
+  
+save_as_image(res = 300, ft.continua, paste(save.tables.path, "ft-continua-1d.png", sep = "/"))
+```
+
+
+
+table - done
+```{r vas-summary-stats}
+# again, I'm going with pair because I think it provides the most detail
+estimates_summary_pair <- aggregate %>%
+  group_by(pair, day) %>%
+  get_summary_stats(zslope, zvar, show = c("min", "max", "mean", "median", "sd")) %>%
+  mutate(across(where(is.numeric), ~ round(., digits = 2))) %>%
+  mutate(range = paste0("(", min, ", ", max, ")"), .after = n) %>%
+  select(-c(min, max, n)) %>%
+  # add language column
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", "Japanese"), .before = pair) %>% ungroup() %>%
+  arrange(variable, day, language)
+
+
+estimates_summary_pair_wide <- estimates_summary_pair %>%
+  pivot_wider(id_cols = c("day", "language", "pair"), names_from = c("variable"), values_from = c("range", "mean", "median", "sd"), names_vary = "slowest")
+
+# I'm using this one instead
+estimates_summary_pair_wide_day <-estimates_summary_pair %>%
+  pivot_wider(id_cols = c("variable", "language", "pair"), names_from = c("day"), values_from = c("range", "mean", "median", "sd"), names_vary = "slowest")
+
+# rename header columns 
+summary_headers = c("range_Day 1" = "Range", "median_Day 1" = "Median", "mean_Day 1" = "Mean", "sd_Day 1" = "SD", "range_Day 2" = "Range", "median_Day 2" = "Median", "mean_Day 2" = "Mean", "sd_Day 2" = "SD", "variable" = "VAS Measure", "language" = "Language", "pair" = "Contrast Pair")
+
+
+estimate_labels = c("zslope" = "Slope", "zvar" = "Response\nVariability")
+
+
+ft.estimates.grouped <- estimates_summary_pair_wide_day %>%
+  #as_grouped_data(groups = c("day", "language")) %>%
+  flextable() %>%
+  labelizor(part = "header", labels = summary_headers) %>%
+  labelizor(part = "body", labels = estimate_labels) %>%
+  add_header_row(values = c("VAS Measure", "", "Day 1", "Day 2"), colwidths = c(1, 2, 4, 4)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  align(part = "header", align = "center", j = c(4:11)) %>%  
+  hline(part = "header", j = 4:11, i = 1) %>%
+  padding(j = 7, padding.right = 10, part = "all") %>%
+  merge_v(j = c("variable", "language")) %>%
+  merge_v(j = 1, part = "header") %>%
+  bold(j = c("pair", "language", "variable"), bold = TRUE, part = "body") %>%
+  bold(bold = TRUE, part = "header") %>%
+  hline(part = "body") %>% 
+  valign(j = c("language", "pair", "variable"), valign = "top") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation.", 
+    "**Note**: The VAS measures of Slope and Response Variability were each grand mean centered and scaled by 1 SD (z-transformed).", 
+    "")))
+ft.estimates.grouped
+save_as_image(res = 300, ft.estimates.grouped, paste(save.tables.path, "st2-ft-estimates-grouped.png", sep = "/"))
+```
+
+
+
+figure - done
+```{r vas-curve-examples}
+normal_examples <- ggdraw() + draw_image(paste(save.figures.path, "st2-slope-var-examples.png", sep = "/"))
+noisy_examples <- ggdraw() + draw_image(paste(save.figures.path, "st2-noisy-slope-var-examples.png", sep = "/"))
+
+
+vas.plot.grid <- cowplot::plot_grid(normal_examples, noisy_examples, labels = "AUTO", label_size = 20, label_x = 0.05, label_y = 1)
+ggsave(vas.plot.grid, width = 15, height = 6, units = "in", filename = paste(save.figures.path, "st2-vas-curvefit-examples.png", sep = "/"))
+
+```
+
+distributions of MLD scores - done
+```{r mld-scores-histograms}
+mld.a.hist <- ggplot(MLD_scores, aes(x = MLD_A)) +
+  geom_histogram() +
+  labs(x = "MLD-A")  +
+  scale_x_continuous(breaks = c(0, 1, 1.58, 2)) +
+  coord_cartesian(xlim = c(0, 2), ylim = c(0, 61), clip = "off") +
+  theme_pubr() +
+  theme(panel.grid.major.x = element_line(colour = "gray", linetype = "dotted"),
+        plot.margin = margin(t = 20, 7, 7, 7)) +
+  labs(y = "count") +
+  annotate(geom = "text", x = 0, y = 70, label = "n = 1") +
+  annotate(geom = "text", x = 1, y = 70, label = "n = 2") +
+  annotate(geom = "text", x = 1.58, y = 70, label = "n = 3") +
+  annotate(geom = "text", x = 2, y = 70, label = "n = 4")
+
+mld.p.hist <- ggplot(MLD_scores, aes(x = MLD_P)) +
+  geom_histogram() +
+  labs(x = "MLD-P")  +
+  scale_x_continuous(breaks = c(0, 1, 1.58, 2)) +
+  coord_cartesian(xlim = c(0, 2)) +
+  theme_pubr() +
+  theme(panel.grid.major.x = element_line(colour = "gray", linetype = "dotted")) +
+  labs(y = "count")
+
+{mld.a.hist / mld.p.hist} + plot_annotation(tag_levels = "A") -> mld.patch
+
+cowplot::save_plot(mld.patch, filename = paste(save.figures.path, "st2-mld-hists.png", sep = "/"), ncol = 1, nrow = 1.5, base_asp = 1.1)
+```
+
+
+## results and data analysis for n = 80
+
+
+### in VAS results section
+
+
+figure - done
+```{r respvar-by-slope-scatterplot-and-trajectories}
+# for day 1 and day 2
+# can probably put in appendix, maybe also compare with kutlu
+df.id.lang <- df.l %>%
+  group_by(ID, day, language, ax_condition) %>%
+  summarize(mean_slope = mean(Slope), mean_zslope = mean(zslope), mean_var = mean(PointVar), mean_zvar = mean(zvar)) %>%
+  ungroup() %>%
+  # recode condition factor levels and day factor levels, and convert speaker_signal to be a factor
+  mutate(ax_condition = recode(ax_condition, lowLD = "Low LD", highLD = "High LD"), day = recode(day, `1` = "Day 1", `2` = "Day 2"))
+
+# z-transformed slope and response variability averaged within language for each day
+ggplot(df.id.lang, aes(x = mean_zslope, y = mean_zvar)) + 
+  geom_point(aes(color = day), size = 2) +
+  scale_color_manual(values = day_colors) +
+  facet_grid(ax_condition~language) +
+  theme_pubr(legend = "top") +
+  labs(x = "VAS Slope", y = "VAS Response Variability")
+
+
+# z-transformed slope and response variability averaged by pair for each day - might be a bit overwhelming
+# though this is the same as df.l just with fewer columns
+df.id.pair <- df.l %>%
+  select(ID, day, language, pair, ax_condition, zslope, zvar) %>%
+  # recode condition factor levels and day factor levels, and convert speaker_signal to be a factor
+  mutate(ax_condition = recode(ax_condition, lowLD = "Low LD", highLD = "High LD"), day = recode(day, `1` = "Day 1", `2` = "Day 2"))
+
+
+plain.p <- ggplot(df.id.pair, aes(x = zslope, y = zvar)) + 
+  geom_point(aes(color = day), size = 2) +
+  scale_color_manual(values = day_colors) +
+  facet_grid(ax_condition~pair) +
+  theme_pubr(legend = "none") +
+  labs(x = "VAS Slope", y = "VAS Response Variability")
+
+
+# add arrows that plot day 1 to day 2 trajectory for each participant
+
+ggplot(df.id.lang, aes(x = mean_zslope, y = mean_zvar)) + 
+  geom_point(aes(color = day), size = 2) +
+  stat_ellipse(aes(fill = day, group = day), geom = "polygon", alpha = 0.5, type = "t") +
+  geom_path(aes(group = ID), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.075, "inches"))) +
+  scale_color_manual(values = day_colors) +
+  scale_fill_manual(values = day_colors) +
+  facet_grid(ax_condition~language) +
+  theme_pubr(legend = "top") +
+  labs(x = "VAS Slope", y = "VAS Response Variability")
+
+
+arrow.p <- ggplot(df.id.pair, aes(x = zslope, y = zvar)) + 
+  geom_point(aes(color = day), size = 2) +
+  stat_ellipse(aes(color = day, group = day), alpha = 0.8, type = "t", linetype = 2) +
+  geom_path(aes(group = ID), alpha = 0.6, arrow = arrow(type = "closed", length = unit(0.05, "inches")), color = "grey10") +
+  facet_grid(ax_condition~pair) +
+  scale_color_manual(values = day_colors) +
+  theme_pubr(legend = "right") +
+  theme(legend.box = "vertical") +
+  labs(x = "VAS Slope", y = "VAS Response Variability", color = "Day")
+
+# the arrows path the trajectory of change in both slope and response variability for each participant from day 1 (pink) to day 2 (yellow), circle around the arrow is 95% CI about the mean coordinates of the two distributions, assuming a bivariate t-distribution
+
+{plain.p / arrow.p} + plot_annotation(tag_levels = "A") + plot_layout(guide = "collect", axis_titles = "collect_x") -> vas.patch
+vas.patch
+cowplot::save_plot(vas.patch, filename = paste(save.figures.path, "st2-vas-slope-var-arrow.png", sep = "/"), nrow = 2, ncol = 4, base_asp = 0.6)
+```
+
+
+
+#### Bayesian multivariate mixed-effects model for longitudinal VAS
+
+done!
+```{r vas-fixed-effects-table}
+vas.cleaned.parameters <- clean_parameters(brm.vas.fit)
+
+brm_vas_fixed_bayestest <- describe_posterior(
+  brm.vas.fit,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = vas.cleaned.parameters, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Response, Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  filter(!(Predictor %in% c("MLD_A", "MLD_P", "pretest_dprime.c"))) %>% # filter out control variables
+  pivot_wider(names_from = Response, values_from = c(Median, `95% CI`, pd_p), names_vary = "slowest") %>%
+  # add row numbers to be able to rearrange rows in custom order
+  mutate(.before = Predictor, row_order = c(1, 5, 3, 2, 7, 6, 4, 8)) %>%
+  arrange(row_order) %>%
+  # change this to reflect day 1 vs day 2 predictors 
+  mutate(row_order = case_when(
+    row_order %in% c(1, 2, 3, 4) ~ "Day 1:",
+    row_order %in% c(5, 6, 7, 8) ~ "Change from Day 1 to 2:"),
+    Predictor = str_remove_all(Predictor, "dayDay2:"))
+
+# rename parameters
+vas_parameter_labels = c("(Intercept)" = "Intercept (Day 1)", "languageEngvs.Jpn" = "Contrast Language", "ax_conditionLowLDvs.HighLD" = "AX Training Condition",  "ax_conditionLowLDvs.HighLD:languageEngvs.Jpn" = "Contrast Language x\nAX Training Condition", "dayDay2" = "Change from Day 1 to 2")
+
+# rename header columns for the bivariate model
+brm_vas_headers = c("Median_zslope" = "Estimate", "Median_zvar" = "Estimate", "95% CI_zslope" = "95% CrI", "95% CI_zvar" = "95% CrI", "pd_p_zslope" = "pd-p", "pd_p_zvar" = "pd-p", "row_order" = "Predictor")
+
+# if I can change the order of the rows that would be great
+ft.vas.fixed <- as_grouped_data(brm_vas_fixed_bayestest, groups = "row_order") %>%
+  flextable() %>%
+  bold(j = 1, part = "body") %>%
+  merge_h_range(i = ~ !is.na(row_order), j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 1, j1 = 1, j2 = 2, part = "header") %>%
+  width(j = 1, width = 0.01) %>%
+  labelizor(labels = brm_vas_headers, part = "header") %>%
+  labelizor(labels = vas_parameter_labels, part = "body") %>%
+  add_header_row(values = c("", "VAS Slope", "VAS Response Variability"), colwidths = c(2, 3, 3)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 2:6, i = 1) %>% # add back one just under the spanner headers
+  bold(part = "header") %>%
+  align(part = "all", align = "right") %>%
+  align(part = "header", align = "center") %>%  
+  align(part = "all", j = c(1, 2), align = "left") %>%
+  italic(j = c("pd_p_zslope", "pd_p_zvar"), part = "header") %>%
+  hline_bottom(part = "body", border = fp_border_default(width = 1.5)) %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 4, 7), width = c(0.1, 1.7, 1.05, 1.05)) %>%
+  padding(j = 5, padding.right = 10, part = "all") %>%
+  #set_table_properties(layout = "autofit", align = "center", opts_word = list("keep_with_next" = T)) %>% 
+  # fix this footnote, add formula
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: Estimate = median of the posterior probability distribution; CrI = Credible Interval (95% highest-density interval); *pd-p* = p-value calculated from Probability of Direction (pd)",
+    "**Model formula**: (VAS Slope, VAS Response Variability) ~ Day * Contrast Language * AX Training Condition + *MLD-A* + *MLD-P* + *Day 1 Discrimination Sensitivity* + (1 + Day + Contrast Language | Participant) + (1 | VAS Pair); *italics* = control variables (effects not included in table)",
+    "**Notes**: The variable Day was dummy coded (Day 1 = reference level). VAS Contrast Language was simple effects coded (English = -0.5, Japanese = 0.5). AX Training Condition was simple effects coded (Low LD = -0.5, High LD = 0.5).  *pd-p* was calculated using the *bayestestR* R package (v0.16.0; Makowski et al., 2019).",
+    "")))
+ft.vas.fixed
+
+save_as_image(res = 300, ft.vas.fixed, paste(save.tables.path, "st2-ft-vas-fixed.png", sep = "/"))
+```
+
+done!
+```{r vas-random-effects-table}
+# now what to do for random effects - def important since I'm visualizing random slopes
+# coef() is the sum of what I would get from fixef() and ranef()
+# random_coefficients <- coef(brm.vas.fit.complex, robust = TRUE)$ID
+# but returns a set of 3D matrices
+# matrix structure is [ID ("102", "103", etc.), value ("Estimate", "Est. Error", "Q2.5", "Q97.5"), parameters ("zslope_Intercept", etc.)]
+# random_coefficients[0, 0,] # this gives the names of the parameters
+
+
+# variance and correlation of random group components
+# sigma for each resposne
+# R-square for each response
+# residual correlation between responses
+# ngroups and nobs for each response
+
+# I think since these credible intervals are quantile not HDI, I can just put these in a different table
+brm_vas_summary <- summary(brm.vas.fit, robust = TRUE)
+brm_vas_r2 <- as.data.frame(bayes_R2(brm.vas.fit, robust = TRUE)) %>% rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[",`Q2.5`,", ", `Q97.5`, "]"),
+         Response = str_remove(Response, "R2"),
+           r2_ci = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_ci)
+
+brm_vas_rescor <- brm_vas_summary$rescor_pars %>%
+  rownames_to_column("Parameter") %>%
+  format_table() %>%
+  mutate(uncertainty = paste0("[",`l-95% CI`,", ", `u-95% CI`, "]"),
+         rescor_ci = paste0(Estimate, "\\\n", uncertainty)) %>%
+  select(Parameter, rescor_ci) %>%
+  mutate(Parameter = "VAS Slope ~\\\nVAS Resp. Var.")
+
+
+
+brm_vas_random <- describe_posterior(
+  brm.vas.fit, 
+  effects = "all",
+  component = "all",
+  centrality = "median",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL) %>%
+  print_parameters(x = vas.cleaned.parameters, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group:Response, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "dayDay2 ~") ~ "slope_slope_corr",
+    str_detect(Random_Effect, "Intercept ~") ~ "int_slope_corr",
+    .default = "SD"), 
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "zslope_"),
+    Random_Effect = str_remove_all(Random_Effect, "zvar_"),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    Random_Effect = str_remove_all(Random_Effect, "dayDay2 ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\[")) %>%
+  select(-c(Median:`95% CI`))
+  
+
+
+brm_vas_random_all <- brm_vas_random %>%
+  arrange(Response) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`) %>%
+  pivot_wider(names_from = Response, values_from = c(SD, int_slope_corr, slope_slope_corr), names_vary = "slowest") %>%
+  mutate(Random_Effect = case_when(
+    Random_Effect == "(Intercept)" ~ "Intercept",
+    Random_Effect == "dayDay2" ~ "Day",
+    Random_Effect == "languageEngvs.Jpn" ~ "Contrast Language",
+    .default = Random_Effect),
+    Group = ifelse(Group == "ID", "Participant", ifelse(Group == "pair", "VAS Pair", Group)),
+    Group = ifelse(Group == "Participant" & Random_Effect != "Intercept", NA, Group)) %>%
+  # add model fit stuff, the columns won't make sense but this is just for positioning
+  add_row(Group = "**Bayes R^2^**") %>%
+  add_row(SD_zslope = brm_vas_r2$r2_ci[1], SD_zvar = brm_vas_r2$r2_ci[2]) %>%
+  add_row(Group = "**Residual Correlation**") %>%
+  add_row(Random_Effect = brm_vas_rescor$Parameter, slope_slope_corr_zslope = brm_vas_rescor$rescor_ci)
+  
+
+
+vas_random_headers <- c("Random_Effect" = "Random Effect", "SD_zslope" = "SD\n[95% CrI]", "int_slope_corr_zslope" = "Int. ~ Slope Corr.", "slope_slope_corr_zslope" = "Slope ~ Slope Corr.", "SD_zvar" = "SD\n[95% CrI]", "int_slope_corr_zvar" = "Int. ~ Slope Corr.", "slope_slope_corr_zvar" = "Slope ~ Slope Corr.")
+
+
+
+ft.vas.random <- brm_vas_random_all %>% 
+  flextable() %>%
+  labelizor(labels = vas_random_headers, part = "header") %>%
+  add_header_row(values = c("", "VAS Slope", "VAS Response Variability"), colwidths = c(2, 3, 3)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 3:6, i = 1) %>% # add back one just under the spanner headers
+  align(part = "header", align = "center") %>%
+  align(j = 3:8, part = "body", align = "center") %>%
+  bold(part = "header") %>%
+  colformat_md() %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3:8), width = c(1, 0.8, rep(1, 6))) %>%
+  merge_h_range(i = 7, j1 = 3, j2 = 5, part = "body") %>%
+  merge_h_range(i = 7, j1 = 6, j2 = 8, part = "body") %>%
+  merge_h_range(i = c(6, 8), j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 9, j1 = 2, j2 = 3, part = "body") %>%
+  merge_h_range(i = 9, j1 = 5, j2 = 6, part = "body") %>%
+  hline(i = 5, border = fp_border_default(width = 1.5), part = "body") %>%
+  add_footer_row(values = as_paragraph_md(c("N~Participant~", brm_vas_summary$ngrps$ID, "N~VAS~ ~Pair~", brm_vas_summary$ngrps$pair, "N~observations~", brm_vas_summary$nobs, "")), colwidths = c(1, 1, 1, 1, 1, 1, 2), top = F) %>%
+  hline(i = 9, border = fp_border_default(width = 0), part = "body") %>% # remove border added by add_footer_row
+  add_footer_lines(values = as_paragraph_md(c("**Key**: SD = Standard Deviation; CrI = Credible Interval (95% highest density interval); Int. = Intercept; Cor. = Correlation; Resp. Var. = Response Variability", 
+    "**Model formula**: (VAS Slope, VAS Response Variability) ~ Day * Contrast Language * AX Condition Group + *MLD-A* + *MLD-P* + *Day 1 Discrimination Sensitivity* + (1 + Day + Contrast Language | Participant) + (1 | VAS Pair); *italics* = control variable"))) %>%
+  footnote(j = 1, i = c(6, 8), ref_symbols = c("Note"),
+           value = as_paragraph_md(c(
+            "The estimated Bayes R^2^ values for each response variable are presented with the 2.5% and 97.5% quantile range. The estimated Residual Correlation between the response variables is presented with the 95% uncertainty interval."))) %>%
+  add_footer_lines(top = FALSE, values = "") %>%
+  hline(i = 1, border = fp_border_default(width = 1.5), part = "footer") # add border above the real footer
+  
+ft.vas.random
+save_as_image(res = 300, ft.vas.random, paste(save.tables.path, "st2-ft-vas-random.png", sep = "/"))
+```
+
+done!
+```{r vas-emmeans-plot}
+brm_vas_summary$formula
+# zslope, zvar ~ day * ax_condition * language + MLD_A + MLD_P + pretest_dprime.c + (1 + day + language | ID) + (1 | pair) 
+
+emm.slope <- emmeans(brm.vas.fit, ~ ax_condition * day | language, resp = "zslope", cov.reduce = mean)
+summary(emm.slope)
+# median and 95% HDI
+emp.slope.df <- emmip(emm.slope, ax_condition ~ day | language, CIs = T, plotit = F) # to get the values
+
+emp.slope <- emmip(emm.slope, ax_condition ~ day | language, CIs = T, CIarg = list(linetype = 1), dotarg = list(shape = "square", size = 2), xlab = "", ylab = "Estimated VAS Slope", tlab = "Exp. Group") + scale_color_manual(values = cond_colors) + theme_pubr()
+
+emm.var <- emmeans(brm.vas.fit, ~ ax_condition * day | language, resp = "zvar", cov.reduce = mean)
+summary(emm.var)
+# median and 95% HDI
+emp.var.df <- emmip(emm.var, ax_condition ~ day | language, resp = "zslope", CIs = T, plotit = F) # to get the values
+
+emp.var <- emmip(emm.var, ax_condition ~ day | language, resp = "zslope", CIs = T, CIarg = list(linetype = 1), dotarg = list(shape = "diamond", size = 3), xlab = "", ylab = "Estimated VAS Resp. Var.", tlab = "Exp. Group") + scale_color_manual(values = cond_colors) + theme_pubr(legend = "none")
+
+
+p.vas <- cowplot::plot_grid(
+  emp.slope + theme(legend.position = "none", axis.title = element_text(size = 9), axis.text.x = element_text(size = 9)),
+  emp.var + theme(legend.position = "bottom", axis.title = element_text(size = 9), axis.text.x = element_text(size = 9)),
+  nrow = 2,
+  rel_heights = c(0.8, 1),
+  labels = c("A", "B"),
+  label_fontface = "plain"
+)
+p.vas
+
+cowplot::save_plot(p.vas, filename = paste(save.figures.path, "st2-vas-emmeans.png", sep = "/"), nrow = 1.5, ncol = 1.5, base_asp = 1)
+```
+
+not using
+```{r vas-emmeans-with-coef}
+
+# get the random coefs (fixed effect + random effect) for each ID to be able to plot with emmeans
+coef(brm.vas.fit)$ID[0,1 ,] # list of the coefficients
+
+vas_coef <- coef(brm.vas.fit.complex)$ID[ , ,c("zslope_Intercept", "zslope_dayDay2", "zslope_languageEngvs.Jpn", "zslope_dayDay2:languageEngvs.Jpn", "zvar_Intercept", "zvar_dayDay2", "zvar_languageEngvs.Jpn", "zvar_dayDay2:languageEngvs.Jpn")] %>%
+  as.data.frame() %>%
+  rownames_to_column("ID") %>%
+  mutate(ID = as.factor(ID)) 
+# includes coefficient estimate, estimate error, and 2.5-97.5 quantile range
+
+# random effect equation is (1 + day * language | ID), where day is dummy coded (0 = day 1, 1 = day 2), and language is effects coded (eng = -0.5, jpn = 0.5)
+# day * language expands into day*X_day + language*X_language + day:language*(X_day*X_language)
+# english day 1 = (1 + day*0 + language*-0.5 + day:language*(0*-0.5)) -> (intercept + language*-0.5)
+# english day 2 = (1 + day*1 + language*-0.5 + day:language*(1*-0.5)) -> (intercept + day2 + language*-0.5 + day2:language*-0.5)
+# japanese day 1 = (1 + day*0 + language*0.5 + day:language*(0*0.5)) -> (intercept + language*0.5)
+# japanese day 2 = (1 + day*1 + language*0.5 + day:language*(1*0.5)) -> (intercept + day2 + language*0.5 + day:language*0.5)
+
+vas_slope_coef <- vas_coef %>%
+  select(ID, contains("Estimate.zslope")) %>%
+  rename_with(~str_remove_all(., "Estimate.zslope_")) %>%
+  group_by(ID) %>%
+  summarize(
+    day1_eng = Intercept + (languageEngvs.Jpn*-0.5),
+    day2_eng = Intercept + dayDay2 + (languageEngvs.Jpn*-0.5) + (`dayDay2:languageEngvs.Jpn`*-0.5),
+    day1_jpn = Intercept + (languageEngvs.Jpn*0.5),
+    day2_jpn = Intercept + dayDay2 + (languageEngvs.Jpn*0.5) + (`dayDay2:languageEngvs.Jpn`*0.5),
+  ) %>%
+  ungroup() %>%
+  pivot_longer(cols = c(-ID), names_to = c("day", "language"), names_sep = "_") %>%
+  inner_join(select(aggregate_interim, ID, condition), by = "ID", relationship = "many-to-one") %>%
+  mutate(day = factor(day, levels = c("day1", "day2"), labels = c(day1 = "Day 1", day2 = "Day 2")),
+         language = factor(language, level = c("eng", "jpn"), labels = c(eng = "English", jpn = "Japanese")),
+         condition = factor(condition, labels = c(lowLD = "Low LD", highLD = "High LD"))) %>%
+  rename(tvar = "condition")
+
+vas_var_coef <- vas_coef %>%
+  select(ID, contains("Estimate.zvar")) %>%
+  rename_with(~str_remove_all(., "Estimate.zvar_")) %>%
+  group_by(ID) %>%
+  summarize(
+    day1_eng = Intercept + (languageEngvs.Jpn*-0.5),
+    day2_eng = Intercept + dayDay2 + (languageEngvs.Jpn*-0.5) + (`dayDay2:languageEngvs.Jpn`*-0.5),
+    day1_jpn = Intercept + (languageEngvs.Jpn*0.5),
+    day2_jpn = Intercept + dayDay2 + (languageEngvs.Jpn*0.5) + (`dayDay2:languageEngvs.Jpn`*0.5),
+  ) %>%
+  ungroup() %>%
+  pivot_longer(cols = c(-ID), names_to = c("day", "language"), names_sep = "_") %>%
+  inner_join(select(aggregate_interim, ID, condition), by = "ID", relationship = "many-to-one") %>%
+  mutate(day = factor(day, levels = c("day1", "day2"), labels = c(day1 = "Day 1", day2 = "Day 2")),
+         language = factor(language, level = c("eng", "jpn"), labels = c(eng = "English", jpn = "Japanese")),
+         condition = factor(condition, labels = c(lowLD = "Low LD", highLD = "High LD")))
+
+
+
+# so this is really not all that interesting, so I don't want to use this version either, I'm just going to use the emmip version
+ggplot(emp.slope.df, aes(x = xvar, y = yvar, color = tvar)) + 
+  facet_wrap(tvar~language) +
+  geom_point(data = vas_slope_coef, aes(x = day, y = value, group = ID), alpha = 0.5, color = "grey", position = position_dodge(0.1)) + 
+  geom_line(data = vas_slope_coef, aes(x = day, y = value, group = ID), alpha = 0.5, color = "grey", position = position_dodge(0.1)) + 
+  geom_point(size = 2, shape = "square") +
+  geom_line(linewidth = 1.5, aes(group = 1)) +
+  geom_pointrange(linewidth = 1, aes(ymin = LCL, ymax = UCL)) +
+  scale_color_manual(values = cond_colors) + 
+  theme_pubr(legend = "bottom")
+```
+
+### AX discrimination results section - just those vas measure x vas language x condition x day plots each for dprime and RT (still a total of 4 plots, each with 4 facets lol)
+
+
+#### Generalized linear mixed-effects model for pre/post-training AX discrimination d-prime
+
+done!
+```{r dprime-fixed-effects-table}
+tmb_dprime_summary <- summary(tmb.ax.dprime.model)
+
+dprime_tidy_fixed <- tidy(tmb.ax.dprime.model, conf.int = T) %>%
+  format_table(digits = 2, zap_small = TRUE, p_digits = 3, stars = TRUE) %>%
+  filter(effect == "fixed" & str_detect(term, "signal_cont")) %>%
+  filter(!(str_detect(term, "MLD_A|MLD_P|speaker_signal"))) %>%
+  mutate(conf.int = str_replace_all(conf.int, "\\[ ", "\\[")) %>%
+  relocate(conf.int, .after = estimate) %>%
+  mutate(est.conf = paste(estimate, conf.int, sep = " "), .after = term) %>%
+  mutate(.before = term, day = case_when(
+    str_detect(term, "dayDay 2") ~ "Change from Day 1 to 2:",
+    .default = "Day 1:")) %>%
+  mutate(term = str_remove_all(term, "dayDay 2:")) %>%
+  select(-c(effect, component, group, estimate, conf.int)) %>%
+  arrange(desc(day))
+
+test_dprime_effect_labels <- c(
+  "signal_cont" = "Signal (d')",
+  "signal_cont:conditionLow LD vs. High LD" = "d' x Low LD vs. High LD",
+  "signal_cont:zslope_English" = "d' x L1 VAS Slope",
+  "signal_cont:zvar_English" = "d' x L1 VAS Resp. Var.",
+  "signal_cont:zslope_Japanese" = "d' x L2 VAS Slope",
+  "signal_cont:zvar_Japanese" = "d' x L2 Resp. Var.",
+  "signal_cont:conditionLow LD vs. High LD:zslope_English" = "d' x Low LD vs. High LD x\\\nL1 VAS Slope",
+  "signal_cont:conditionLow LD vs. High LD:zvar_English" = "d' x Low LD vs. High LD x\\\nL1 VAS Resp. Var.",
+  "signal_cont:conditionLow LD vs. High LD:zslope_Japanese" = "d' x Low LD vs. High LD x\\\nL2 VAS Slope",
+  "signal_cont:conditionLow LD vs. High LD:zvar_Japanese" = "d' x Low LD vs. High LD x\\\nL2 VAS Resp. Var.",
+  "signal_cont:zslope_English:zvar_English" = "d' x L1 VAS Slope x L1 VAS Resp. Var.",
+  "signal_cont:zslope_Japanese:zvar_Japanese" = "d' x L2 VAS Slope x L2 VAS Resp. Var.",
+  "signal_cont:conditionLow LD vs. High LD:zslope_English:zvar_English" = "d' x Low LD vs. High LD x\\\nL1 VAS Slope x L1 VAS Resp. Var.",
+  "signal_cont:conditionLow LD vs. High LD:zslope_Japanese:zvar_Japanese" = "d' x Low LD vs. High LD x\\\nL2 VAS Slope x L2 VAS Resp. Var.",
+  "signal_cont:dayDay 2" = "Change in d' from Day 1 to 2"
+)
+
+dprime_headers = c("term" = "Predictor", "est.conf" = "Estimate [95% CI]", "std.error" = "SE", "statistic" = "*Z*-statistic", "p.value" = "*p*", "day" = "Predictor")
+
+
+ft.dprime.fixed <- as_grouped_data(dprime_tidy_fixed, groups = "day") %>% 
+  flextable() %>%
+  bold(j = 1) %>%
+  labelizor(labels = test_dprime_effect_labels, part = "body") %>%
+  labelizor(labels = dprime_headers, part = "header") %>%
+  merge_h_range(i = ~ !is.na(day), j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 1, j1 = 1, j2 = 2, part = "header") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4, 5, 6), width = c(0.1, 2.8, 1.5, 0.5, 0.5, 1)) %>%
+  align(j = c(3, 4, 5), part = "body", align = "right") %>%
+  colformat_md(part = "all") %>%
+  bold(part = "header") %>%
+  # hline(i = 16, part = "body", border = fp_border_default(width = 1.5)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: CI = Confidence Interval; SE = Standard Error; Resp. Var. = Response Variability; Significance codes: (**\\*\\*\\***) *p* < 0.001, (**\\*\\***) *p* < 0.01, (**\\***) *p* < 0.05", 
+    "**Model formula (family = binomial, link = probit)**: Response ~ Signal * Day * AX Training Condition * (L1 VAS Slope * L1 VAS Resp. Var. + L2 VAS Slope * L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) + (1 + Signal + Signal:Day | Participant) + (1 + Signal | AX Word Pair); *italics* = control variable (effects not included in table)", 
+    "**Notes**: The intercept value and effects that did not interact with Signal were estimates associated with response bias *c* in SDT, which were not of interest in the model interpretation and were thus not included in the table.",
+    ""))) %>%
+  footnote(j = 2, 
+           ref_symbols = c("(A1)", "(A2)", "(A3)", "(A4)", "(B1)", "(B2)", "(B3)", "(B4)"), 
+           i = c(10, 25, 12, 27, 11, 26, 13, 28), 
+           value = as_paragraph_md(c("", "", "", "", "", "", "", " Interaction effects which are depicted in the corresponding subplots of the figure depicting model estimated d' as a function of VAS slope and response variability.")), inline = TRUE, sep = " ") %>%
+    add_footer_lines(values = "", top = FALSE)
+ft.dprime.fixed
+save_as_image(res = 300, ft.dprime.fixed, paste(save.tables.path, "st2-ft-dprime-fixed.png", sep = "/"))
+```
+
+done!
+```{r dprime-random-effects-table}
+dprime_random <- model_parameters(tmb.ax.dprime.model, effects = "random", ci_random = FALSE) %>%
+  select(-c(SE:Effects, Component)) %>%
+  arrange(Group) %>%
+  separate_wider_delim(Parameter, delim = " (", names = c("Term", "Parameter"), too_few = "align_start") %>%
+  mutate(Parameter = str_remove_all(Parameter, "\\)")) %>%
+  mutate(Term = case_when(
+    Term == "Cor" & str_detect(Parameter, "Intercept~") ~ "int_slope_corr", 
+    Term == "Cor" & str_detect(Parameter, "signal_cont~") ~ "slope_slope_corr",
+    .default = Term),
+    Parameter = case_when(
+      Term == "int_slope_corr" ~ str_remove_all(Parameter, "Intercept~"), 
+      Term == "slope_slope_corr" ~ str_remove_all(Parameter, "signal_cont~"), 
+      .default = Parameter)) %>%
+  pivot_wider(names_from = Term, values_from = Coefficient) %>%
+  mutate(Group = case_when(
+    Group == "ID" & Parameter == "Intercept" ~ "Participant",
+    Group == "word_pair" & Parameter == "Intercept" ~ "AX Word Pair",
+    Parameter != "Intercept" ~ NA,
+    .default = Group),
+    Parameter = case_when(
+    Parameter == "signal_cont" ~ "Signal (d')",
+    Parameter == "signal_cont:dayDay 2" ~ "Signal (d') x Day",
+    .default = Parameter
+  )) %>%
+  format_table(zap_small = TRUE) %>%
+  relocate(Group, .before = everything()) %>%
+  # add n for each random group and total obs, columns won't make sense but it's for formatting
+  add_row(Group = "N~Participant~", Parameter = as.character(tmb_dprime_summary$ngrps$cond["ID"])) %>%
+  add_row(Group = "N~AX~ ~Word~ ~Pair~", Parameter = as.character(tmb_dprime_summary$ngrps$cond["word_pair"])) %>%
+  add_row(Group = "N~observations~", Parameter = as.character(tmb_dprime_summary$nobs))
+
+dprime_random_headers <- c("int_slope_corr" = "Int. ~ Slope\\\nCorr.", "slope_slope_corr" = "Slope ~ Slope\\\nCorr.", "Parameter" = "Random Effect")
+
+
+ft.dprime.random <- dprime_random %>%
+  flextable() %>%
+  labelizor(part = "header", labels = dprime_random_headers) %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4, 5), width = c(1.1, 1, 0.5, 1, 1.2)) %>%
+  bold(part = "header") %>%
+  colformat_md(part = "all") %>%
+  hline(i = 5, border = fp_border_default(width = 1.5), part = "body") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation; Int. = Intercept; Corr. = Correlation", 
+    "**Model formula (family = binomial, link = probit)**: Response ~ Signal * Day * AX Training Condition * (L1 VAS Slope * L1 VAS Resp. Var. + L2 VAS Slope * L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) + (1 + Signal + Signal:Day | Participant) + (1 + Signal | AX Word Pair); *italics* = control variable", 
+    "")))
+ft.dprime.random
+save_as_image(res = 300, ft.dprime.random, paste(save.tables.path, "st2-dprime-random.png", sep = "/"))
+```
+
+
+
+done!
+```{r dprime-random-slopes-int-figures}
+# I think this is probably the best way to plot such a complex model - I can try to connect the table terms to the figure facets - doesn't need to be more complicated than that - just sticking with these two
+
+
+# get everyones dprime scores (signal_cont random slope) for day 1 and day2 (signal_cont:day2 interaction random slope)
+# since this is just the estimates from the coefficients of the random slopes, doesn't include SE or CI
+
+# I can also use this to give summary stats
+# note that coef gives the output of the fixed effect + random effect
+# (explaination from coef.merMod function: Computes the sum of the random and fixed effects coefficients for each explanatory variable for each level of each grouping factor.)
+dprime_ran_slopes <- coef(tmb.ax.dprime.model)$cond$ID %>% select(signal_cont, `signal_cont:dayDay 2`) %>%
+  rownames_to_column(var = "ID") %>%
+  rename(day1 = signal_cont, day2_change = `signal_cont:dayDay 2`) %>%
+  mutate(day2 = day1 + day2_change, ID = as.factor(ID)) %>%
+  pivot_longer(cols = c("day1", "day2"), names_to = "day", values_to = "dprime") %>%
+  left_join(select(aggregate_interim, c(ID, condition)), by = "ID") %>%
+  mutate(condition = recode(condition, lowLD = "Low LD", highLD = "High LD"), day = factor(day, levels = c("day1", "day2"), labels = c("Day 1", "Day 2")))
+
+# simple group means by day and condition
+p.means <- ggplot(dprime_ran_slopes, aes(x = day, y = dprime)) +
+  geom_point(color = "grey40", alpha = 0.4,) +
+  geom_line(aes(group = ID), color = "grey40", alpha = 0.4) +
+  #stat_summary(geom = "pointrange", aes(group = condition, color = condition)) +
+  stat_summary(geom = "line", aes(group = condition, color = condition)) +
+  stat_summary(aes(color = condition, group = condition), geom = "point", fun = "mean", size = 3) +
+  stat_summary(aes(color = condition, group = condition), geom = "errorbar", fun.data = "mean_se", width = 0.2, linewidth = 1) +
+  coord_cartesian(y = c(0, 3)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) +
+  facet_wrap(vars(condition)) +
+  scale_color_manual(values = cond_colors) +
+  theme_pubr(legend = "none") +
+  labs(x = "", y = "Model Estimated d'")
+
+
+p.means
+
+cowplot::save_plot(p.means, filename = paste(save.figures.path, "st2-dprime-model-means.png", sep = "/"), nrow = 1, ncol = 2, base_asp = 0.8)
+
+
+# group means by day, condition, and VAS measures as predictors
+dprime_ran_slopes_vas <- dprime_ran_slopes %>%
+  mutate(day = ifelse(day == "Day 1", "1", "2")) %>%
+  left_join(vas_means_lang, by = c("ID", "day")) %>%
+  pivot_longer(cols = starts_with(c("zslope", "zvar")), names_to = c("outcome", "language"), names_sep = "_", values_to = "value") %>%
+  mutate(day = ifelse(day == "1", "Day 1", "Day 2"))
+
+dprime_by_zslope <- dprime_ran_slopes_vas %>%
+  filter(outcome == "zslope")
+
+dprime_by_zvar <- dprime_ran_slopes_vas %>%
+  filter(outcome == "zvar")
+
+
+number_facets <- function(vector, letter = "A"){
+  for (i in 1:length(vector)){
+    paste0(letter, vector[i])
+  }
+}
+
+d.slope <- ggplot(dprime_by_zslope, aes(x = value, y = dprime)) +
+  geom_point(aes(color = condition), shape = "square") +
+  geom_smooth(aes(color = condition, group = condition, fill = condition), method = "lm", se = TRUE, alpha = 0.3) +
+  coord_cartesian(y = c(0, 3)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) +
+  scale_color_manual(values = cond_colors) +
+  scale_fill_manual(values = cond_colors) +
+  labs(x = "VAS Slope", y = "Model Estimated d'", color = "AX Training Condition", fill = "AX Training Condition") +
+  facet_wrap(language~day, labeller = stickylabeller::label_glue("(A{.n}) {day}, {language}")) +
+  theme_pubr(legend = "right")
+
+d.var <- ggplot(dprime_by_zvar, aes(x = value, y = dprime)) +
+  geom_point(aes(color = condition), shape = "diamond", size = 2) +
+  geom_smooth(aes(color = condition, group = condition, fill = condition), method = "lm", se = TRUE, alpha = 0.3) +
+  coord_cartesian(y = c(0, 3)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) +
+  scale_color_manual(values = cond_colors) +
+  scale_fill_manual(values = cond_colors) +
+  labs(x = "VAS Response Variability", y = "Model estimated d'", color = "AX Training Condition", fill = "AX Training Condition") +
+  facet_wrap(language~day, labeller = stickylabeller::label_glue("(B{.n}) {day}, {language}")) +
+  theme_pubr(legend = "right")
+
+d.slope
+d.var
+
+
+dprime.plot <-
+  ggarrange(d.slope, d.var, ncol = 2, nrow = 1, common.legend = TRUE, legend = "bottom", labels = c("A", "B"),  font.label = list(face = "plain"))
+
+dprime.plot
+# with 95% confidence interval
+
+cowplot::save_plot(dprime.plot, filename = paste(save.figures.path, "st2-dprime-model-interactions.png", sep = "/"), nrow = 2, ncol = 4, base_asp = 1, units = "in")
+```
+
+```{r dprime-vas-slope-RV-lang-not-cond}
+# day 1 and day 2 dprime by slope and response variability colored by language, collapsed across participant groups
+# for the defense presentation, to simplify what I'm showing
+
+
+d.slope.lang <- ggplot(dprime_by_zslope, aes(x = value, y = dprime)) +
+  geom_point(aes(color = language), shape = "square") +
+  geom_smooth(aes(color = language, group = language, fill = language), method = "lm", se = TRUE, alpha = 0.3) +
+  coord_cartesian(y = c(0, 3)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) +
+  scale_color_manual(values = vas_lang_colors ) +
+  scale_fill_manual(values = vas_lang_colors ) +
+  labs(x = "VAS Slope", y = "Model Estimated d'", color = "VAS Contrast Language", fill = "VAS Contrast Language") +
+  facet_wrap(vars(day)) +
+  theme_pubr(legend = "bottom")
+
+d.var.lang <- ggplot(dprime_by_zvar, aes(x = value, y = dprime)) +
+  geom_point(aes(color = language), shape = "diamond", size = 2) +
+  geom_smooth(aes(color = language, group = language, fill = language), method = "lm", se = TRUE, alpha = 0.3) +
+  coord_cartesian(y = c(0, 3)) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2, 2.5, 3)) +
+  scale_color_manual(values = vas_lang_colors ) +
+  scale_fill_manual(values = vas_lang_colors ) +
+  labs(x = "VAS Response Variability", y = "Model estimated d'", color = "VAS Contrast Language", fill = "VAS Contrast Language") +
+  facet_wrap(vars(day)) +
+  theme_pubr(legend = "bottom")
+
+d.slope.lang
+d.var.lang
+
+dprime.plot.lang <-
+  ggarrange(d.slope.lang, d.var.lang, ncol = 1, nrow = 2, common.legend = TRUE, legend = "bottom", labels = c("A", "B"),  font.label = list(face = "plain"))
+
+dprime.plot.lang
+# with 95% confidence interval
+
+cowplot::save_plot(dprime.plot.lang, filename = paste(save.figures.path, "st2-dprime-by-vas-lang-only.png", sep = "/"), nrow = 1.5, ncol = 1.5, base_asp = 1, units = "in")
+```
+
+
+
+#### Linear mixed-effects model for pre/post-training AX discrimination (log) reaction time
+
+
+done!
+```{r rt-fixed-effects-table}
+rt_fixed <- model_parameters(lm.ax.rt.model, exponentiate = TRUE, effects = "fixed") %>% # back-transforming SE doesn't work
+  format_table(digits = 2, zap_small = TRUE, p_digits = 3, stars = TRUE) %>%
+  filter(!(str_detect(Parameter, "MLD A|MLD P|speaker signal"))) %>%
+  select(-Effects) %>%
+  mutate(est.conf = paste(Coefficient, `95% CI`, sep = " "), .after = Parameter, 
+         est.conf = str_replace_all(est.conf, "\\[  ", "\\["), 
+         est.conf = str_replace_all(est.conf, ",  ", ", "),
+         Parameter = str_replace_all(Parameter, "×", "x")) %>%
+  select(-c(Coefficient, `95% CI`, SE)) %>%
+  rename(Predictor = Parameter) %>%
+  mutate(.before = Predictor, day = case_when(
+    str_detect(Predictor, "day \\[Day 2\\]") ~ "Change from Day 1 to 2:",
+    .default = "Day 1:")) %>%
+  mutate(Predictor = str_remove_all(Predictor, "day \\[Day 2\\] x |\\(|\\)"))  %>%
+  arrange(desc(day))
+
+rt_labels <- c("Intercept" = "Intercept (Day 1)", 
+               "conditionLow LD vs High LD" = "Low LD vs. High LD",
+               "zslope English" = "L1 VAS Slope",
+               "zvar English" = "L1 VAS Resp. Var.",
+               "zslope Japanese" = "L2 VAS Slope",
+               "zvar Japanese" = "L2 VAS Resp. Var.",
+               "conditionLow LD vs High LD x zslope English" = "Low LD vs. High LD x\nL1 VAS Slope",
+               "conditionLow LD vs High LD x zvar English" = "Low LD vs. High LD x\nL1 VAS Resp. Var.",
+               "conditionLow LD vs High LD x zslope Japanese" = "Low LD vs. High LD x\nL2 VAS Slope",
+               "conditionLow LD vs High LD x zvar Japanese" = "Low LD vs. High LD x\nL2 VAS Resp. Var.",
+               "day [Day 2]" = "Change from Day 1 to 2")
+
+rt_headers = c("est.conf" = "Exp(Estimate) [95% CI]", "t(11839)" = "*t*", "p" = "*p*", "day" = "Predictor")
+
+ft.rt.fixed <- as_grouped_data(rt_fixed, groups = "day") %>% 
+   # not including SE because back-transforming SE doesn't work
+  flextable() %>%
+  bold(j = 1, part = "body") %>%
+  labelizor(labels = rt_labels, part = "body") %>%
+  labelizor(labels = rt_headers, part = "header") %>%
+  merge_h_range(i = ~ !(is.na(day)), j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 1, j1 = 1, j2 = 2, part = "header") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4, 5), width = c(0.1, 1.75, 1.75, 0.7, 0.8)) %>%
+  align(j = c(3, 4), part = "body", align = "right") %>%
+  align(j = c(3, 4, 5), part = "header", align = "center") %>%
+  colformat_md(part = "header") %>%
+  bold(part = "header") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: CI = Confidence Interval; Resp. Var. = Response Variability; Significance codes: (**\\*\\*\\***) *p* < 0.001, (**\\*\\***) *p* < 0.01, (**\\***) *p* < 0.05", 
+    "**Model formula**: Log RT ~ Day * AX Training Condition * (L1 VAS Slope + L1 VAS Resp. Var. + L2 VAS Slope + L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) +
+    (1 + Day | Participant) + (1 | AX Word Pair); *italics* = control variable (effects not included in table)",
+    "**Notes**: Log-RT estimates and 95% CIs were exponentiated into the original reaction time scale (milliseconds) using the model_parameters function of the *parameters* R package (v0.26.0; Lüdecke et al., 2020). Non-intercept predictor terms represent multiplicative changes in RT. Standard error estimates are not reported on the original RT scale.",
+    ""))) %>%
+  footnote(j = 2, 
+           ref_symbols = c("(A1)", "(A2)", "(A3)", "(A4)", "(B1)", "(B2)", "(B3)", "(B4)"), 
+           i = c(8, 19, 10, 21, 9, 20, 11, 22), 
+           value = as_paragraph_md(c("", "", "", "", "", "", "", " Interaction effects which are depicted in the corresponding subplots of the figure depicting model estimated mean RT (ms) as a function of VAS slope and response variability.).")), inline = TRUE, sep = " ") %>%
+    add_footer_lines(values = "", top = FALSE)
+ft.rt.fixed
+save_as_image(res = 300, ft.rt.fixed, paste(save.tables.path, "st2-ft-rt-fixed.png", sep = "/"))
+```
+
+done!
+```{r rt-random-effects-table}
+lm_rt_summary <- summary(lm.ax.rt.model)
+
+# get model fit elements, add them to the tidy random effects df
+rt_model_fit <- performance::model_performance(lm.ax.rt.model) %>% format_table(zap_small = TRUE) %>%
+  rename(R2_cond = `R2 (cond.)`, R2_marg = `R2 (marg.)`) %>%
+  mutate(n_ID = lm_rt_summary$ngrps["ID"],
+         n_wordpair = lm_rt_summary$ngrps["word_pair"],
+         n_obs = n_obs(lm.ax.rt.model))
+
+# back-transforming SE doesn't work (can't just exponentiate SE/SD values, see this answer: https://stats.stackexchange.com/a/566486) so the reports of the SD of the random parameters is on the log scale
+rt_random <- model_parameters(lm.ax.rt.model, effects = "random") %>%
+  separate_wider_delim(Parameter, delim = " (", names = c("Term", "Parameter"), too_few = "align_start") %>%
+  mutate(Parameter = str_remove_all(Parameter, "\\)")) %>%
+  mutate(Parameter = case_when(
+      Term == "Cor" ~ str_remove_all(Parameter, "Intercept~"),
+      .default = Parameter)) %>%
+  pivot_wider(id_cols = c(Group, Parameter), names_from = Term, values_from = Coefficient) %>%
+  mutate(Parameter = ifelse(Group == "Residual", Group, Parameter)) %>%
+  arrange(match(Group, c("ID", "word_pair", "Residuals"))) %>%
+  mutate(Group = case_when(
+    Group == "ID" & Parameter == "Intercept" ~ "Participant",
+    Group == "word_pair" & Parameter == "Intercept" ~ "AX Word Pair",
+    Group == "ID" & Parameter != "Intercept" ~ NA,
+    .default = Group),
+    Parameter = str_replace_all(Parameter, "dayDay 2", "Day")) %>%
+  format_table(zap_small = TRUE) %>%
+  # add model fit stuff, the columns won't make sense but this is just for positioning
+  add_row(Group = "**Model Fit**", Parameter = "", SD = "", Cor = "") %>%
+  add_row(Group = "N~Participant~", Parameter = as.character(rt_model_fit$n_ID), SD = "N~AX~ ~Word~ ~Pair~", Cor = as.character(rt_model_fit$n_wordpair)) %>%
+  add_row(Group = "N~observations~", Parameter = as.character(rt_model_fit$n_obs), SD = "ICC", Cor = rt_model_fit$ICC) %>%
+  add_row(Group = "Marginal R^2^", Parameter = rt_model_fit$R2_marg, SD = "Conditional R^2^", Cor = rt_model_fit$R2_cond)
+
+rt_random_headers <- c("Cor" = "Int. ~ Slope\\\nCorr.", "Parameter" = "Random Effect")
+
+ft.rt.random <-rt_random %>%
+  flextable() %>%
+  set_header_labels(values = rt_random_headers) %>%
+  bold(part = "header") %>%
+  colformat_md(part = "all") %>%
+  hline(i = 4, border = fp_border_default(width = 1.5)) %>%
+  merge_h_range(i = 5, j1 = 1, j2 = 4, part = "body") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4), width = c(1.2, 0.8, 1.2, 1)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation; Int. = Intercept; Corr. = Correlation; ICC = Intra-level Correlation Coefficient", 
+    "**Model formula**: Log RT ~ Day * AX Training Condition * (L1 VAS Slope + L1 VAS Resp. Var. + L2 VAS Slope + L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) +
+    (1 + Day | Participant) + (1 | AX Word Pair); *italics* = control variable", 
+    "**Notes**: Random standard deviations are presented in the Log-RT scale.",
+    "")))
+ft.rt.random
+save_as_image(res = 300, ft.rt.random, paste(save.tables.path, "st2-ft-rt-random.png", sep = "/"))
+```
+
+
+
+done!
+```{r ax-test-rt-int-random-slopes-figures}
+# get everyone's mean log rt scores for day 1 (random intercept) and day2 (day random slope)
+# since this is just the estimates from the coefficients of the random intercepts and slopes, doesn't include SE or CI
+
+# I can also use this to give summary stats
+# note that coef gives the output of the fixed effect + random effect
+# (explaination from coef.merMod function: Computes the sum of the random and fixed effects coefficients for each explanatory variable for each level of each grouping factor.)
+
+# back transform by exponentiation
+# exponentiate the random intercepts and slopes, then multiply the exponentiated day1 (intercept) by the exponentiated slope (instead of adding, it's multiplication) to get day2
+exp.rt.ran.slopes <- coef(lm.ax.rt.model)$ID %>% 
+  rownames_to_column("ID") %>%
+  select(ID, day1 = `(Intercept)`, day2change = `dayDay 2`) %>%
+  mutate(day2 = day1 + day2change, day1.exp = exp(day1), day2change.exp = exp(day2change), day2.exp = day1.exp * day2change.exp, ID = as.factor(ID)) %>%
+  pivot_longer(cols = c("day1", "day2"), names_to = "day", values_to = "mean_log_RT") %>%
+  rename(day1 = day1.exp, day2 = day2.exp) %>%
+  pivot_longer(cols = c("day1", "day2"), names_to = "day.exp", values_to = "mean_RT") %>%
+  left_join(select(aggregate_interim, ID, condition), by = "ID") %>%
+  select(-c(day2change, day2change.exp)) %>%
+  filter(day == day.exp) %>%
+  mutate(manual = log(mean_RT), check = ifelse(mean_log_RT == manual, "0", "1")) %>%
+  mutate(condition = recode(condition, lowLD = "Low LD", highLD = "High LD"), day = factor(day, levels = c("day1", "day2"), labels = c("Day 1", "Day 2")), day.exp = factor(day.exp, levels = c("day1", "day2"), labels = c("Day 1", "Day 2")))
+
+# the manual log transformation of the back transformed (exponentiated) random effects values were good! the rows that had "1" were identical according to the printed values, so they were probably different in the small digits past what was printed in the data frame, which is fine
+# so back transforming was nbd (though what I did may be circular in logic which might make it a moot point, idk)
+
+# simple group means by day and condition
+rt.means <- ggplot(exp.rt.ran.slopes, aes(x = day.exp, y = mean_RT)) +
+  geom_point(color = "grey40", alpha = 0.4,) +
+  geom_line(aes(group = ID), color = "grey40", alpha = 0.4) +
+  stat_summary(geom = "line", aes(group = condition, color = condition)) +
+  stat_summary(aes(color = condition, group = condition), geom = "point", fun = "mean", size = 3) +
+  stat_summary(aes(color = condition, group = condition), geom = "errorbar", fun.data = "mean_se", width = 0.2, linewidth = 1) +
+  facet_wrap(vars(condition)) +
+  scale_color_manual(values = cond_colors) +
+  coord_cartesian(y = c(0, 1700)) +
+  theme_pubr(legend = "none") +
+  labs(x = "", y = "Model Estimated Mean RT (ms)")
+
+rt.means
+
+cowplot::save_plot(rt.means, filename = paste(save.figures.path, "st2-rt-model-means.png", sep = "/"), nrow = 1, ncol = 2, base_asp = 0.8)
+
+
+
+  
+# group means by day, condition, and VAS measures as predictors
+rt_ran_slopes_vas <- exp.rt.ran.slopes %>%
+  select(-c(day:mean_log_RT)) %>%
+  rename(day = day.exp) %>%
+  mutate(day = ifelse(day == "Day 1", "1", "2")) %>%
+  left_join(vas_means_lang, by = c("ID", "day")) %>%
+  pivot_longer(cols = starts_with(c("zslope", "zvar")), names_to = c("outcome", "language"), names_sep = "_", values_to = "value") %>%
+  mutate(day = ifelse(day == "1", "Day 1", "Day 2"))
+
+rt_by_zslope <- rt_ran_slopes_vas %>%
+  filter(outcome == "zslope")
+
+rt_by_zvar <- rt_ran_slopes_vas %>%
+  filter(outcome == "zvar")
+
+rt.slope <- ggplot(rt_by_zslope, aes(x = value, y = mean_RT)) +
+  geom_point(aes(color = condition), shape = "square") +
+  geom_smooth(aes(color = condition, group = condition, fill = condition), method = "lm", se = TRUE, alpha = 0.3) +
+  scale_color_manual(values = cond_colors) +
+  scale_fill_manual(values = cond_colors) +
+  coord_cartesian(y = c(0, 1700)) +
+  labs(x = "VAS Slope", y = "Model Estimated Mean RT (ms)", color = "AX Training Condition", fill = "AX Training Condition") +
+  facet_wrap(language~day, labeller = stickylabeller::label_glue("(A{.n}) {day}, {language}")) +
+  theme_pubr(legend = "right")
+
+rt.var <- ggplot(rt_by_zvar, aes(x = value, y = mean_RT)) +
+  geom_point(aes(color = condition), shape = "diamond", size = 2) +
+  geom_smooth(aes(color = condition, group = condition, fill = condition), method = "lm", se = TRUE, alpha = 0.3) +
+  coord_cartesian(y = c(0, 1700)) +
+  scale_color_manual(values = cond_colors) +
+  scale_fill_manual(values = cond_colors) +
+  labs(x = "VAS Response Variability", y = "Model Estimated Mean RT (ms)", color = "AX Training Condition", fill = "AX Training Condition") +
+  facet_wrap(language~day, labeller = stickylabeller::label_glue("(B{.n}) {day}, {language}")) +
+  theme_pubr(legend = "right")
+
+rt.slope
+rt.var
+
+
+rt.plot <- ggarrange(rt.slope, rt.var, ncol = 2, nrow = 1, common.legend = TRUE, legend = "bottom", labels = c("A", "B"),  font.label = list(face = "plain"))
+
+rt.plot
+# with 95% confidence interval
+
+cowplot::save_plot(rt.plot, filename = paste(save.figures.path, "st2-rt-model-interactions.png", sep = "/"), nrow = 2, ncol = 4, base_asp = 1, units = "in")
+
+
+
+
+```
+
+
+------------------------------------------------------------------------
+
+# To include in appendix/supplementary material
+
+
+table(s) - saving for the appendix (with a better format, maybe combined)
+```{r ax-word-pairs-table}
+# import spreadsheets
+word_pairs_test <- import("../../AX_discrimination/spreadsheets/testing_all_groups.csv") %>%
+  filter(!is.na(randomize_language_blocks)) %>%
+  select(word_pair, word_A, word_B, transliteration_A:task) %>%
+  distinct() %>%
+  select(word_pair, transliteration_A:transliteration_B, orthography_A:gloss_B, phoneme_quality, segment_type, task)
+
+word_pairs_train <- import("../../AX_discrimination/spreadsheets/training_high_LD.csv") %>%
+  filter(!is.na(randomize_language_blocks)) %>%
+  select(word_pair, word_A, word_B, transliteration_A:task) %>%
+  distinct() %>%
+  select(word_pair, transliteration_A:transliteration_B, orthography_A:gloss_B, phoneme_quality, segment_type, task)
+```
+
+also need VAS full effects table
+
+```{r full-fixed-effects-tables}
+vas_fixed_full <- describe_posterior(
+  brm.vas.fit,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = vas.cleaned.parameters, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Response, Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  pivot_wider(names_from = Response, values_from = c(Median, `95% CI`, pd_p), names_vary = "slowest")
+
+ft.vas.fixed.full <- vas_fixed_full %>%
+  flextable() %>%
+  labelizor(labels = brm_vas_headers, part = "header") %>%
+  add_header_row(values = c("", "VAS Slope", "VAS Response Variability"), colwidths = c(1, 3, 3)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 2:7, i = 1) %>% # add back one just under the spanner headers
+  bold(part = "header") %>%
+  align(part = "body", align = "right") %>%
+  align(part = "header", align = "center") %>%  
+  align(part = "all", j = c(1), align = "left") %>%
+  italic(j = c("pd_p_zslope", "pd_p_zvar"), part = "header") %>%
+  hline_bottom(part = "body", border = fp_border_default(width = 1.5)) %>%
+  fit_to_width(max_width = 7) %>%
+  padding(j = 4, padding.right = 10, part = "all") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: Estimate = median of the posterior probability distribution; CrI = Credible Interval (95% highest-density interval); *pd-p* = p-value calculated from Probability of Direction (pd)",
+    "**Model formula**: (VAS Slope, VAS Response Variability) ~ day * language * ax_condition + MLD_A + MLD_P + pretest_dprime.c + (1 + day + language | Participant) + (1 | VAS Pair)",
+    "")))
+ft.vas.fixed.full
+
+
+
+ft.dprime.full <- model_parameters(tmb.ax.dprime.model, effects = "fixed") %>%
+  format_table(zap_small = TRUE, stars = TRUE) %>%
+  select(-c(df, Effects)) %>%
+  relocate(SE, .before = z)%>%
+  rename(Predictor = Parameter, Estimate = Coefficient) %>%
+  flextable() %>%
+  fit_to_width(max_width = 7) %>%
+  bold(part = "header") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Model formula**: response_int ~ signal_cont * day * condition * (zslope_English * zvar_English + zslope_Japanese * zvar_Japanese + MLD_A + MLD_P + speaker_signal) + (1 + signal_cont + signal_cont:day | ID) + (1 + signal_cont | word_pair)",
+    "")))
+ft.dprime.full
+
+ft.rt.full <- model_parameters(lm.ax.rt.model, effects = "fixed", exponentiate = TRUE) %>%
+  format_table(zap_small = TRUE, stars = TRUE) %>%
+  select(-c(Effects, SE)) %>%
+  rename(Predictor = Parameter, `Exp(Estimate)` = Coefficient) %>%
+  flextable() %>%
+  bold(part = "header") %>%
+  fit_to_width(max_width = 7) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Model formula**: log_rt ~ day * condition * (zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + MLD_A + MLD_P + speaker_signal) + (1 + day | ID) + (1 | word_pair)",
+    "")))
+
+ft.rt.full
+
+```
+
+
+
+```{r raw-summary-stats}
+
+estimates_summary_pair_raw <- aggregate %>%
+  group_by(pair, day) %>%
+  get_summary_stats(Slope, PointVar, show = c("min", "max", "mean", "median", "sd")) %>%
+  mutate(across(where(is.numeric), ~ round(., digits = 2))) %>%
+  mutate(range = paste0("(", min, ", ", max, ")"), .after = n) %>%
+  select(-c(min, max, n)) %>%
+  # add language column
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", "Japanese"), .before = pair) %>% ungroup() %>%
+  arrange(variable, day, language)
+
+estimates_summary_pair_raw_wide <- estimates_summary_pair_raw %>%
+  pivot_wider(id_cols = c("day", "language", "pair"), names_from = c("variable"), values_from = c("range", "mean", "median", "sd"), names_vary = "slowest")
+
+get_summary_stats(select(aggregate, Slope, PointVar), show = c("min", "max", "median", "mean", "sd"))
+
+# rename header columns 
+raw_summary_headers = c("range_Slope" = "range", "median_Slope" = "median", "mean_Slope" = "mean", "sd_Slope" = "SD", "range_PointVar" = "range", "median_PointVar" = "median", "mean_PointVar" = "mean", "sd_PointVar" = "SD")
+
+# can also plot untransformed data
+ggplot(df.id.lang, aes(x = mean_slope, y = mean_var)) + 
+  geom_point(aes(color = day), size = 2) +
+  scale_color_manual(values = day_colors) +
+  facet_grid(ax_condition~language, labeller = labeller(.rows = as_labeller(cond_labels))) +
+  theme_pubr() +
+  labs(x = "VAS Slope\n(raw values)", y = "VAS Response Variability\n(raw values)")
+
+
+# this shows that the z-transformation just made the numbers a little easier to interpret rather than changing the distance between points (?) - it didn't change the distributions at least
+```
+
+
+```{r brm-vas-estimate-visualization}
+
+est_zslope <- mcmc_plot(brm.vas.fit, variable = "b_zslope", regex = TRUE, point_est = "median")
+est_zvar <- mcmc_plot(brm.vas.fit, variable = "b_zvar", regex = TRUE, point_est = "median")
+
+est_zslope + est_zvar + plot_layout(axes = "collect")
+plot_model(brm.vas.fit, type = "est")
+
+# can include in supplementary materials instead and can include control variables
+```
+
+
+
+
+---------------------------
+
+# graveyard
+
+
+done! - but tbh this is a bad figure (or rather, superfluous, so it's going in the graveyard)
+```{r vas-random-slopes-figure, eval = FALSE}
+# help from chatgpt
+
+# Step 1 and 2: Load, clean, get random slopes for each response and language using spread_draws
+
+# spread_draws allows me to choose which parameters summarize using the format
+# r_ID (random effect for groupID)
+# __zslope (additional tag to indicate response variable)
+# [ID, parameter] (the rest of the parameter name is in this format, so it just what I want to call the column that contains each level of ID and what I want to call the column that represents the parameter (intercept or random slope/which random slope))
+# this gets every draw from the posterior distribution, which I can summarize with median_hdci
+# get both the fixed effect for day and interaction with language, and the random slopes (and intercepts?) for ID, based on the random term (1 + day * language|ID)
+# this is to calculate each participants change in zslope from day 1 to day 2 separately for English and Japanese
+ran_zslope <- spread_draws(brm.vas.fit.complex, b_zslope_day2, `b_zslope_day2:language1`, r_ID__zslope[ID,parameter]) %>%
+  filter(parameter %in% c("day2", "day2:language1")) %>%
+  pivot_wider(names_from = parameter, values_from = r_ID__zslope) %>%
+  mutate(day2_English = b_zslope_day2 + day2 + -0.5 * (`b_zslope_day2:language1` + `day2:language1`),
+         day2_Japanese = b_zslope_day2 + day2 + 0.5 * (`b_zslope_day2:language1` + `day2:language1`),
+         ID = as.factor(ID)
+  ) %>% 
+  group_by(ID) %>%
+  median_hdci(day2_English, day2_Japanese, .width = 0.95) %>%
+  janitor::clean_names() %>%
+  select(ID = id,
+         day2_English_estimate = day2_english,
+         day2_English_lower = day2_english_lower,
+         day2_English_upper = day2_english_upper,
+         day2_Japanese_estimate = day2_japanese,
+         day2_Japanese_lower = day2_japanese_lower,
+         day2_Japanese_upper = day2_japanese_upper) %>%
+  # gather all numbers in the same column to get separate rows for English and Japanese
+  pivot_longer(-ID, names_to = c("parameter", "language", "type"), names_sep = "_") %>%
+  # pivot wider again to get separate columns for estimate, lower, and upper, but still one row each per language
+  pivot_wider(names_from = type) %>%
+  left_join(aggregate_interim, by = "ID") %>%
+  select(-(dprime:MLD_P))
+ 
+# this is driving me crazy so I'm not including it in the plot
+# get population level fixed effect for day and interaction with language, to compare against random slopes
+# population_zslope <- spread_draws(brm.vas.fit.complex, b_zslope_day2, `b_zslope_day2:language1`, `b_zslope_day2:ax_condition1:language1`) %>%
+#   mutate(population_day2_English_lowLD = b_zslope_day2 + (-0.5 * `b_zslope_day2:language1`) + (-0.5 * `b_zslope_day2:ax_condition1:language1`),
+#          population_day2_Japanese_lowLD = b_zslope_day2 + (0.5 * `b_zslope_day2:language1`) + (-0.5 * `b_zslope_day2:ax_condition1:language1`),
+#          population_day2_English_highLD = b_zslope_day2 + (-0.5 * `b_zslope_day2:language1`) + (0.5 * `b_zslope_day2:ax_condition1:language1`),
+#          population_day2_Japanese_highLD = b_zslope_day2 + (0.5 * `b_zslope_day2:language1`) + (0.5 * `b_zslope_day2:ax_condition1:language1`)) %>%
+#   median_hdci(population_day2_English_lowLD, population_day2_Japanese_lowLD, population_day2_English_highLD, population_day2_Japanese_highLD, .width = 0.95) %>%
+#   clean_names() %>%
+#   select(population_day2_English_lowLD_estimate = population_day2_english_low_ld,
+#          population_day2_English_lowLD_lower = population_day2_english_low_ld_lower,
+#          population_day2_English_lowLD_upper = population_day2_english_low_ld_upper,
+#          population_day2_Japanese_lowLD_estimate = population_day2_japanese_low_ld,
+#          population_day2_Japanese_lowLD_lower = population_day2_japanese_low_ld_lower,
+#          population_day2_Japanese_lowLD_upper = population_day2_japanese_low_ld_upper, 
+#          population_day2_English_highLD_estimate = population_day2_english_high_ld,
+#          population_day2_English_highLD_lower = population_day2_english_high_ld_lower,
+#          population_day2_English_highLD_upper = population_day2_english_high_ld_upper,
+#          population_day2_Japanese_highLD_estimate = population_day2_japanese_high_ld,
+#          population_day2_Japanese_highLD_lower = population_day2_japanese_high_ld_lower,
+#          population_day2_Japanese_highLD_upper = population_day2_japanese_high_ld_upper) %>%
+#   # gather all numbers in the same column to get separate rows for English and Japanese
+#   pivot_longer(everything(), names_to = c("ID", "parameter", "language", "condition", "type"), names_sep = "_") %>%
+#   # pivot wider again to get separate columns for estimate, lower, and upper, but still one row each per language
+#   pivot_wider(names_from = type) %>%
+#   # move condition to the end to make binding easier
+#   relocate(condition, .after = everything())
+
+# put it all together
+# ran_zslope_all <- bind_rows(ran_zslope, population_zslope)
+
+# same thing for zvar
+ran_zvar <- spread_draws(brm.vas.fit.complex, b_zvar_day2, `b_zvar_day2:language1`, r_ID__zvar[ID,parameter]) %>%
+  filter(parameter %in% c("day2", "day2:language1")) %>%
+  pivot_wider(names_from = parameter, values_from = r_ID__zvar) %>%
+  mutate(day2_English = b_zvar_day2 + day2 + -0.5 * (`b_zvar_day2:language1` + `day2:language1`),
+         day2_Japanese = b_zvar_day2 + day2 + 0.5 * (`b_zvar_day2:language1` + `day2:language1`),
+         ID = as.factor(ID)
+  ) %>% 
+  group_by(ID) %>%
+  median_hdci(day2_English, day2_Japanese, .width = 0.95) %>%
+  janitor::clean_names() %>%
+  select(ID = id,
+         day2_English_estimate = day2_english,
+         day2_English_lower = day2_english_lower,
+         day2_English_upper = day2_english_upper,
+         day2_Japanese_estimate = day2_japanese,
+         day2_Japanese_lower = day2_japanese_lower,
+         day2_Japanese_upper = day2_japanese_upper) %>%
+  # gather all numbers in the same column to get separate rows for English and Japanese
+  pivot_longer(-ID, names_to = c("parameter", "language", "type"), names_sep = "_") %>%
+  # pivot wider again to get separate columns for estimate, lower, and upper, but still one row each per language
+  pivot_wider(names_from = type) %>%
+  left_join(aggregate_interim, by = "ID") %>%
+  select(-(dprime:MLD_P))
+
+# this is driving me crazy, so I'm not including it in the plot
+# get population level fixed effect for day and interaction with language and ax_condition, to compare against random slopes
+# population_zvar <- spread_draws(brm.vas.fit.complex, b_zvar_day2, `b_zvar_day2:language1`, `b_zvar_day2:ax_condition1`) %>%
+#   mutate(population_day2_English_lowLD = b_zvar_day2 + (-0.5 * `b_zvar_day2:language1`) + (-0.5 * `b_zvar_day2:ax_condition1`),
+#          
+#          population_day2_Japanese_lowLD = b_zvar_day2 + (0.5 * `b_zvar_day2:language1`) + (-0.5 * `b_zvar_day2:ax_condition1`),
+#          
+#          population_day2_English_highLD = b_zvar_day2 + (-0.5 * `b_zvar_day2:language1`) + (0.5 * `b_zvar_day2:ax_condition1`),
+#          
+#          population_day2_Japanese_highLD = b_zvar_day2 + (0.5 * `b_zvar_day2:language1`) + (0.5 * `b_zvar_day2:ax_condition1`)) %>%
+#   median_hdci(population_day2_English_lowLD, population_day2_Japanese_lowLD, population_day2_English_highLD, population_day2_Japanese_highLD, .width = 0.95) %>%
+#   clean_names() %>%
+#   select(population_day2_English_lowLD_estimate = population_day2_english_low_ld,
+#          population_day2_English_lowLD_lower = population_day2_english_low_ld_lower,
+#          population_day2_English_lowLD_upper = population_day2_english_low_ld_upper,
+#          population_day2_Japanese_lowLD_estimate = population_day2_japanese_low_ld,
+#          population_day2_Japanese_lowLD_lower = population_day2_japanese_low_ld_lower,
+#          population_day2_Japanese_lowLD_upper = population_day2_japanese_low_ld_upper, 
+#          population_day2_English_highLD_estimate = population_day2_english_high_ld,
+#          population_day2_English_highLD_lower = population_day2_english_high_ld_lower,
+#          population_day2_English_highLD_upper = population_day2_english_high_ld_upper,
+#          population_day2_Japanese_highLD_estimate = population_day2_japanese_high_ld,
+#          population_day2_Japanese_highLD_lower = population_day2_japanese_high_ld_lower,
+#          population_day2_Japanese_highLD_upper = population_day2_japanese_high_ld_upper) %>%
+#   # gather all numbers in the same column to get separate rows for English and Japanese
+#   pivot_longer(everything(), names_to = c("ID", "parameter", "language", "condition", "type"), names_sep = "_") %>%
+#   # pivot wider again to get separate columns for estimate, lower, and upper, but still one row each per language
+#   pivot_wider(names_from = type) %>%
+#   # move condition to the end to make binding easier
+#   relocate(condition, .after = everything())
+
+# put it all together
+# ran_zvar_all <- bind_rows(ran_zvar, population_zvar)
+
+# 3. Plot
+plot_random_slopes <- function(..., data, resp_shape, xlim, title, subtitle){
+  ggplot(data = data, ...) +
+  tidytext::scale_y_reordered() +
+  geom_point(aes(color = condition), shape = resp_shape) +
+  geom_errorbar(aes(xmin = lower, xmax = upper, color = condition), width = 0.2) +
+  theme_pubr(legend = "none") +
+  coord_cartesian(xlim = xlim) +
+  facet_wrap(vars(language), scales = "free_y", ncol = 2) +
+  scale_color_manual(values = cond_colors) +
+  # geom_point(data = subset(data, ID == "population___English"), color = lang_colors[1], shape = resp_shape, size = 2) + # differentiate population data point
+  # geom_errorbar(data = subset(data, ID == "population___English"), color = lang_colors[1], aes(xmin = lower, xmax = upper), width = 0.2) + # differentiate population datapoint
+  #   geom_text(data = subset(data, ID == "population___English"), aes(x = 0.3, hjust = "left"), label = "English population mean", size = 3) +
+  #   geom_point(data = subset(data, ID == "population___Japanese"), color = lang_colors[2], shape = resp_shape, size = 2) + # differentiate population data point
+  # geom_errorbar(data = subset(data, ID == "population___Japanese"), color = lang_colors[2], aes(xmin = lower, xmax = upper), width = 0.2) + # differentiate population datapoint
+    # geom_text(data = subset(data, ID == "population___Japanese"), aes(x = 0.35, hjust = "left"), label = "Japanese population mean", size = 3) +
+  labs(x = paste0("Estimated difference in ",title," between Day 1 and Day 2"), subtitle = paste0("Condition group ", subtitle), y = "Participant") +
+  theme(axis.text.y = element_blank(), plot.subtitle = element_text(size = 12, hjust = 0.5))
+}
+
+df.low.zslope <- ran_zslope %>% 
+  filter(condition == "lowLD") %>% 
+  mutate(ID = tidytext::reorder_within(ID, estimate, within = language))
+df.high.zslope <- ran_zslope %>% 
+  filter(condition == "highLD") %>% 
+  mutate(ID = tidytext::reorder_within(ID, estimate, within = language))
+df.low.zvar <- ran_zvar %>% 
+  filter(condition == "lowLD") %>% 
+  mutate(ID = tidytext::reorder_within(ID, estimate, within = language))
+df.high.zvar <- ran_zvar %>% 
+  filter(condition == "highLD") %>% 
+  mutate(ID = tidytext::reorder_within(ID, estimate, within = language))
+
+
+plot_random_slopes(data = df.low.zslope, aes(x = estimate, y = reorder(ID,estimate)), title = "VAS Slope", resp_shape = "square", subtitle = "Low LD", xlim = c(-0.6, 0.6)) + labs(x = "") -> p1
+
+plot_random_slopes(data = df.high.zslope, aes(x = estimate, y = reorder(ID,estimate)), title = "VAS Slope", resp_shape = "square", subtitle = "High LD", xlim = c(-0.6, 0.6)) -> p2
+
+plot_random_slopes(data = df.low.zvar, aes(x = estimate, y = reorder(ID,estimate)), title = "VAS Response Variability", resp_shape = "diamond", subtitle = "Low LD", xlim = c(-0.6, 0.6)) + labs(x = "") -> p3
+
+plot_random_slopes(data = df.high.zvar, aes(x = estimate, y = reorder(ID,estimate)), title = "VAS Response Variability", resp_shape = "diamond", subtitle = "High LD", xlim = c(-0.6, 0.6)) -> p4
+
+
+ggarrange(p1, p3, p2, p4, labels = c("A1", "B1", "A2", "B2"), font.label = list(face = "plain")) -> vas.random.slopes
+
+
+cowplot::save_plot(vas.random.slopes, filename = paste(save.figures.path, "st2-vas-random-slopes.png", sep = "/"), nrow = 2, ncol = 2)
+# These two figures suggest that, at the group level, response slope (zslope) shows relatively little consistent change from day 1 to day 2. In contrast, response variability (zvar) tends to decrease over time, especially in the HighLD condition. However, the overall pattern of change appears similar across LowLD and HighLD groups, with no large between-group differences emerging visually.
+# These figures were plotted with a model that contained the random slope interaction between day and language, but that model performed worse so it is not the same model as in the analysis
+```
+
+not going to use any of these
+
+```{r dprime-sj-plot-model-attempt, eval = FALSE}
+
+# the word-pair one is interesting for supplementary material
+plot_model(glm.ax.dprime.model, type = "re")
+
+plot_model(glm.ax.dprime.model, type = "est")
+# conditional effects for glmer?
+# plot_model(glm.final.dprime.model, type = )
+
+# y axis is their probability of answering "different", x-axis is whether the signal is the same (-0.5) or different (0.5)
+
+plot_model(glm.ax.dprime.model, type = "pred", terms = c("signal_cont", "zslope_Japanese", "day",  "condition"))
+
+plot_model(glm.ax.dprime.model, type = "pred", terms = c("signal_cont", "zvar_Japanese", "day",  "condition"))
+
+plot_model(glm.ax.dprime.model, type = "pred", terms = c("signal_cont", "zvar_English", "day",  "condition"))
+
+plot_model(glm.ax.dprime.model, type = "pred", terms = c("signal_cont", "zslope_English", "day",  "zvar_English"))
+
+# these are interesting but much easier to plot with dprime as the y-axis rather than response probability
+plot_model(glm.ax.dprime.model, type = "int", terms = c("signal_cont", "zslope_English", "day", "condition"))
+
+
+```
+
+```{r slope-var-hists}
+df.hist.pair <- df.id.pair %>%
+  pivot_longer(cols = c("zslope", "zvar"), names_to = "variable", values_to = "value")
+
+
+ggplot(df.hist.pair, aes(x = value)) +
+  geom_histogram(aes(color = language)) +
+  #scale_x_binned(n.breaks = 12) +
+  scale_color_manual(values = vas_lang_colors) +
+  #scale_fill_manual(values = day_colors) +
+  facet_grid(variable~pair) +
+  theme_pubr(legend = "top")
+
+
+```
+
+```{r dprime-c-plots}
+# plot dprime and c per participant, maybe even by day
+
+ggplot(mld_dprime_prepost_test, aes(y = dprime, x = criterion)) +
+  geom_point(aes(color = condition)) +
+  stat_ellipse(aes(group = 1, color = condition, fill = condition), geom = "polygon", alpha = 0.4) +
+  facet_wrap(day~condition)
+# more people than not were conservative with their bias to detect a signal, and there was a mild
+mld_dprime_prepost_test %>%
+  cor_test(dprime, criterion)
+
+# not going to use this because I'm not going to talk about criterion
+```
+
+```{r emmeans-attempt-dprime, eval = FALSE}
+glm_dprime_summary$call
+# formula = response_int ~ signal_cont * day * condition * 
+#     (zslope_English * zvar_English + zslope_Japanese * zvar_Japanese + 
+#         MLD_A + MLD_P + speaker_signal) + (1 + signal_cont + 
+#     signal_cont:day | ID) + (1 + signal_cont | word_pair)
+
+glm.ax.dprime.model %>%
+  emmeans::emmeans(pairwise~signal_cont*day*condition)
+# these cannot be interpreted since I can only look at interpretation with estimate of signal_cont coefficient, not at different values of signal_cont (because the emmean is just the probability of responding different, not d')
+```
+
+```{r emmeans-attempt-rt, eval = FALSE}
+lm_rt_summary$call
+# formula = log_rt ~ day * condition * (zslope_English + zvar_English + 
+#     zslope_Japanese + zvar_Japanese + MLD_A + MLD_P + speaker_signal) + 
+#     (1 + day | ID) + (1 | word_pair)
+
+lm.ax.rt.model %>% emmeans::emmeans(pairwise~day*condition)
+
+emmeans::emtrends(lm.ax.rt.model, pairwise ~ day*condition, var = "zslope_English")
+emmeans::emtrends(lm.ax.rt.model, pairwise ~ day*condition, var = "zslope_English")
+emmeans::emmip(lm.ax.rt.model, zslope_English ~ day*condition, cov.reduce = range) # ??? unsure what this is showing me
+```
+
+```{r just-looking, eval = FALSE}
+
+tab_model(lm.ax.rt.model)
+tidy(lm.ax.rt.model)
+tbl_regression(lm.ax.rt.model)
+model_parameters(lm.ax.rt.model)
+tidy_rt_fixed <- model_parameters(lm.ax.rt.model, exponentiate = TRUE, effects = "fixed")
+tidy_rt_random <- model_parameters(lm.ax.rt.model, effects = "random") # exponentiate only works on fixed effects
+
+tidy_rt_random_coef <- model_parameters(lm.ax.rt.model, effects = "random_total") # equivalent to what coef() would give (sum of fixed + random at the group level) - note that exponentiate only works on fixed effects, so this is in log scale
+# https://easystats.github.io/parameters/reference/model_parameters.glmmTMB.html
+# so I think this can be interpreted with, one unit increase in predictor associated with 14% decrease in response (repsonse x 0.86 AKA response x 86%)
+# so from day 1 (intercept, 677 ms) to day 2 (coefficient: 0.86), that means day 2 mean is 677 x 0.86 = 582 ms
+exp(6.49) * exp(-0.22)
+```
+
+obsolete tables - from before data was recleaned in July 2025
+
+```{r dprime-fixed-effects-table, eval = FALSE}
+
+glm_dprime_summary <- summary(glm.ax.dprime.model)
+
+dprime_tidy_fixed <- tidy(glm.ax.dprime.model, conf.int = T) %>%
+  #mutate(signif = ifelse(p.value <= 0.001, "***", ifelse(p.value <= 0.01, "**", ifelse(p.value <= 0.05, "*", ifelse(p.value <= 0.1, ".", ""))))) %>%
+  format_table(digits = 2, zap_small = TRUE, p_digits = 3, stars = TRUE) %>%
+  filter(effect == "fixed" & str_detect(term, "signal_cont")) %>%
+  filter(!(str_detect(term, "MLD_A|MLD_P|speaker_signal"))) %>%
+  mutate(conf.int = str_replace_all(conf.int, "\\[ ", "\\[")) %>%
+  select(-c(effect:group)) %>%
+  relocate(conf.int, .after = estimate) %>%
+  mutate(est.conf = paste(estimate, conf.int, sep = " "), .after = term) %>%
+  select(-c(estimate, conf.int))
+
+
+dprime_fixed_terms <- dprime_tidy_fixed$term
+dprime_cleaned_parameters <- c(
+  "Day 1: Signal (d')", #1
+  "Day 2-1: Signal (d')", #15
+  "Day 1: d' by AX Training Condition", #2
+  "Day 1: d' by L1 VAS Slope", #3
+  "Day 1: d' by L1 VAS Resp. Var.", #4
+  "Day 1: d' by L2 VAS Slope", #5
+  "Day 1: d' by L2 VAS Resp. Var.", #6
+  "Day 2-1: d' by AX Training Condition", #16
+  "Day 1: d' by L1 VAS Slope x VAS Resp. Var.", #7
+  "Day 1: d' by L2 VAS Slope x VAS Resp. Var.", #8
+  "Day 2-1: d' by L1 VAS Slope", #17
+  "Day 2-1: d' by L1 VAS Resp. Var.", #18
+  "Day 2-1: d' by L2 VAS Slope", #19
+  "Day 2-1: d' by L2 VAS Resp. Var.", #20
+  "Day 1: d' by AX Training Condition x L1 VAS Slope (A1)", #9
+  "Day 1: d' by AX Training Condition x L1 VAS Resp. Var. (B1)", #10
+  "Day 1: d' by AX Training Condition x L2 VAS Slope (A2)", #11
+  "Day 1: d' by AX Training Condition x L2 VAS Resp. Var. (B2)", #12
+  "Day 2-1: d' by L1 VAS Slope x VAS Resp. Var.", #21
+  "Day 2-1: d' by L2 VAS Slope x VAS Resp. Var.", #22
+  "Day 1: d' by AX Training Condition x L1 VAS Slope x VAS Resp. Var.", #13
+  "Day 1: d' by AX Training Condition x L2 VAS Slope x VAS Resp. Var.", #14
+  "Day 2-1: d' by AX Training Condition x L1 VAS Slope (A3)", #23
+  "Day 2-1: d' by AX Training Condition x L1 VAS Resp. Var. (B3)", #24
+  "Day 2-1: d' by AX Training Condition x L2 VAS Slope (A4)", #25
+  "Day 2-1: d' by AX Training Condition x L2 VAS Resp. Var. (B4)", #26
+  "Day 2-1: d' by AX Training Condition x L1 VAS Slope x VAS Resp. Var.", #27
+  "Day 2-1: d' by AX Training Condition x L2 VAS Slope x VAS Resp. Var.") #28
+# assign row order to rearrange for table
+row_order <- c(1, 15, 2:6, 16, 7:8, 17:20, 9:12, 21:22, 13:14, 23:28)
+
+dprime_model_labels = data.frame(dprime_fixed_terms, dprime_cleaned_parameters, row_order) %>%
+  arrange(row_order) %>%
+  mutate(day = ifelse(str_detect(dprime_cleaned_parameters, "Day 1: "), "Day 1:", ifelse(str_detect(dprime_cleaned_parameters, "Day 2-1: "), "Day 2-1:", "")), .before = dprime_cleaned_parameters) %>%
+  mutate(dprime_cleaned_parameters = str_remove_all(dprime_cleaned_parameters, "Day 1: |Day 2-1: "))
+  
+labels = setNames(as.character(dprime_model_labels$dprime_cleaned_parameters), dprime_model_labels$dprime_fixed_terms)
+
+
+dprime_tidy_fixed_rows <- dprime_tidy_fixed %>%
+  inner_join(select(dprime_model_labels, -dprime_cleaned_parameters), by = c("term" = "dprime_fixed_terms")) %>%
+  arrange(row_order) %>%
+  relocate(day, .before = everything()) %>%
+  as_grouped_data(groups = "day")
+
+dprime_headers = c("term" = "Predictor", "est.conf" = "Estimate [95% CI]", "std.error" = "SE", "statistic" = "*Z*-statistic", "p.value" = "*p*", "day" = "Predictor")
+
+ft.dprime.fixed <- select(dprime_tidy_fixed_rows, -row_order) %>% 
+  as_flextable(col_keys = c("day", "term", "est.conf", "std.error", "statistic", "p.value"), hide_grouplabel = TRUE) %>%
+  bold(j = 1, i = ~ day == "Day 1:" | day == "Day 2-1:", part = "body") %>%
+  labelizor(labels = labels, part = "body") %>%
+  labelizor(labels = dprime_headers, part = "header") %>%
+  merge_h_range(i = ~ day == "Day 1:" | day == "Day 2-1:", j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 1, j1 = 1, j2 = 2, part = "header") %>%
+  width(j = "day", width = 0.01) %>%
+  colformat_md(part = "header") %>%
+  bold(part = "header") %>%
+  autofit(part = "body") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: CI = Confidence Interval; SE = Standard Error; Resp. Var. = Response Variability; Significance codes: (**\\*\\*\\***) *p* < 0.001, (**\\*\\***) *p* < 0.01, (**\\***) *p* < 0.05", 
+    "**Model formula (family = binomial, link = probit)**: Response ~ Signal * Day * AX Training Condition * (L1 VAS Slope * L1 VAS Resp. Var. + L2 VAS Slope * L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) + (1 + Signal + Signal:Day | Participant) + (1 + Signal | AX Word Pair); *italics* = control variable (effects not included in table)", 
+    "**Notes**: Signal, which represents whether the pair of words in the AX trial were the same (signal absent) or different (signal present), was transformed into a continuous variable (Same = -0.5, Different = 0.5). Response was transformed into a binary response variable (Different = 1, Same = 0). Also note that the Intercept value and effects that did not interact with Signal were estimates associated with response bias *c* in SDT, which were not of interest in the model interpretation and were thus not included.",
+    "(A1), (B1), etc. are added to interaction terms that are depicted in the corresponding subplots of Figure \\@ref(tab:st2-dprime-interactions).",
+    "")))
+ft.dprime.fixed
+```
+
+```{r prime-random-effects-table, eval = FALSE}
+
+# find out if this model outputs sigma (residual sd) and what model fit to report (ICC? R2?)
+tidy(glm.ax.dprime.model, effects = "ran_vals")
+# the model only outputs estimates for random effect parameters
+dprime_tidy_random <- tidy(glm.ax.dprime.model) %>%
+  format_table(digits = 3, zap_small = TRUE) %>%
+  filter(effect == "ran_pars")
+
+glm_dprime_summary$call
+
+dprime_random <- model_parameters(glm.ax.dprime.model, effects = "random", ci_random = FALSE) %>%
+  select(-c(SE:Effects)) %>%
+  arrange(Group) %>%
+  mutate(Group = ifelse(Group == "ID", "Participant", ifelse(Group == "word_pair", "AX Word Pair", Group))) %>%
+  relocate(Group, .before = everything()) %>%
+  mutate(Parameter = str_remove_all(Parameter, "\\(|\\)")) %>%
+  separate_wider_delim(Parameter, delim = " ", names = c("Term", "Parameter")) %>%
+  mutate(Term = ifelse(Term == "Cor" & str_detect(Parameter, "Intercept~"), "int_slope_corr", ifelse(Term == "Cor" & str_detect(Parameter, "signal_cont~"), "slope_slope_corr", Term)),
+         Parameter = ifelse(Term == "int_slope_corr", str_remove_all(Parameter, "Intercept~"), ifelse(Term == "slope_slope_corr", str_remove_all(Parameter, "signal_cont~"), Parameter))) %>%
+  pivot_wider(names_from = Term, values_from = Coefficient) %>%
+  format_table(zap_small = TRUE)
+
+
+dprime_id_ngroups <- n_grouplevels(glm.ax.dprime.model)$N_levels[1]
+dprime_word_pair_ngroups <- n_grouplevels(glm.ax.dprime.model)$N_levels[2]
+dprime_nobs <- n_obs(glm.ax.dprime.model)
+
+dprime_random_headers <- c("int_slope_corr" = "Int. ~ Slope Cor.", "slope_slope_corr" = "Slope ~ Slope Cor.", "Parameter" = "Random Effect")
+clean_random_parameters <- c("signal_cont" = "Signal (d')", "signal_cont:day2" = "Day 2-1: Signal (d')")
+
+ft.dprime.random <- dprime_random %>%
+  flextable() %>%
+  labelizor(part = "header", labels = dprime_random_headers) %>%
+  labelizor(part = "body", labels = clean_random_parameters) %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c("Group", "Parameter"), width = 1) %>%
+  bold(part = "header") %>%
+  #add_footer_row(values = as_paragraph(as_b(c("Model Fit", "VAS Slope", "VAS Response Variability"))), colwidths = c(1, 4)) %>%
+  add_footer_row(values = as_paragraph_md(c("Participant", "N", dprime_id_ngroups)), colwidths = c(1, 1, 3), top = F) %>%
+  add_footer_row(values = as_paragraph_md(c("AX Word Pair", "N", dprime_word_pair_ngroups)), colwidths = c(1, 1, 3), top = F) %>%
+  add_footer_row(values = as_paragraph_md(c("", "N~total~ ~obs~", dprime_nobs)), colwidths = c(1, 1, 3), top = F) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation; Int. = Intercept; Cor. = Correlation", 
+    "**Model formula (family = binomial, link = probit)**: Response ~ Signal * Day * AX Training Condition * (L1 VAS Slope * L1 VAS Resp. Var. + L2 VAS Slope * L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) + (1 + Signal + Signal:Day | Participant) + (1 + Signal | AX Word Pair); *italics* = control variable", 
+    ""))) %>%
+  hline(i = 3, border = fp_border_default(width = 1.5), part = "footer")
+ft.dprime.random
+```
+
+```{r rt-fixed-effects, eval = FALSE}
+lm_rt_summary <- summary(lm.ax.rt.model)
+
+
+tidy_rt_fixed <- model_parameters(lm.ax.rt.model, exponentiate = TRUE, effects = "fixed") %>% # back-transforming SE doesn't work
+  format_table(digits = 2, zap_small = TRUE, p_digits = 3, stars = TRUE) %>%
+  filter(!(str_detect(Parameter, "MLD A|MLD P|speaker signal"))) %>%
+  select(-Effects) %>%
+  mutate(est.conf = paste(Coefficient, `95% CI`, sep = " "), .after = Parameter) %>%
+  select(-c(Coefficient, `95% CI`)) %>%
+  rename(Predictor = Parameter)
+
+rt_fixed_terms <- tidy_rt_fixed$Predictor
+rt_cleaned_parameters <- c(
+  "Day 1: Intercept (Day 1)", #1
+  "Day 2 Change: Day 2 Change", #11
+  "Day 1: AX Training Condition", #2
+  "Day 1: L1 VAS Slope", #3
+  "Day 1: L1 VAS Resp. Var.", #4
+  "Day 1: L2 VAS Slope", #5
+  "Day 1: L2 VAS Resp. Var.", #6
+  "Day 2 Change: AX Training Condition", #12
+  "Day 2 Change: L1 VAS Slope", #13
+  "Day 2 Change: L1 VAS Resp. Var.", #14
+  "Day 2 Change: L2 VAS Slope", #15
+  "Day 2 Change: L2 VAS Resp. Var.", #16
+  "Day 1: AX Training Condition x L1 VAS Slope (A1)", #7
+  "Day 1: AX Training Condition x L1 VAS Resp. Var. (B1)", #8
+  "Day 1: AX Training Condition x L2 VAS Slope (A2)", #9
+  "Day 1: AX Training Condition x L2 VAS Resp. Var. (B2)", #10
+  "Day 2 Change: AX Training Condition x L1 VAS Slope (A3)", #17
+  "Day 2 Change: AX Training Condition x L1 VAS Resp. Var. (B3)", #18
+  "Day 2 Change: AX Training Condition x L2 VAS Slope (A4)", #19
+  "Day 2 Change: AX Training Condition x L2 VAS Resp. Var. (B4)" #20
+)
+rt_row_order <- c(1, 11, 2:6, 12:16, 7:10, 17:20)
+
+
+
+rt_model_labels = data.frame(rt_fixed_terms, rt_cleaned_parameters, rt_row_order) %>%
+  arrange(rt_row_order) %>%
+  mutate(day = ifelse(str_detect(rt_cleaned_parameters, "Day 1: "), "Day 1:", ifelse(str_detect(rt_cleaned_parameters, "Day 2 Change: "), "Day 2 Change:", "")), .before = rt_cleaned_parameters) %>%
+  mutate(rt_cleaned_parameters = str_remove_all( rt_cleaned_parameters, "Day 1: |Day 2 Change: "))
+
+
+rt_labels = setNames(as.character(rt_model_labels$rt_cleaned_parameters), rt_model_labels$rt_fixed_terms)
+
+
+rt_tidy_fixed_rows <- tidy_rt_fixed %>%
+  inner_join(select(rt_model_labels, -rt_cleaned_parameters), by = c("Predictor" = "rt_fixed_terms")) %>%
+  mutate(est.conf = str_replace_all(est.conf, "\\[  ", "\\[")) %>%
+  mutate(est.conf = str_replace_all(est.conf, ",  ", ", "))%>%
+  arrange(rt_row_order) %>%
+  relocate(day, .before = everything()) %>%
+  as_grouped_data(groups = "day")
+
+rt_headers = c("est.conf" = "Estimate [95% CI]", "t(11830)" = "*t*-statistic", "p" = "*p*", "day" = "Predictor")
+
+ft.rt.fixed <- select(rt_tidy_fixed_rows, -rt_row_order) %>% 
+  as_flextable(col_keys = c("day", "Predictor", "est.conf", "t(11830)", "p"), hide_grouplabel = TRUE) %>% # not including SE because back-transforming SE doesn't work
+  bold(j = 1, i = ~ day == "Day 1:" | day == "Day 2 Change:", part = "body") %>%
+  labelizor(labels = rt_labels, part = "body") %>%
+  labelizor(labels = rt_headers, part = "header") %>%
+  merge_h_range(i = ~ day == "Day 1:" | day == "Day 2 Change:", j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 1, j1 = 1, j2 = 2, part = "header") %>%
+  width(j = "day", width = 0.01) %>%
+  colformat_md(part = "header") %>%
+  bold(part = "header") %>%
+  autofit(part = "body") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: CI = Confidence Interval; Resp. Var. = Response Variability; Significance codes: (**\\*\\*\\***) *p* < 0.001, (**\\*\\***) *p* < 0.01, (**\\***) *p* < 0.05", 
+    "**Model formula**: Log RT ~ Day * AX Training Condition * (L1 VAS Slope + L1 VAS Resp. Var. + L2 VAS Slope + L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) +
+    (1 + Day | Participant) + (1 | AX Word Pair); *italics* = control variable (effects not included in table)", 
+    "**Notes**: Because the response variable of the model was natural log-transformed, the model estimated coefficients of the predictor effects in units of log milliseconds. To obtain the estimated effects in the original reaction time unit of milliseconds, the estimates and 95% CIs presented in this table were exponentiated using the model_parameters function of the parameters package (v0.26.0; Lüdecke et al., 2020). Standard error estimates are not included because they cannot be easily back-transformed.",
+    "(A1), (B1), etc. are added to interaction terms that are depicted in the corresponding subplots of Figure \\@ref(tab:st2-rt-interactions).",
+    "")))
+ft.rt.fixed
+```
+
+```{r rt-random-effects, eval = FALSE}
+tidy_rt_random <- model_parameters(lm.ax.rt.model, effects = "random") # exponentiate only works on fixed effects
+
+lm_rt_summary
+# back-transforming SE doesn't work (can't just exponentiate SE/SD values, see this answer: https://stats.stackexchange.com/a/566486) so the reports of the SD of the random parameters is on the log scale
+
+tidy_rt_random
+rt_var_insight <- get_variance(lm.ax.rt.model) # need to sqrt the variance values to get sd
+lm_rt_summary$ngrps["ID"]
+n_obs(lm.ax.rt.model)
+rt_model_fit <- performance::model_performance(lm.ax.rt.model) %>% format_table(zap_small = TRUE)
+
+# manually make the dataframe of the random parameters, add model fit indices as well
+rt_random_df <- data.frame(
+  group = c("Participant", "Participant", "AX Word Pair", "Residual", "**Model Fit**", 
+             "N~Participant~", "N~AX~ ~Word~ ~Pair~", "N~total~ ~obs~", "ICC", "Marginal R^2^", "Conditional R^2^"),
+  effect = c("Intercept", "Day", "Intercept", "Residual", NA, NA, NA, NA, NA, NA, NA),
+  sd = c(round(sqrt(rt_var_insight$var.intercept["ID"]), 2), 
+         round(sqrt(rt_var_insight$var.slope["ID.day2"]), 2),
+         round(sqrt(rt_var_insight$var.intercept["word_pair"]), 2),
+         round(sqrt(rt_var_insight$var.residual), 2),
+         NA,
+         lm_rt_summary$ngrps["ID"],
+         lm_rt_summary$ngrps["word_pair"],
+         n_obs(lm.ax.rt.model),
+         rt_model_fit$ICC,
+         rt_model_fit$`R2 (marg.)`,
+         rt_model_fit$`R2 (cond.)`),
+  int_slope_cor = c(NA, rt_var_insight$cor.slope_intercept["ID"], NA, NA, 
+                    NA, NA, NA, NA, NA, NA, NA),
+  row.names = NULL
+) %>% format_table(zap_small = TRUE)
+
+rt_random_headers <- c("int_slope_cor" = "Int. ~ Slope Cor.", "group" = "Group", "effect" = "Random Effect", "sd" = "SD")
+
+ft.rt.random <-rt_random_df %>%
+  flextable() %>%
+  set_header_labels(values = rt_random_headers) %>%
+  bold(part = "header") %>%
+  colformat_md(j = c("group", "effect"), part = "body") %>%
+  merge_h_range(i = 5:11, j1 = 1, j2 = 2, part = "body") %>%
+  hline(i = 4, border = fp_border_default(width = 1.5)) %>%
+  autofit(part = "header") %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation; Int. = Intercept; Cor. = Correlation", 
+    "**Model formula**: Log RT ~ Day * AX Training Condition * (L1 VAS Slope + L1 VAS Resp. Var. + L2 VAS Slope + L2 VAS Resp. Var. + *MLD-A* + *MLD-P* + *Speaker Signal*) +
+    (1 + Day | Participant) + (1 | AX Word Pair); *italics* = control variable ", 
+    "**Notes**: The random effects parameters presented in this table are in the units of natural log RT (log milliseconds).",
+    "")))
+  
+ft.rt.random
+```
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```

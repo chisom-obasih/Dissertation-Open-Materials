@@ -1,0 +1,114 @@
+---
+title: "Study 2 Questionnaire Scoring"
+author: "Chisom Obasih"
+date: "May 2025"
+subtitle: "Calculate Multilingual Diversity (MLD) scores from Parts 1 and 2 of Linguistic Diversity Questionnaire (LDQ)"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+
+# Libraries
+```{r load-libraries}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+```
+
+------------------------------------------------------------------------
+
+
+# Read in data
+
+```{r read-data message = FALSE}
+
+# read-in clean questionnaire data
+part1 <- import("clean_data/study2_ldq_wide_part1_filtered.csv")
+part2 <- import("clean_data/study2_ldq_wide_part2_filtered.csv")
+
+```
+
+
+```{r source-scoring-functions}
+# source the scoring functions from the LDQscoring.R file
+# this goes up three parent folders from the location of this Rmd file (in the subfolder named Rmd)
+# first .. goes to the parent folder data_cleaning_visualization_analysis
+# second .. goes to the parent folder Study 2
+# third ... goes to the parent folder Dissertation
+source("../../LDQ/LDQscoring.R")
+```
+
+
+# Score LDQ
+
+```{r calculate-part1-scores}
+mld.a <- calculate_active_scores(part1)
+
+# [1] Argument `weights` has been set to default: weights = list("R" = 0.25, "L" = 0.25, "W" = 0.25, "S" = 0.25).
+# [1] Argument `K` has been set to default: K = 16.
+```
+
+
+```{r calculate-part2-scores}
+mld.p <- calculate_passive_scores(part2)
+
+# [1] Argument `K` has been set to default: K = 24.
+```
+
+```{r put-data-together-scatterplot}
+scores <- mld.a %>% 
+  select(ID, age, gender, MLD_A) %>% 
+  left_join(mld.p, by = c("ID", "age", "gender")) %>% 
+  select(ID, age, gender, MLD_A, MLD_P)
+
+ggplot(scores, aes(x = MLD_A, y = MLD_P)) +
+  geom_point(position = "jitter")
+```
+
+```{r save-data}
+# set path save the data
+path.to.data <- "clean_data/outcome_data"
+
+export(mld.a, file = paste(path.to.data, "study2_mld-a_scores.csv", sep = "/"))
+export(mld.p, file = paste(path.to.data, "study2_mld-p_scores.csv", sep = "/"))
+export(scores, file = paste(path.to.data, "study2_mld_scores.csv", sep = "/"))
+```
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r, sessionInfo, results='hide'}
+sessionInfo()
+```

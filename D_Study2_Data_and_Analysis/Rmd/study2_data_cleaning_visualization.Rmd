@@ -1,0 +1,1122 @@
+---
+title: "Study 2 Data Cleaning and Visualization"
+author: "Chisom Obasih"
+date: "April 2025"
+subtitle: "Cleaning and wrangling raw data of pre/post-training Visual Analog Scale (VAS) task, discrimination pre/post-tests, discrimination training, and linguistic diversity questionnaire, from Study 2 of dissertation, some visualizations - data cleaning was updated in July 2025 to better match the data cleaning process for Study 3"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+
+# Libraries
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+conflicts_prefer(janitor::clean_names)
+# avoid scientific notation
+options(scipen = 999)
+
+
+library(brms)
+```
+
+------------------------------------------------------------------------
+
+
+# Read in data
+
+```{r read-data}
+
+data.path <- "raw_data"
+
+# This is useful for if you need to combine data from different folders (e.g., combining conditions or versions of Gorilla experiments)
+
+# Make list of data files from the data folders of three separate conditions, list only csv files
+VAS_files <- list.files(path = paste(data.path, sep = "/"), pattern = "*VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_test_files <- list.files(path = paste(data.path, sep = "/"), pattern = "*test*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_training_files <- list.files(path = paste(data.path, sep = "/"), pattern = "AX_training*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+
+
+# From the single list of data file names, iteratively read each csv files into a single data frame
+VAS_df <- VAS_files %>%
+  map_df(~import(.x)) %>%
+  distinct() # some people had their entire dataset from a task duplicated so this removes those hopefully (this seems to be a copying error from Gorilla rather than a trial duplication error which have different timestamps)
+
+
+AX_test_df <- AX_test_files %>%
+  map_df(~import(.x)) %>%
+  # for some reason, Gorilla's output for the Correct column is blank when they got it wrong, instead of 0, so I'm manually changing all the NAs to 0 in the Correct column for when Response Type is response
+  mutate(`Correct` = ifelse(is.na(`Correct`) & `Response Type` == "response", 0, `Correct`)) %>%
+  distinct() # some people had their entire dataset from a task duplicated so this removes those hopefully (this seems to be a copying error from Gorilla rather than a trial duplication error which have different timestamps)
+
+
+AX_training_df <- AX_training_files %>%
+  map_df(~import(.x)) %>%
+   # for some reason, Gorilla's output for the Correct column is blank when they got it wrong, instead of 0, so I'm manually changing all the NAs to 0 in the Correct column for when Response Type is response
+  mutate(`Correct` = ifelse(is.na(`Correct`) & `Response Type` == "response", 0, `Correct`)) %>%
+  distinct() # some people had their entire dataset from a task duplicated so this removes those hopefully (this seems to be a copying error from Gorilla rather than a trial duplication error which have different timestamps)
+
+```
+
+```{r attach-Rdata}
+# this is for matching private IDs with new IDs across day 1 and day 2 data
+load("Rdata/clean_IDs.Rdata")
+
+# this is for filtering cleaned dataframes for subsequent analysis for only those with a calculated MLD scores (excluded are those who did not return for Day 2, and those who did not give usable data in the LDQ)
+MLD_scores <- import(file = "clean_data/outcome_data/study2_mld_scores.csv") %>%
+  mutate(ID = as.factor(ID))
+
+# for when I'm coming back to the session, load the data frames that have been collected here so I don't have to keep re-running everything
+# be careful loading this when there are already existing objects in the global environment - note that load *replaces* objects with the same names as in the Rdata file, whereas attach masks the previous object in the global environment with the object of the same name from the loaded Rdata file
+# load("Rdata/study2_data_cleaning_workspace.Rdata")
+```
+
+
+```{r save-Rdata}
+# so that when I restart the R session I can just load in the dataframes as they are, I'm saving the objects/dataframes that I make as I go along
+save(clean_IDs,
+     MLD_scores,
+     VAS_df,
+     AX_test_df,
+     AX_training_df,
+     unfiltered_vas_df,
+     df, # intermediate cleaning step for unfiltered_vas_df
+     df_vas_clean, # final cleaned state of unfiltered VAS data
+     group_mad, # for VAS data
+     individual_mad, # for VAS data
+     filtered_vas,
+     mld_filtered_vas, # filtered only for participants included in stats (for whom MLD scores were able to be calculated)
+     filtered_matlab, # input to the MATLAB nonlinear curvefitting package
+     mld_filtered_matlab, # filtered only for participants with MLD scores
+     unfiltered_ax_test,
+     testing_interim,
+     testing_sanity_check,
+     testing,
+     individual_mad_axtest, # filtered only for participants with MLD scores
+     filtered_test_mad, # filtered only for participants with MLD scores
+     filtered_test, # filtered only for participants with MLD scores
+     unfiltered_ax_training,
+     training,
+     individual_mad_axtrain, # filtered only for participants with MLD scores
+     filtered_train_mad, # filtered only for participants with MLD scores
+     filtered_train, # filtered only for participants with MLD scores
+     visualization_vas,
+     test_dprime_interim,
+     test_dprime_calculation,
+     dprime_prepost_test,
+     visualization_test_rt,
+     training_dprime_interim,
+     training_dprime_calculations,
+     dprime_training, # not saved in separate csv file
+     file = "Rdata/study2_data_cleaning_workspace.Rdata")
+
+
+
+
+# save as R objects just the cleaned and filtered data frames
+save(clean_IDs,
+     MLD_scores,
+     mld_filtered_vas,
+     mld_filtered_matlab,
+     filtered_test_mad,
+     filtered_test,
+     filtered_train_mad,
+     filtered_train,
+     test_dprime_interim,
+     dprime_prepost_test,
+     training_dprime_interim,
+     dprime_training,
+     file = "Rdata/study2_filtered_data.Rdata")
+```
+
+------------------------------------------------------------------------
+
+# data cleaning for VAS
+this was not updated to match the Study 3 data cleaning process because I would have had to rerun the curvefitter and I don't want to do that
+
+```{r initial-data-cleaning-vas}
+# data cleaning of VAS data
+
+
+# first, select only the relevant columns and clean up their names
+unfiltered_vas_df <- VAS_df %>%
+  select(
+    `Local Date and Time`,
+    `Participant Private ID`,
+    `Participant Starting Group`,
+    `allocator-flaz`,
+    `allocator-cukp`,
+    `allocator-j6cm`,
+    `Trial Number`,
+    `Display`,
+    `Screen`,
+    `Response Type`,
+    `Response`,
+    `Reaction Time`,
+    `Tag`,
+    `Spreadsheet: sound`,
+    `Spreadsheet: pair`,
+    `Spreadsheet: language`,
+    `Spreadsheet: first_dim_step`,
+    `Spreadsheet: second_dim_step`,
+    `Store: left_word`,
+    `Store: right_word`
+  ) %>%
+  clean_names() %>%
+  rename(
+    privateID = participant_private_id, 
+    pre_training_condition = allocator_flaz,
+    post_training_condition = allocator_cukp,
+    ax_condition = allocator_j6cm,
+    sound = spreadsheet_sound, 
+    pair = spreadsheet_pair, 
+    language = spreadsheet_language, 
+    first_dim_step = spreadsheet_first_dim_step, 
+    second_dim_step = spreadsheet_second_dim_step, 
+    left_word = store_left_word, 
+    right_word = store_right_word) %>%
+  # then filter to include only the slider responses
+  filter(display == "trial" & response_type == "response") %>%
+  # then remove ".png" from the left_word and right_word columns
+  mutate(left_word = str_remove_all(left_word, ".png")) %>%
+  mutate(right_word = str_remove_all(right_word, ".png")) %>%
+  # change the column response to be numerical instead of character
+  # and change ID to be factor instead of numeric
+  # change language to be factor instead of character
+  # and change pair to be factor rather than character with custom levels
+  mutate(response = as.numeric(response), privateID = as.factor(privateID), language = as.factor(language), pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru"))) %>%
+  arrange(privateID, local_date_and_time) %>%
+  # clean IDs by matching the privateIDs from clean_IDs 
+  # using inner join (only keeps only matching rows in x instead of trying to make all combinations of x and y) by privateID, drop unmatched rows in y but throws error in case any row in the current data frame doesn't have a matching row in vas_IDs
+  inner_join(clean_IDs, by = c("privateID"), unmatched = c(x = "error", y = "drop"), relationship = "many-to-one") %>%
+  # remove privateID and move ID to be after date
+  select(-c(privateID)) %>%
+  relocate(ID, .after = local_date_and_time) %>%
+  arrange(ID, local_date_and_time) %>%
+  mutate(ax_condition = case_when(
+          participant_starting_group == "GroupHighLD1" ~ "highLD",
+          participant_starting_group == "GroupHighLD2" ~ "highLD",
+          participant_starting_group == "GroupLowLD1" ~ "lowLD",
+          participant_starting_group == "GroupLowLD2" ~ "lowLD",
+          .default = ax_condition)) %>%
+  # and mark each day based on timestamp
+  # first need to separate date and time
+  separate_wider_delim(local_date_and_time, delim = " ", names = c("local_date", "local_time")) %>%
+  mutate(local_date = as.Date(local_date, format = "%d/%m/%Y")) %>%
+  group_by(ID) %>%
+  mutate(day = as.numeric(factor(local_date)), .after = local_date) %>%
+  # turn day and condition into factor, and make sure ID is a factor for good measure
+  mutate(ax_condition = factor(ax_condition, levels = c("lowLD", "highLD")), ID = as.factor(ID), day = as.factor(day)) %>%
+  ungroup()
+  
+```
+
+
+```{r vas-cleaning-sanity-check}
+# sanity checks to make sure the day 1 and day 2 tags worked
+# should see 13 participants without a day 2
+
+
+# should see 112 trials for each day
+unfiltered_vas_df %>% group_by(ID, day) %>% summarize(day_n = n()) %>% print(n = 193)
+# participants with only Day 1 data: 101, 117, 120, 130, 138, 143, 154, 164, 166, 173, 185, 193, 201
+# should see 112 trials for those with only Day 1 data and 224 trials for those with Day 1 and Day 2 data
+unfiltered_vas_df %>% group_by(ID) %>% summarize(day_n = n()) %>% print(n = 103)
+
+# sub 152 has 113 trials on day 1
+s152 <- unfiltered_vas_df %>% filter(ID == "152" & day == "1")
+# very last trial repeated for some reason, but its reaction time is more than 10 seconds so it will be filtered out anyway, but I will still remove that specific row
+# that row has a local_time stamp of 14:37:22
+
+# sub 184 has 119 trials on day 2
+s184 <- unfiltered_vas_df %>% filter(ID == "184" & day == "2")
+# trials 64-70 repeated for some reason - I will take the first set and discard the second set
+# the timestamps for those rows were between 21:44:15 - 21:45:03
+
+# 195 has a duplicated trial on day 2
+s195 <- unfiltered_vas_df %>% filter(ID == "195" & day == "2")
+# trial 37 for reason-risen was copied exactly (same timestamp and reaction time, so not a presentation error but a data writing error)
+
+df <- unfiltered_vas_df %>%
+  filter(!(ID == "152" & local_time == "14:37:22")) %>% # filtering out 1 row
+  filter(!(ID == "184" & local_time >= "21:44:15" & local_time <= "21:45:03")) %>% # filtering out 7 rows
+  distinct() # removing any leftover identical rows
+
+# sanity check that it worked
+# df2 should have only 9 less than unfiltered_vas_df2
+nrow(unfiltered_vas_df) # 21625
+nrow(df) # 21616
+# all good
+```
+
+```{r clean-metadata-columns-vas}
+# because the word on the left and right of the slider was randomized by participant, some people's 0 rating means, e.g., indent, while other people's 0 rating means intent
+# so we need to equalize the left and right words across participants and adjust their ratings accordingly, also known as reversing the scales
+reverse_scale = function(x, range) {range - x}
+vas_range = 100
+
+
+df_vas_clean <- df %>%
+  mutate(reverse_scale = ifelse(left_word == "indent" | left_word == "reason" | left_word == "kata" | left_word == "toru", "no", "yes")) %>%
+  mutate(norm_left_word = ifelse(reverse_scale == "no", left_word, right_word)) %>%
+  mutate(norm_right_word = ifelse(reverse_scale == "no", right_word, left_word)) %>%
+  mutate(norm_response = ifelse(reverse_scale == "yes", reverse_scale(response, vas_range), response)) %>%
+  # and add column to indicate pre-training if day 1 and post-training if day 2
+  mutate(prepost = ifelse(day == 1, "pre-training", "post-training"), .after = day) %>%
+  # refactor prepost levels
+  mutate(prepost = factor(prepost, levels = c("pre-training", "post-training")))
+
+```
+
+```{r save-unfiltered-clean-data-vas}
+# save as csv file, saves in subfolder
+write_excel_csv(df_vas_clean, file = "clean_data/unfiltered_study2_vas_all.csv")
+```
+
+## filtering and data cleaning for matlab logistic curve fitting script
+
+```{r visualize-group-individual-rt-mad-VAS}
+# filter vas results to remove responses with RTs > 10 seconds and then above/below 3 absolute deviations around the median - aka median absolute deviation (MAD)
+## https://www.semanticscholar.org/paper/Detecting-outliers%3A-Do-not-use-standard-deviation-Leys-Ley/5935f52caf1df059ed9e301ad1fbfbd8d01bfa18
+
+## check the distributions of RTs compared to the upper and lower MAD limits by group and by individual
+
+group_mad <- df_vas_clean %>% #nrow = 21616
+  filter(reaction_time < 10000) %>% # nrow = 21274
+  # remove unnecessary columns and move around other columns to different locations
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col()) %>%
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), # median of enter group
+         mad = mad(log_rt), # mad calculated using group median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad)) %>%
+  group_by(ID) %>%
+  mutate(participant_median = median(log_rt))
+# this plots every participants individual median RT (log transformed) against the 3*MAD upper and lower limits calculated from the group data
+group_mad%>%ggplot(aes(x=ID,y=participant_median))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+
+
+individual_mad <- df_vas_clean %>% #nrow = 21616
+  filter(reaction_time < 10000) %>% # nrow = 21274
+  # remove unnecessary columns and move around other columns to different locations
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col()) %>%
+  group_by(ID) %>% # this makes it so the median and mad calculations are by participant
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), # participant specific median
+         mad = mad(log_rt), # mad calculated using individual median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad))
+
+# this plots the RTs (log transformed) against the 3*MAD upper and lower limits calculated from each individual's median RT
+individual_mad%>%ggplot(aes(x=ID,y=log_rt))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+
+
+# given that everybody's median RT is within the group MAD limits (such that I don't need to get rid of any participant entirely), this shows that its definitely better to filter trials based on individual MAD limits rather than group MAD limits
+
+# check distributions of raw and transformed reaction time
+hist(individual_mad$reaction_time) # fairly skewed right
+hist(individual_mad$log_rt) # pretty normal, a little wide - though it makes sense as VAS reponses are slower than AX responses
+```
+
+
+```{r filter-data-by-rt-mad-VAS}
+# filter vas results to remove responses with RTs > 10 seconds and then above/below 3 absolute deviations around the median - aka median absolute deviation (MAD)
+# now the actual filtering
+filtered_vas <- individual_mad %>% # nrow = 21274
+  ungroup() %>%
+  # individual_mad already filtered out trials > 10 s
+  # filter out individual trials where the reaction time is greater than or less than 3*MAD
+  filter(log_rt < upper_mad & log_rt > lower_mad) %>%
+  arrange(ID, day, pair, first_dim_step, second_dim_step)
+nrow(filtered_vas) # 20894
+
+
+
+# writing the data for matlab, removing columns that would make each row unique so that the matlab script can calculate logistic curve parameters based only on data grouped by ID, pair, and day, giving each individual participants four different VAS calculations
+# keeping second_dim_step as a "grouping" variable just for clarity, but it should be "3" across the board
+# other grouping variables that are redundant but being used for clarity for downstream analsis: prepost, language, ax_condition, 
+filtered_matlab <- filtered_vas %>%
+  select(ID, ax_condition, day, prepost, language, pair, second_dim_step, first_dim_step, norm_response)
+# x value must be penultimum column, and y value must be final column
+
+
+# also make a filtered version where it's just the people who came back for day 2 and also had MLD scores calculated (so also excluding those who were filtered from the LDQ data)
+
+mld_filtered_vas <- filtered_vas %>%
+  filter(ID %in% MLD_scores$ID)
+# now n should be 80
+length(unique(mld_filtered_matlab$ID)) # 80
+
+mld_filtered_matlab <- filtered_matlab %>%
+  filter(ID %in% MLD_scores$ID)
+# now n should be 80
+length(unique(mld_filtered_matlab$ID)) # 80
+```
+
+
+```{r save-filtered-VAS-data}
+
+# save filtered (with all the columns) as csv file
+export(filtered_vas, "clean_data/filtered_study2_vas.csv", row.names = F, quote = F)
+
+# save MLD-filtered (with all the columns) as csv file
+export(mld_filtered_vas, "clean_data/filtered_mld_study2_vas.csv", row.names = F, quote = F)
+
+
+# save matlab (with less columns) as txt file
+export(filtered_matlab, "clean_data/filtered_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+
+# save the MLD-filtered matlab as txt file
+export(mld_filtered_matlab, "clean_data/filtered_mld_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+
+```
+
+
+
+------------------------------------------------------------------------
+
+# data cleaning of AX discrimination testing data
+
+```{r initial-data-cleaning-ax-test}
+# this cleaned data will be all trials from all participants before filtering outliers, etc.
+
+# first, select only the relevant columns and clean up their names
+unfiltered_ax_test <- AX_test_df %>%
+  select(
+    `Local Date and Time`,
+    `Participant Private ID`,
+    `Participant Starting Group`,
+    `Current Spreadsheet`,
+    `Trial Number`,
+    `Display`,
+    `Screen`,
+    `Response Type`,
+    `Response`,
+    `Reaction Time`,
+    `Correct`,
+    `Tag`,
+    `allocator-j6cm`,
+    `Spreadsheet: word_pair`,
+    `Spreadsheet: signal`,
+    `Spreadsheet: type`,
+    `Spreadsheet: word_A`,
+    `Spreadsheet: word_B`,
+    `Spreadsheet: sound_1`,
+    `Spreadsheet: sound_2`,
+    `Spreadsheet: language`,
+    `Spreadsheet: gloss_A`,
+    `Spreadsheet: gloss_B`,
+    `Spreadsheet: pitch_accent_A`,
+    `Spreadsheet: pitch_accent_B`,
+    `Spreadsheet: phoneme_quality`,
+    `Spreadsheet: phoneme_identity_A`,
+    `Spreadsheet: phoneme_identity_B`,
+    `Spreadsheet: length_A`,
+    `Spreadsheet: length_B`,
+    `Spreadsheet: segment_type`,
+    `Spreadsheet: word_position`,
+    `Spreadsheet: task`,
+    `Manipulation: F_response`,
+    `Manipulation: J_response`
+  ) %>%
+  clean_names() %>%
+  rename(
+    privateID = participant_private_id, 
+    condition = allocator_j6cm,
+    word_pair = spreadsheet_word_pair,
+    signal = spreadsheet_signal,
+    type = spreadsheet_type,
+    word_A = spreadsheet_word_a,
+    word_B = spreadsheet_word_b,
+    sound_1 = spreadsheet_sound_1, 
+    sound_2 = spreadsheet_sound_2,
+    language = spreadsheet_language, 
+    gloss_A = spreadsheet_gloss_a,
+    gloss_B = spreadsheet_gloss_b,
+    pitch_accent_A = spreadsheet_pitch_accent_a,
+    pitch_accent_B = spreadsheet_pitch_accent_b,
+    phoneme_quality = spreadsheet_phoneme_quality,
+    phoneme_identity_A = spreadsheet_phoneme_identity_a,
+    phoneme_identity_B = spreadsheet_phoneme_identity_b,
+    length_A = spreadsheet_length_a,
+    length_B = spreadsheet_length_b,
+    segment_type = spreadsheet_segment_type,
+    word_position = spreadsheet_word_position,
+    task = spreadsheet_task,
+    F_response = manipulation_f_response,
+    J_response = manipulation_j_response) %>%
+  # then filter to include only the keyboard responses
+  filter(display == "testing_trial" & response_type == "response") %>%
+  # also response column so that all the values are lowercase
+  mutate(response = tolower(response)) %>%
+  # change all necessary columns to be factors
+  mutate(response = as.factor(response), 
+         privateID = as.factor(privateID), 
+         word_pair = as.factor(word_pair), 
+         signal = as.factor(signal), 
+         type = as.factor(type), 
+         language = as.factor(language)) %>%
+  # clean IDs by matching the privateIDs from clean_IDs 
+  # using inner join (only keeps only matching rows in x instead of trying to make all combinations of x and y) by privateID, drop unmatched rows in y but throws error in case any row in the current data frame doesn't have a matching row in vas_IDs
+  inner_join(clean_IDs, by = c("privateID"), unmatched = c(x = "error", y = "drop"), relationship = "many-to-one") %>%
+  # remove privateID and move ID to be after date
+  select(-c(privateID)) %>%
+  relocate(ID, .after = local_date_and_time) %>%
+  arrange(ID, local_date_and_time) %>%
+  # add proper condition value for these 7 people based on their value of participant_starting_group
+  mutate(condition = case_when(
+          participant_starting_group == "GroupHighLD1" ~ "highLD",
+          participant_starting_group == "GroupHighLD2" ~ "highLD",
+          participant_starting_group == "GroupLowLD1" ~ "lowLD",
+          participant_starting_group == "GroupLowLD2" ~ "lowLD",
+          .default = condition)) %>%
+  # and mark each day based on timestamp
+  # first need to separate date and time
+  separate_wider_delim(local_date_and_time, delim = " ", names = c("local_date", "local_time")) %>%
+  mutate(local_date = as.Date(local_date, format = "%d/%m/%Y")) %>%
+  group_by(ID) %>%
+  mutate(day = as.numeric(factor(local_date)), .after = local_date) %>%
+  # turn day and condition info factors
+  mutate(condition = factor(condition, levels = c("lowLD", "highLD")), day = as.factor(day)) %>%
+  ungroup()
+```
+
+```{r ax-test-cleaning-sanity-check}
+# sanity checks to make sure the day 1 and day 2 tags worked
+# should see 13 participants without a day 2, which are: 101, 117, 120, 130, 138, 143, 154, 164, 166, 173, 185, 193, 201
+# all good
+
+# should see 100 trials for each day
+unfiltered_ax_test %>% group_by(ID, day) %>% summarize(day_n = n()) 
+# should see 100 trials for those with only Day 1 data and 200 trials for those with Day 1 and Day 2 data
+unfiltered_ax_test %>% group_by(ID) %>% summarize(day_n = n())
+
+# sub 106 has 139 trials on day 1 for some reason
+s106 <- unfiltered_ax_test %>% filter(ID == "106" & day == "1")
+# trials 62-100 repeated for some reason - I will take the first set and discard the second set
+# the timestamps for those rows are between 15:10:04 - 15:12:41
+
+# sub 110 has a duplicated trial on day 2
+s110 <- unfiltered_ax_test %>% filter(ID == "110" & day == "2")
+# trial 90 was repeated exactly (same timestamp, same reaction time) so data copy error from Gorilla
+
+# sub 176 has a duplicated trial on day 2
+s176 <- unfiltered_ax_test %>% filter(ID == "176" & day == "2")
+# trial 97 was repeated exactly (same timestamp, same reaction time) so data copying error from Gorilla
+  
+
+testing_interim <- unfiltered_ax_test %>%
+  filter(!(ID == "106" & local_time >= "15:10:04" & local_time <= "15:12:41"))  %>% # filtering out 39 rows
+  distinct() # hopefully takes care of the repeated rows for 110 and 176
+
+# sanity check that it worked
+# testing should have only 41 less than unfiltered_ax_test
+nrow(unfiltered_ax_test) # 19341
+nrow(testing_interim) # 19300
+# perfect 
+
+# sanity check that the correct column is actually correct
+testing_sanity_check <- testing_interim %>% 
+  mutate(correct_manual = ifelse(response == signal, 1, 0)) %>% #if response = signal, then the response is correct
+  mutate(sanity_check = ifelse(correct_manual == correct, 0, 1)) # if our manual correct column is equal to the Gorilla supplied correct column, return 0, otherwise return 1 - this way the sum of this column can count the number of rows where the manual and Gorilla correct columns do not match
+
+# if our manual accuracy check is equal to the gorilla accuracy, then make that 0, so that all trials should sum to 0 (makes it easier to check than if affirmative was 1)
+sum(testing_sanity_check$sanity_check) # sum is 0 so everything is good
+
+
+testing <- testing_interim %>%
+  # add column to indicate pre-test if day 1 and post-test if day 2
+  mutate(prepost = ifelse(day == 1, "pre-test", "post-test"), .after = day) %>%
+  # refactor prepost levels
+  mutate(prepost = factor(prepost, levels = c("pre-test", "post-test"))) %>%
+  # and add extra meta-data column to indicate if the speaker for sound_1 and sound_2 were the same or different (between M speaker and F speaker)
+  mutate(.after = sound_2, speaker_signal = case_when(
+    str_detect(sound_1, "F_") & str_detect(sound_2, "F_") ~ "same",
+    str_detect(sound_1, "M_") & str_detect(sound_2, "M_") ~ "same",
+    str_detect(sound_1, "F_") & str_detect(sound_2, "M_") ~ "different",
+    str_detect(sound_1, "M_") & str_detect(sound_2, "F_") ~ "different",
+    .default = NA
+  ))
+
+# check to see that every row has an assigned speaker_signal (we want is.na() to return FALSE, or 0)
+sum(as.numeric(is.na(testing$speaker_signal))) # sum is 0, so everything is good
+```
+
+```{r save-clean-unfiltered-data-ax-test}
+
+# save as csv file, saves in subfolder
+write_excel_csv(testing, file = "clean_data/unfiltered_study2_AX_testing_all.csv")
+```
+
+## filtering AX testing data by reaction time MAD
+this was updated to match the Study 3 cleaning process in July 2025
+```{r visualize-mad-filter-by-rt-axtest}
+# filter AX test results to remove responses with RTs above/below 3 absolute deviations around the median of log reaction time - aka median absolute deviation (MAD)
+## https://www.semanticscholar.org/paper/Detecting-outliers%3A-Do-not-use-standard-deviation-Leys-Ley/5935f52caf1df059ed9e301ad1fbfbd8d01bfa18
+
+
+# I will see how MAD takes care of the fastest responses, then after MAD filtering I will filter out everything below 150 ms and above 10 seconds
+individual_mad_axtest <- testing %>% #nrow = 19300
+  # first filter only for those with MLD scores
+  filter(ID %in% MLD_scores$ID) %>% # nrow = 16000
+  # remove unnecessary columns for now
+  select(-c(local_time, participant_starting_group, current_spreadsheet, trial_number, screen, display, response_type, tag)) %>%
+  group_by(ID) %>% # this makes it so the median and mad calculations are by participant
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), # participant specific median
+         mad = mad(log_rt), # mad calculated using individual median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad))
+
+# this plots the RTs (log transformed) against the 3*MAD upper and lower limits calculated from each individual's median RT
+individual_mad_axtest%>%ggplot(aes(x=ID,y=log_rt))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+# check distributions of raw and transformed reaction time
+hist(individual_mad_axtest$reaction_time) # very skewed right
+hist(individual_mad_axtest$log_rt) # mostly normal
+
+# now the actual filtering
+# after filtering above/below 3 MAD around median log_rt, then filter trials with RTs > 10 seconds and RTs < 150 ms
+filtered_test_mad <- individual_mad_axtest %>% # nrow = 16000
+  ungroup() %>%
+  # individual_mad already filtered out those who did not come back for day 2
+  filter(log_rt < upper_mad & log_rt > lower_mad) %>% # nrow = 15654
+  # now filter out anything remaining that is still below 150 ms and above 10 seconds
+  filter(reaction_time >= 150 & reaction_time < 10000)
+nrow(filtered_test_mad) # 15236
+
+# I'll make another version of the data that's easier to read without some of the unneeded metadata columns
+filtered_test <- filtered_test_mad %>%
+  select(day:type, sound_1:language, segment_type, log_rt, task) %>%
+  relocate(log_rt, .after = reaction_time) %>%
+  relocate(language, .before = word_pair)
+```
+
+```{r save-filtered-axtest-data}
+# both are filtered only for those who came back for day 2
+
+# save filtered (with all the columns) as csv file
+write_excel_csv(filtered_test_mad, "clean_data/filtered_mld_study2_ax_test_all_metadata.csv")
+
+# save filtered (with less columns) as csv file
+write_excel_csv(filtered_test, "clean_data/filtered_mld_study2_ax_test.csv")
+```
+
+
+------------------------------------------------------------------------
+# data cleaning of AX discrimination training data
+
+```{r initial-cleaning-ax-train}
+# this cleaned data will be all trials from all participants before filtering outliers, etc.
+
+# first, select only the relevant columns and clean up their names
+unfiltered_ax_training <- AX_training_df %>%
+  select(
+    `Local Date and Time`,
+    `Participant Private ID`,
+    `Participant Starting Group`,
+    `Current Spreadsheet`,
+    `Trial Number`,
+    `Display`,
+    `Screen`,
+    `Response Type`,
+    `Response`,
+    `Reaction Time`,
+    `Correct`,
+    `Tag`,
+    `allocator-j6cm`,
+    `Spreadsheet: word_pair`,
+    `Spreadsheet: signal`,
+    `Spreadsheet: type`,
+    `Spreadsheet: word_A`,
+    `Spreadsheet: word_B`,
+    `Spreadsheet: sound_1`,
+    `Spreadsheet: sound_2`,
+    `Spreadsheet: language`,
+    `Spreadsheet: gloss_A`,
+    `Spreadsheet: gloss_B`,
+    `Spreadsheet: pitch_accent_A`,
+    `Spreadsheet: pitch_accent_B`,
+    `Spreadsheet: phoneme_quality`,
+    `Spreadsheet: phoneme_identity_A`,
+    `Spreadsheet: phoneme_identity_B`,
+    `Spreadsheet: length_A`,
+    `Spreadsheet: length_B`,
+    `Spreadsheet: segment_type`,
+    `Spreadsheet: word_position`,
+    `Spreadsheet: task`,
+    `Manipulation: F_response`,
+    `Manipulation: J_response`
+  ) %>%
+  clean_names() %>%
+  rename(
+    privateID = participant_private_id, 
+    condition = allocator_j6cm,
+    word_pair = spreadsheet_word_pair,
+    signal = spreadsheet_signal,
+    type = spreadsheet_type,
+    word_A = spreadsheet_word_a,
+    word_B = spreadsheet_word_b,
+    sound_1 = spreadsheet_sound_1, 
+    sound_2 = spreadsheet_sound_2,
+    language = spreadsheet_language, 
+    gloss_A = spreadsheet_gloss_a,
+    gloss_B = spreadsheet_gloss_b,
+    pitch_accent_A = spreadsheet_pitch_accent_a,
+    pitch_accent_B = spreadsheet_pitch_accent_b,
+    phoneme_quality = spreadsheet_phoneme_quality,
+    phoneme_identity_A = spreadsheet_phoneme_identity_a,
+    phoneme_identity_B = spreadsheet_phoneme_identity_b,
+    length_A = spreadsheet_length_a,
+    length_B = spreadsheet_length_b,
+    segment_type = spreadsheet_segment_type,
+    word_position = spreadsheet_word_position,
+    task = spreadsheet_task,
+    F_response = manipulation_f_response,
+    J_response = manipulation_j_response) %>%
+  # then filter to include only the keyboard responses
+  filter(display == "training_trial" & response_type == "response") %>%
+  # also response column so that all the values are lowercase
+  mutate(response = tolower(response)) %>%
+  # change all necessary columns to be factors
+  mutate(response = as.factor(response), 
+         privateID = as.factor(privateID), 
+         condition = as.factor(condition), 
+         word_pair = as.factor(word_pair), 
+         signal = as.factor(signal), 
+         type = as.factor(type), 
+         language = as.factor(language)) %>%
+  # clean IDs by matching the privateIDs from clean_IDs 
+  # using inner join (only keeps only matching rows in x instead of trying to make all combinations of x and y) by privateID, drop unmatched rows in y but throws error in case any row in the current data frame doesn't have a matching row in vas_IDs
+  inner_join(clean_IDs, by = c("privateID"), unmatched = c(x = "error", y = "drop"), relationship = "many-to-one") %>%
+  # remove privateID and move ID to be after date
+  select(-c(privateID)) %>%
+  relocate(ID, .after = local_date_and_time) %>%
+  arrange(ID, local_date_and_time) %>%
+  # and mark each day based on timestamp
+  # first need to separate date and time
+  separate_wider_delim(local_date_and_time, delim = " ", names = c("local_date", "local_time")) %>%
+  mutate(local_date = as.Date(local_date, format = "%d/%m/%Y")) %>%
+  group_by(ID) %>%
+  mutate(day = as.numeric(factor(local_date)), .after = local_date) %>%
+  # convert day to factor and relevel condition
+  mutate(day = as.factor(day), condition = factor(condition, levels = c("lowLD", "highLD"))) %>%
+  ungroup()
+```
+
+```{r ax-train-sanity-check}
+# sanity checks to make sure the day 1 and day 2 tags worked
+# THERE SHOULD BE NO DAY 2'S (training only took place on day 1)
+
+# should see 288 trials for each day
+unfiltered_ax_training %>% group_by(ID, day) %>% summarize(day_n = n()) 
+
+# sub 196 has 331 trials for some reason
+s196 <- unfiltered_ax_training %>% filter(ID == "196" & day == "1")
+# looked at the raw data for s196 - a lot of weird stuff happened with the time and recording of data, something must have happened with the Gorilla servers (the training started at trial 264, in between trial 288 and starting back at 1 again, the timestamp of local time jumps by like an hour and a half, but the UTC time goes back half an hour, and the minute stamps themselves don't match up with what the participant did on Gorilla, so I think Gorilla messed up big time in presenting this task to the participant)  
+# but also one trial is an exact duplicate
+# everyone else looks good, but I will remove this participant with the subsequent data wrangling (when I filter trials by reaction time, etc.)
+
+
+# 143, 176 have one duplicated trial
+# since this is the unfiltered data, I will keep in s196, but remove the duplicates
+
+training <- unfiltered_ax_training %>%
+  distinct() %>%
+  # and add extra meta-data column to indicate if the speaker for sound_1 and sound_2 were the same or different (between M speaker and F speaker)
+  mutate(.after = sound_2, speaker_signal = case_when(
+    str_detect(sound_1, "F_") & str_detect(sound_2, "F_") ~ "same",
+    str_detect(sound_1, "M_") & str_detect(sound_2, "M_") ~ "same",
+    str_detect(sound_1, "F_") & str_detect(sound_2, "M_") ~ "different",
+    str_detect(sound_1, "M_") & str_detect(sound_2, "F_") ~ "different",
+    .default = NA
+  ))
+nrow(unfiltered_ax_training) #29709
+nrow(training) # 29706 - 3 less from the exact duplicate trials in 143, 176, and 196 (but kept the rest of the weird stuff in 196)
+```
+
+```{r save-clean-unfiltered-data-ax-train}
+
+# save as csv file, saves in subfolder
+write_excel_csv(training, file = "clean_data/unfiltered_study2_AX_training_all.csv")
+```
+
+
+## filtering AX training data by reaction time MAD 
+this was updated to match the Study 3 cleaning process in July 2025
+
+```{r visualize-mad-filter-by-rt-axtrain}
+# filter AX test results to remove responses with RTs above/below 3 absolute deviations around the median of log reaction time - aka median absolute deviation (MAD)
+## https://www.semanticscholar.org/paper/Detecting-outliers%3A-Do-not-use-standard-deviation-Leys-Ley/5935f52caf1df059ed9e301ad1fbfbd8d01bfa18
+
+
+# I will see how MAD takes care of the fastest responses, then after MAD filtering I will filter out everything below 150 ms and above 10 seconds
+
+individual_mad_axtrain <- training %>% # nrow = 29706
+  # first filter only for those who came back for day 2
+  filter(ID %in% MLD_scores$ID) %>% # nrow = 23040
+  # remove unnecessary columns for now
+  select(-c(local_time, participant_starting_group, current_spreadsheet, trial_number, screen, display, response_type, tag)) %>%
+  group_by(ID) %>% # this makes it so the median and mad calculations are by participant
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), # participant specific median
+         mad = mad(log_rt), # mad calculated using individual median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad))
+
+# this plots the RTs (log transformed) against the 3*MAD upper and lower limits calculated from each individual's median RT
+individual_mad_axtrain%>%ggplot(aes(x=ID,y=log_rt))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+
+# check distributions of raw and transformed reaction time
+hist(individual_mad_axtrain$reaction_time) # very skewed right
+hist(individual_mad_axtrain$log_rt) # mostly normal
+
+
+# now the actual filtering
+# after filtering above/below 3 MAD around median log_rt, then filter trials with RTs > 10 seconds and RTs < 150 ms
+filtered_train_mad <- individual_mad_axtrain %>% # nrow = 23040
+  ungroup() %>%
+  # individual_mad already filtered out those who did not come back for posttest
+  # filter out individual trials where the reaction time is greater than or less than 3*MAD
+  filter(log_rt < upper_mad & log_rt > lower_mad) %>% # nrow = 22548
+  # now filter out anything remaining that is still below 150 ms and above 10 seconds
+  filter(reaction_time >= 150 & reaction_time < 10000)
+nrow(filtered_train_mad) # 21954
+
+
+# I'll make another version of the data that's easier to read without some of the unneeded metadata columns
+filtered_train <- filtered_train_mad %>%
+  select(day:type, sound_1:language, log_rt, task) %>%
+  relocate(log_rt, .after = reaction_time) %>%
+  relocate(language, .before = word_pair)
+
+
+```
+
+```{r save-filtered-axtrain-data}
+# save filtered (with all the columns) as csv file
+write_excel_csv(filtered_train_mad, "clean_data/filtered_mld_study2_ax_train_all_metadata.csv")
+
+# save filtered (with less columns) as csv file
+write_excel_csv(filtered_train, "clean_data/filtered_mld_study2_ax_train.csv")
+
+```
+
+------------------------------------------------------------------------
+
+# vas visualizations
+
+```{r two-day-vas-scatterplot}
+# day 1 vs day 2 VAS
+
+visualization_vas <- mld_filtered_matlab %>%
+  group_by(ax_condition, pair, prepost)
+
+ggplot(visualization_vas, aes(x = as.factor(first_dim_step), y = norm_response)) +
+    geom_point(aes(group = ax_condition, color = ax_condition), alpha = 0.5) +
+    geom_smooth(aes(group = ax_condition, color = ax_condition), method = "loess", se=FALSE) +
+    labs(color = "Training Condition", y = "Response", x = "First Dimension Step") +
+  coord_cartesian(y = c(0, 100)) +
+    theme(legend.position = "top") +
+  facet_grid(pair~prepost)
+
+# 21 pages because there are 103 participants and 5 participants per page
+# for (i in 1:21){
+# ggplot(visualization_vas2, aes(x = as.factor(first_dim_step), y = (norm_response/100))) +
+#     geom_point(aes(group = prepost, color = prepost), alpha = 0.5) +
+#     geom_smooth(aes(group = prepost, color = prepost), method = "glm", method.args = list(family = "quasibinomial"), se=FALSE) +
+#     labs(color = "Pre/Post", y = "Response/100", x = "First Dimension Step") +
+#     theme(legend.position = "top") +
+#     ggforce::facet_grid_paginate(pair~ID, ncol = 5, nrow = 4, page = i)
+#   ggsave(filename = paste0("prepost-vas/prepost_vas", i, ".png"))
+# }
+
+ggplot(visualization_vas, aes(x = as.factor(first_dim_step), y = norm_response)) +
+    geom_point(aes(group = prepost, color = prepost), alpha = 0.5) +
+    geom_smooth(aes(group = prepost, color = prepost), method = "loess", se = FALSE) +
+    labs(color = "Pre/Post", y = "Response", x = "First Dimension Step") +
+    coord_cartesian(y = c(0, 100)) +
+    theme(legend.position = "top") +
+    ggforce::facet_grid_paginate(pair~ID, ncol = 5, nrow = 4, page = 3)
+```
+
+
+
+
+# calculating dprime scores
+
+## AX testing
+```{r calculate-dprime-ax-test}
+# make d-prime data frames for the discrimination data
+
+test_dprime_interim <- filtered_test %>%
+  mutate(dprime_response =
+          ifelse(signal == "different" & correct == 1, "hit",
+          ifelse(signal == "different" & correct == 0, "miss",
+          ifelse(signal == "same" & correct == 1, "corr_reject",
+          ifelse(signal == "same" & correct == 0, "false_alarm", NA))))) %>%
+  group_by(ID, day, prepost) %>%
+  mutate(median_log_rt = median(log_rt)) %>% ungroup()
+
+
+dprime_prepost_test <- test_dprime_interim %>%
+  group_by(ID, day, prepost, dprime_response, condition) %>% # I just want all these columns in the summarize output, I'm really only grouping by ID, day, and dprime_response
+  summarize(n = n()) %>%
+  pivot_wider(names_from = dprime_response, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  ungroup()
+
+test_dprime_calculation <- dprime(n_hit = dprime_prepost_test$hit, n_fa = dprime_prepost_test$false_alarm, n_miss = dprime_prepost_test$miss, n_cr = dprime_prepost_test$corr_reject)
+
+dprime_prepost_test$dprime = test_dprime_calculation$dprime
+dprime_prepost_test$criterion = test_dprime_calculation$c
+
+
+hist(dprime_prepost_test$dprime) # pretty normal tbh
+hist(dprime_prepost_test$criterion) # kinda fat tailed
+
+
+```
+
+```{r save-prepost-dprime-data}
+write_excel_csv(test_dprime_interim, file = "clean_data/AX_prepost_test_bytrial_dprime_labels.csv")
+
+
+write_excel_csv(dprime_prepost_test, file = "clean_data/AX_prepost_test_dprime_scores.csv")
+
+```
+
+
+## AX training
+
+```{r calculate-dprime-ax-train}
+## training across blocks
+
+# not sure how I want to do this, because order of blocks is different for everyone (and irrelevant for lowLD) - but if I group it like I did below, lowLD have one row for dprime and highLD have two rows for dprime, because it's grouped by language
+# training dprime may largely be irrelevant, or maybe I just compared the Japanese ones, but then these's less trials in Japanese between lowLD and highLD
+
+# yeah not sure what to do about training analysis
+training_dprime_interim <- filtered_train %>%
+  mutate(dprime_response =
+          ifelse(signal == "different" & correct == 1, "hit",
+          ifelse(signal == "different" & correct == 0, "miss",
+          ifelse(signal == "same" & correct == 1, "corr_reject",
+          ifelse(signal == "same" & correct == 0, "false_alarm", NA))))) %>%
+  group_by(ID, condition, language) %>%
+  mutate(median_log_rt = median(log_rt))
+
+dprime_training <- training_dprime_interim %>%
+  group_by(ID, day, dprime_response, condition, language) %>%
+  summarize(n = n()) %>%
+  pivot_wider(names_from = dprime_response, values_from = n) %>%
+  replace(is.na(.), 0) %>%
+  ungroup()
+
+training_dprime_calculations <- dprime(n_hit = dprime_training$hit, n_fa = dprime_training$false_alarm, n_miss = dprime_training$miss, n_cr = dprime_training$corr_reject)
+
+dprime_training$dprime = training_dprime_calculations$dprime
+dprime_training$criterion = training_dprime_calculations$c
+
+```
+
+
+# visualizing AX testing and training
+
+## visualizing AX testing dprime scores by condition
+```{r ax-test-dprime-scatterplot}
+# pre-test highLD n = 50
+# post-test highLD n = 41 (attrition of 9)
+# pre-test lowLD n = 53
+# post-test lowLD n = 49 (attrition of 4)
+
+ggplot(dprime_prepost_test, aes(x = prepost, y = dprime)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(group = ID), alpha = 0.5) +
+  stat_summary(aes(group = 1), geom = "point", fun = "mean", color = "red", size = 2) +
+  stat_summary(geom = "errorbar", fun.data = "mean_se", color = "red", width = 0.2) +
+  stat_summary(aes(group = 1), geom = "line", fun = "mean", color = "red") +
+  facet_wrap(vars(condition)) +
+  labs(title = "Discrimination Sensitivity (D-prime) From Pre- to Post-Test \nby Condition Group")
+# ggsave(filename = "discrimination/prepost_dprime.png")
+
+ggplot(dprime_prepost_test, aes(y = dprime, x = criterion)) +
+  geom_point()
+# more people than not were conservative with their bias to detect a signal, and there was a mild
+dprime_prepost_test %>%
+  cor_test(dprime, criterion)
+```
+
+## visualizing AX testing reaction times by condition
+```{r ax-test-rt-scatterplot}
+visualization_test_rt <- filtered_test %>%
+  filter(correct == 1) %>%
+  group_by(ID, prepost, condition) %>%
+  mutate(log_rt = log(reaction_time)) %>%
+  summarize(mean_rt = mean(reaction_time), mean_log_rt = mean(log_rt))
+  
+ggplot(visualization_test_rt, aes(x = prepost, y = mean_log_rt)) +
+  geom_point(alpha = 0.5) +
+  geom_line(aes(group = ID), alpha = 0.5) +
+  stat_summary(aes(group = 1), geom = "point", fun = "mean", color = "red", size = 2) +
+  stat_summary(geom = "errorbar", fun.data = "mean_se", color = "red", width = 0.2) +
+  stat_summary(aes(group = 1), geom = "line", fun = "mean", color = "red") +
+  facet_wrap(vars(condition)) +
+  labs(title = "Discrimination Reaction Time From Pre- to Post-Test \nby Condition Group", y = "log of reaction time")
+#ggsave(filename = "discrimination_prepost_rt.png")
+```
+
+
+## visualization of AX training dprime values by language
+```{r ax-train-dprime-scatterplot}
+# doing this by block doesn't make sense, it would make more sense to do it by language
+# that's why I didn't model this data
+# ggplot(dprime_training, aes(x = as.factor(block), y = dprime)) +
+#   geom_point(alpha = 0.5, aes(color = language)) +
+#   geom_line(aes(group = ID), alpha = 0.5) +
+#   stat_summary(aes(group = 1), geom = "point", fun = "mean", color = "red", size = 3) +
+#   stat_summary(aes(group = 1), geom = "line", fun = "mean", color = "red") +
+#   facet_wrap(vars(condition)) +
+#   labs(title = "Discrimination Sensitivity (D-prime) Across Training Blocks \nby Condition Group")
+```
+
+
+------------------------------------------------------------------------
+
+Need to go back over these
+# simple statistics - obsolete as of July 2025
+
+Quick and dirty condition group comparisons with calculated d-prime scores and mean log reaction time
+
+### AX testing, comparing group dprime means across conditions using ANOVA
+```{r anova-ax-test-dprime}
+# two-way mixed anova
+# within-subjects variable is prepost (pre-test vs. post-test)
+# between-subjects variable is condition (lowLD vs. highLD)
+axtest.anova <- dprime_prepost_test %>% 
+  mutate(ID = as.factor(ID)) %>%
+  ungroup() %>%
+  anova_test(dv = dprime, wid = ID, within = prepost, between = condition)
+
+get_anova_table(axtest.anova)
+```
+
+### AX testing, comparing group (log) mean reaction times across conditions using ANOVA
+```{r anova-ax-test-rt}
+# two-way mixed anova
+# within-subjects variable is prepost (pre-test vs. post-test)
+# between-subjects variable is condition (lowLD vs. highLD)
+axtestrt.anova <- visualization_test_rt %>% 
+  mutate(ID = as.factor(ID)) %>%
+  ungroup() %>%
+  anova_test(dv = mean_log_rt, wid = ID, within = prepost, between = condition)
+
+get_anova_table(axtestrt.anova)
+```
+
+### AX training, comparing group mean dprime scores across conditions and blocks using ANOVA
+
+```{r anova-ax-train-dprime}
+# two-way mixed anova
+# within-subjects variable is prepost (pre-test vs. post-test)
+# between-subjects variable is condition (lowLD vs. highLD)
+axtrain.anova <- dprime_training %>% 
+  mutate(ID = as.factor(ID)) %>%
+  ungroup() %>%
+  anova_test(dv = dprime, wid = ID, within = block, between = condition)
+
+get_anova_table(axtrain.anova)
+```
+
+--------------------
+
+# graveyard
+
+these Rdata files still exist, but their data is obsolete as of the July 2025 update of data cleaning to match Study 3
+```{r old-save-Rdata-lists}
+# obsolete list
+# save as R objects to preserve dataframe properties for just VAS data
+# save(list = c("filtered_vas",
+#               "filtered_matlab",
+#               "mld_filtered_matlab",
+#               "visualization_vas"),
+#      file = "Rdata/study2_cleaned_vas.Rdata")
+
+# obselete list
+# save as R objects to preserve dataframe properties for just AX testing data
+# save(list = c("filtered_test_full",
+#               "filtered_test",
+#               "mld_filtered_test",
+#               "test_trial_dprime",
+#               "mld_test_trial_dprime",
+#               "test_dprime_calculation",
+#               "dprime_prepost_test",
+#               "mld_dprime_prepost_test",
+#               "visualization_test_rt"),
+#      file = "Rdata/study2_cleaned_AX_test.Rdata")
+
+# obselete list
+# save as R objects to preserve dataframe properties for just AX training data
+# save(list = c("filtered_train_full",
+#               "filtered_train",
+#               "mld_filtered_train",
+#               "training_trial_dprime",
+#               "training_dprime_calculations",
+#               "dprime_training",
+#               "dprime_training_highLD",
+#               "dprime_training_lowLD"),
+#      file = "Rdata/study2_cleaned_AX_train.Rdata")
+```
+
+
+------------------------------------------------------------------------
+## Session Info
+
+```{r sessionInfo, results='hide'}
+sessionInfo()
+```
