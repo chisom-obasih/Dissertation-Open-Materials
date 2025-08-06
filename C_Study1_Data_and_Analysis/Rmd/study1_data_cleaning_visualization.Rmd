@@ -1,0 +1,465 @@
+---
+title: "Study 1 Data Cleaning and Visualization"
+author: "Chisom Obasih"
+date: "March 2025"
+subtitle: "Cleaning and wrangling raw data of Visual Analog Scale (VAS) task from Study 1 of dissertation, some visualizations"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+## Libraries
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+```
+
+------------------------------------------------------------------------
+
+
+## Read in data
+
+```{r read-data, message = FALSE}
+# folder that contains raw data
+# data.path <- "raw_data"
+
+# Make list of the four spreadsheet conditions of the VAS task
+VAS_files <- list.files(path = "raw_data", pattern = "VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+
+# From the single list of data file names, iteratively read each csv files into a single data frame
+vas <- VAS_files %>%
+  map_df(~import(.x))
+```
+
+## Custom visualization theme
+
+```{r custom-ggplot-theme}
+my_theme_param = theme(
+  text = element_text(family = "Arial"),
+  title = element_text(family = "Arial"),
+  plot.title = element_text(size = 11.5, hjust = .5),
+  legend.position = "bottom", 
+  legend.direction = "horizontal",
+  strip.text.x = element_text(size = 8), 
+  legend.text = element_text(size = 8, hjust = .5), 
+  legend.title = element_text(size = 8),
+  legend.justification = "right",
+  axis.text.x = element_text(angle = 0),
+  rect = element_rect(fill = "white"),
+  axis.title = element_text(size = 11.5),
+  axis.text = element_text(face = "plain"),
+  panel.grid = element_line(linetype = "blank"),
+  plot.background = element_blank(),
+  complete = TRUE)
+
+my_theme <- function(){
+  theme_wsj() %+replace%
+    my_theme_param
+}
+
+#colorblind friendly palette values
+# The palette with grey:
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73", "#CC79A7", "#0072B2", "#E69F00", "#F0E442")
+#light blue, reddish-orange, greenish, pink, pastel blue, pastel orange, yellow
+#palette from http://jfly.iam.u-tokyo.ac.jp/color/
+
+# for more info on color-blind friendly palettes for continuous, diverging, and qualitative data, go to: https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3
+# see also: https://sjspielman.github.io/introverse/articles/color_fill_scales.html
+
+#To use for fills, add
+#scale_fill_manual(values=cbPalette)
+
+#To use for line and point colors, add
+#scale_colour_manual(values=cbPalette)
+
+```
+
+------------------------------------------------------------------------
+```{r initial-data-cleaning-vas}
+# data cleaning of VAS data
+
+# this cleaned data will be all trials from all participants before filtering outliers, etc.
+
+# first, select only the relevant columns and clean up their names
+unfiltered_vas_df <- vas %>%
+  select(
+    `Participant Private ID`,
+    `allocator-vztf`,
+    `Trial Number`,
+    `Display`,
+    `Screen`,
+    `Response Type`,
+    `Response`,
+    `Reaction Time`,
+    `Tag`,
+    `Spreadsheet: sound`,
+    `Spreadsheet: pair`,
+    `Spreadsheet: language`,
+    `Spreadsheet: first_dim_step`,
+    `Spreadsheet: second_dim_step`,
+    `Store: left_word`,
+    `Store: right_word`
+  ) %>%
+  clean_names() %>%
+  rename(
+    ID = participant_private_id, 
+    condition = allocator_vztf, 
+    sound = spreadsheet_sound, 
+    pair = spreadsheet_pair, 
+    language = spreadsheet_language, 
+    first_dim_step = spreadsheet_first_dim_step, 
+    second_dim_step = spreadsheet_second_dim_step, 
+    left_word = store_left_word, 
+    right_word = store_right_word) %>%
+  # then filter to include only the slider responses
+  filter(display == "trial" & response_type == "response") %>%
+  # then remove ".png" from the left_word and right_word columns
+  mutate(left_word = str_remove_all(left_word, ".png")) %>%
+  mutate(right_word = str_remove_all(right_word, ".png")) %>%
+  # change the ID column to be character to remove "1287" from all ID (making the ID shorter and more manageable)
+  mutate(ID = str_remove(as.character(ID), "1287")) %>%
+  # change the column response to be numerical instead of character
+  # and change ID to be factorial instead of character
+  # and change pair to be factorial rather than character with custom levels
+  mutate(response = as.numeric(response), ID = as.factor(ID), pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru")))
+
+# because the word on the left and right of the slider was randomized by participant, some people's 0 rating means, e.g., indent, while other people's 0 rating means intent
+# so we need to equalize the left and right words across participants and adjust their ratings accordingly, also known as reversing the scales
+reverse_scale = function(x, range) {range - x}
+vas_range = 100
+
+
+unfiltered_vas_df <- unfiltered_vas_df %>%
+  mutate(reverse_scale = ifelse(left_word == "indent" | left_word == "reason" | left_word == "kata" | left_word == "toru", "no", "yes")) %>%
+  mutate(norm_left_word = ifelse(reverse_scale == "no", left_word, right_word)) %>%
+  mutate(norm_right_word = ifelse(reverse_scale == "no", right_word, left_word)) %>%
+  mutate(norm_response = ifelse(reverse_scale == "yes", reverse_scale(response, vas_range), response))
+```
+
+```{r save-clean-unfiltered-data-vas}
+
+# save as csv file, saves in same folder as this .Rmd file
+write_excel_csv(unfiltered_vas_df, file = "clean_data/unfiltered_study1_vas_all.csv")
+```
+
+----------------
+
+## quick preliminary visualization
+
+```{r vas-heatmap-indent-intent}
+# quick visualization
+# indent-intent
+
+indent_intent_df <- unfiltered_vas_df %>%
+  filter(pair == "indent-intent") %>%
+  group_by(ID, first_dim_step, second_dim_step)
+
+ggplot(data = indent_intent_df, aes(x = factor(first_dim_step), y = factor(second_dim_step), color = norm_response)) +
+  geom_raster(aes(fill = norm_response)) +
+  scale_fill_viridis_c(option = "plasma", direction = -1, n.breaks = 5, labels = c("indent (0)", "25", "50", "75", "intent (100)")) +
+  labs(title = "2-dimensional VAS responses for indent vs. intent", x = "VOT Step (1 = Indent, 7 = Intent)", y = "F0 Step (1 = Indent, 5 = Intent)", fill = "Average VAS rating") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+ggsave(filename = "heatmaps/indent-intent.png", width = 100, height = 80, unit = "cm")
+```
+
+```{r vas-heatmap-reason-risen}
+# quick visualization
+# reason-risen
+
+reason_risen_df <- unfiltered_vas_df %>%
+  filter(pair == "reason-risen") %>%
+  group_by(ID, first_dim_step, second_dim_step)
+
+ggplot(data = reason_risen_df, aes(x = factor(first_dim_step), y = factor(second_dim_step), color = norm_response)) +
+  geom_raster(aes(fill = norm_response)) +
+  scale_fill_viridis_c(option = "viridis", direction = -1,  n.breaks = 5, labels = c("reason (0)", "25", "50", "75", "risen (100)")) +
+  labs(title = "2-dimensional VAS responses for reason vs. risen", x = "Spectral Step (1 = Reason, 7 = Risen)", y = "Duration Step (1 = Reason, 5 = Risen)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+ggsave(filename = "heatmaps/reason-risen.png", width = 100, height = 80, unit = "cm")
+```
+
+```{r vas-heatmap-kata-katta}
+# quick visualization
+# kata-katta
+
+kata_katta_df <- unfiltered_vas_df %>%
+  filter(pair == "kata-katta") %>%
+  group_by(ID, first_dim_step, second_dim_step)
+
+ggplot(data = kata_katta_df, aes(x = factor(first_dim_step), y = factor(second_dim_step), color = norm_response)) +
+  geom_raster(aes(fill = norm_response)) +
+  scale_fill_viridis_c(option = "rocket", direction = -1, n.breaks = 5, labels = c("kata (0)", "25", "50", "75", "katta (100)")) +
+  labs(title = "2-dimensional VAS responses for kata vs. katta", x = "Duration Step (1 = kata, 7 = katta)", y = "F0 Contour Step (1 = kata, 5 = katta)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+ggsave(filename = "heatmaps/kata-katta.png", width = 100, height = 80, unit = "cm")
+```
+
+```{r vas-heatmap-toru-tooru}
+# quick visualization
+# toru-tooru
+
+toru_tooru_df <- unfiltered_vas_df %>%
+  filter(pair == "toru-tooru") %>%
+  group_by(ID, first_dim_step, second_dim_step)
+
+ggplot(data = toru_tooru_df, aes(x = factor(first_dim_step), y = factor(second_dim_step), color = norm_response)) +
+  geom_raster(aes(fill = norm_response)) +
+  scale_fill_viridis_c(option = "mako", direction = -1,  n.breaks = 5, labels = c("toru (0)", "25", "50", "75", "tooru (100)")) +
+  labs(title = "2-dimensional VAS responses for toru vs. tooru", x = "Duration Step (1 = toru, 7 = tooru)", y = "F0 Contour Step (1 = toru, 5 = tooru)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+ggsave(filename = "heatmaps/toru-tooru.png", width = 100, height = 80, unit = "cm")
+```
+
+
+
+
+------------------------------------------------------------------------
+
+## filtering and data cleaning for matlab rotated logistic curve fitting script
+
+```{r reaction-time-distributions}
+# looking at distribution of reaction time after filtering out all responses above 10 seconds
+# this is to determine what transformation of reaction_time is best for this data
+hist <- unfiltered_vas_df %>%
+  filter(reaction_time < 10000) %>% # nrow = 41380
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col())
+hist(hist$reaction_time)
+# skewed right
+
+hist(sqrt(hist$reaction_time))
+# better but still skewed right
+
+hist(log(hist$reaction_time))
+# much more normal
+```
+
+```{r visualize-group-individual-rt-mad}
+# filter vas results to remove responses with RTs > 10 seconds and then above/below 3 absolute deviations around the median - aka median absolute deviation (MAD)
+## https://www.semanticscholar.org/paper/Detecting-outliers%3A-Do-not-use-standard-deviation-Leys-Ley/5935f52caf1df059ed9e301ad1fbfbd8d01bfa18
+
+## first check the distributions of RTs compared to the upper and lower MAD limits by group and by individual
+
+# unfiltered_vas_df nrow = 42000
+group_mad <- unfiltered_vas_df %>%
+  filter(reaction_time < 10000) %>% # nrow = 41380
+  # remove columns I don't need and move around other columns to new locations
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col()) %>%
+  # transform reaction time into log reaction time to create a normal distribution
+  mutate(log_rt = log(reaction_time), 
+         median_rt = median(log_rt), # median of enter group
+         mad = mad(log_rt), # mad calculated using group median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad)) %>%
+  group_by(ID) %>%
+  mutate(participant_median = median(log_rt))
+
+# this plots every participants individual median RT (log transformed) against the 3*MAD upper and lower limits calculated from the group data
+group_mad%>%ggplot(aes(x=ID,y=participant_median))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+# this plots the RTs (log transformed) of every individual trial against the 3*MAD upper and lower limits calculated from the group median RT
+group_mad%>%ggplot(aes(x=ID,y=log_rt))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+
+
+individual_mad <- unfiltered_vas_df %>%
+  filter(reaction_time < 10000) %>% # nrow = 41380
+  # remove unnecessary columns and move around other columns to different locations
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col()) %>%
+  group_by(ID) %>% # this makes it so the median and mad calculations are by participant
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), # participant specific median
+         mad = mad(log_rt), # mad calculated using individual median RT
+         upper_mad = median_rt + (3*mad),
+         lower_mad = median_rt - (3*mad))
+
+# this plots the RTs (log transformed) against the 3*MAD upper and lower limits calculated from each individual's median RT
+individual_mad%>%ggplot(aes(x=ID,y=log_rt))+
+  geom_point()+
+  geom_point(aes(y=upper_mad),color="red")+
+  geom_point(aes(y=lower_mad),color="blue")
+
+# given that everybody's median RT is within the group MAD limits (such that I don't need to get rid of any participant entirely), this shows that its definitely better to filter trials based on individual MAD limits rather than group MAD limits
+```
+
+```{r filter-data-by-rt-mad}
+# filter vas results to remove responses with RTs > 10 seconds and then above/below 3 absolute deviations around the median - aka median absolute deviation (MAD)
+# now the actual filtering
+filtered_vas <- unfiltered_vas_df %>%
+  filter(reaction_time < 10000) %>% # nrow = 41380
+  # remove unnecessary columns and move around other columns to different locations
+  select(-c(trial_number, screen, display, response_type, tag)) %>%
+  relocate(c(first_dim_step, second_dim_step), .before = last_col()) %>%
+  group_by(ID) %>% # this makes it so the median and mad calculations are by participant
+  mutate(log_rt = log(reaction_time), # log transform rt to create normal distribution
+         median_rt = median(log_rt), 
+         mad = mad(log_rt), # mad calculated using individual median RT
+         upper_mad = median_rt + (3*mad), # participant specific median
+         lower_mad = median_rt - (3*mad)) %>%
+  # filter out individual trials where the reaction time is greater than or less than 3*MAD
+  filter(log_rt < upper_mad & log_rt > lower_mad) %>%
+  arrange(ID, pair, first_dim_step, second_dim_step)
+nrow(filtered_vas) # 40683
+
+
+# writing the data for matlab, removing columns that would make each row unique so that the matlab script can calculate rotated logistic curve parameters based only on data grouped by ID and pair, giving each individual participants four different VAS calculations
+filtered_matlab <- filtered_vas %>%
+  select(-c(condition:sound, language:norm_right_word, log_rt:lower_mad)) %>%
+  relocate(second_dim_step, .before = first_dim_step)
+
+# average across the responses for each of the stimuli (for each first x second dimension step combination)
+filtered_matlab_avg <- filtered_matlab %>%
+  group_by(ID, pair, second_dim_step, first_dim_step) %>%
+  summarize(avg_response = mean(norm_response))
+```
+
+```{r save-filtered-data}
+
+# save filtered (with all the columns) as csv file
+export(filtered_vas, "clean_data/filtered_study1_vas.csv", row.names = F, quote = F)
+
+# save matlab (with 4 columns) as txt file
+export(filtered_matlab, "clean_data/filtered_study1_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+
+# save the averaged version (didn't end up using this version)
+export(filtered_matlab_avg, "clean_data/filtered_study1_vas_avg_matlab.txt", sep = "\t", row.names = F, quote = F)
+```
+------------------------------------------------------------------------
+## more visualizations
+
+```{r language-heatmaps-averaged-across-IDs}
+# add language column back
+group_heatmap_lang <- filtered_matlab %>%
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "english", ifelse(pair == "toru-tooru" | pair == "kata-katta", "japanese", "")), .after = "pair") %>%
+  group_by(language, first_dim_step, second_dim_step) %>%
+  summarize(norm_resp = mean(norm_response))
+
+
+ggplot(data = group_heatmap, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_resp)) + facet_wrap(vars(language), nrow = 2, ncol = 1) +
+  scale_fill_viridis_c(option = "cividis", direction = -1, limits = c(0, 100), n.breaks = 5, labels = c("0 (Word A)", "25", "50", "75", "100 (Word B)")) +
+  labs(title = "2-dimensional VAS responses for English and Japanese continua\n Averaged across participants", x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Secondary Dimension Step (1 = Word A, 5 = Word B)", fill = "Average VAS rating") +
+  theme(legend.direction = "vertical", legend.position = "right", legend.key.size = unit(4, "cm"), text = element_text(size = 40), legend.text = element_text(size = 30))
+
+
+ggsave(filename = "heatmaps/averaged_across_ID_per_lang.png", width = 80, height = 100, unit = "cm")
+
+
+group_heatmap_pair <- filtered_matlab %>%
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "english", ifelse(pair == "toru-tooru" | pair == "kata-katta", "japanese", "")), .after = "pair") %>%
+  group_by(pair, first_dim_step, second_dim_step) %>%
+  summarize(norm_resp = mean(norm_response))
+
+ggplot(data = group_heatmap_pair, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_resp)) + facet_wrap(vars(pair)) +
+  scale_fill_viridis_c(option = "cividis", direction = -1, limits = c(0, 100), n.breaks = 5, labels = c("0 (Word A)", "25", "50", "75", "100 (Word B)")) +
+  labs(title = "2-dimensional VAS responses for English and Japanese continua by pair\n Averaged across participants", x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Secondary Dimension Step (1 = Word A, 5 = Word B)", fill = "Average VAS rating") +
+  theme(legend.direction = "vertical", legend.position = "right", legend.key.size = unit(4, "cm"), text = element_text(size = 40), legend.title.position = "top", legend.text = element_text(size = 30))
+
+
+ggsave(filename = "heatmaps/averaged_across_ID_per_pair.png", width = 120, height = 80, unit = "cm")
+```
+
+
+```{r vas-response-histograms}
+visualization <- filtered_matlab %>%
+  group_by(ID, pair, second_dim_step)
+
+# response histograms by pair for each participant 
+
+## ggforce::facet_grid/wrap_pagination prints one page at a time, but pagination allows for all the plots to be plotted on multiple pages
+## so if I want to save all of them, I can put this in a loop
+
+# for loop 20 times for 20 pages because each page has 5 participants on it from the facet grid
+for (i in 1:20){
+  ggplot(visualization, aes(x = norm_response)) +
+    # ID is rows, pair is cols
+    ggforce::facet_grid_paginate(ID~pair, ncol = 4, nrow = 5, page = i) +
+    geom_histogram()
+    ggsave(filename = paste0("response_histograms/response_histograms_", i, ".png"))
+  }
+```
+
+
+
+```{r vas-scatterplots-geom-smooth-glm-fit}
+## this took 40 minutes so out of fear of it running again, I'm commenting it out
+
+# scatterplots with rough quasibinomial fit purely for visualization purposes
+# because of the two-dimensionality of the data, plots are split by pair and by each step of the secondary dimension for each participant
+# so the pagination will have 20 plots for one participant per page
+
+# for loop 100 times for 100 pages because each page of plots has 20 plots for one participant
+# for (i in 1:length(unique(visualization$ID))){
+#   ggplot(visualization, aes(x = as.factor(first_dim_step), y = (norm_response/100))) +
+#     geom_point(aes(color = pair), alpha = 0.5) +
+#     geom_smooth(aes(group = as.factor(second_dim_step), linetype = as.factor(second_dim_step)), method = "glm", method.args = list(family = "quasibinomial"), se=FALSE, color = "black") +
+#     labs(linetype = "Second Dimension Step", y = "Response/100", x = "First Dimension Step") +
+#     theme(legend.position = "top") +
+#     guides(color = "none") +
+#     ggforce::facet_grid_paginate(pair~ID:as.factor(second_dim_step), ncol = 5, nrow = 4, page = i)
+#   ggsave(filename = paste0("scatterplots/scatterplot_", unique(visualization$ID)[i], ".png"), width = 10, height = 8, units = "in")
+# }
+```
+
+```{r vas-scatterplots-geom-smooth-loess-fit}
+# scatter plots with mean lines instead of fitted curves, and plots are collapsed across the steps of the second dimension
+
+ggplot(visualization, aes(x = as.factor(first_dim_step), y = norm_response)) +
+  geom_point(alpha = 0.5, aes(color = pair)) +
+  geom_smooth(method = "loess", se = FALSE, aes(group = pair, color = pair)) +
+    #stat_summary(fun = "mean", geom = "line", aes(group = pair, color = pair)) +
+    labs(y = "Response", x = "First Dimension Step") +
+    theme(legend.position = "top") +
+    ggforce::facet_wrap_paginate(vars(ID), ncol = 5, nrow = 4, page = 1)
+```
+
+## Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```

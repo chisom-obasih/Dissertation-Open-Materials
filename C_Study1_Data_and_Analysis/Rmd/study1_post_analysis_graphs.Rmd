@@ -1,0 +1,1805 @@
+---
+title: "Study 1 Post-Analysis Visualizations"
+author: "Chisom Obasih"
+date: "May 2025"
+subtitle: "Visualizations and tables after runnning rotated logistic curvefitter and Bayesian mixed-effects models"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+Can get custom visualization theme from personal template
+
+
+# Libraries
+
+Add more libraries from personal template as necessary
+
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+
+
+library(ggforce) # for the function geom_arc
+library(brms) # for brms summary functions
+library(bayestestR) # for brms output
+library(insight) # for help with brms and bayestestR
+library(broom.mixed) # for help with tidy output of mixed effects models
+library(sjPlot) # alternative table and plotting method for regression models
+library(parameters) # also helps with brms and bayestestR
+
+
+library(flextable)
+library(ftExtra)
+library(patchwork) # putting graphs together
+library(modelsummary)
+library(gt)
+library(gtsummary)
+library(cowplot)
+```
+
+------------------------------------------------------------------------
+
+
+# Read in data
+
+```{r read-data, message = FALSE}
+# these paths are to save figures and the Rdata file with the directory for my dissertation Rproj
+save.figures.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/figure"
+
+save.tables.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/table"
+
+save.data.file <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/data/study1_data.Rdata"
+
+# load in Rdata that contains most if not all the dataframes for post-analysis data, should be in the current wd
+load(file = "Rdata/study1_post_analysis_visualization_workspace.Rdata")
+```
+
+```{r save-data-to-use-in-manuscript}
+# after doing the post-analysis visualizations and data summarizing, these are the dataframes, etc. that need to be loaded into the R environment to knit the Rmd files within the Rproj for my dissertation
+
+# run this every time I make a new table/plot that will be used directly in the Rmd file of the chapter
+save(ft.st1.proc,
+     ft.continua,
+     ft.ldq,
+     ft.estimates.grouped,
+     ft.loo,
+     ft.fixed,
+     ft.random,
+     ft.posthoc.fixed,
+     ft.posthoc.random,
+     ft.theta.fixed,
+     ft.theta.random,
+      file = save.data.file)
+
+# save all the stuff made in this file in case session restarts
+save(lang_colors,
+     st1_procedure,
+     st1_proc_colnames,
+     ft.st1.proc,
+     demographics,
+     continua.table.2d,
+     new_line_continua_header,
+     ft.continua,
+     ldq_contexts,
+     ft.ldq,
+     estimate_labels,
+     predictor_labels,
+     estimates_summary_pair,
+     ft.estimates.grouped,
+     loo_focus,
+     ft.loo,
+     group76_heatmap_pair,
+     p.heatmap.group,
+     matlab_input_trials_76,
+     matlab_rl_curvefit_preds,
+     indiv76_heatmap_pair,
+     visualize_theta76,
+     plot_histograms,
+     plot_scatterplots,
+     plot_heatmaps,
+     combined_choices,
+     a,
+     b,
+     c,
+     plot_scatterplots_1d,
+     presentation_choices,
+     presentation_scatterplot_df,
+     d,
+     cleaned_parameter_names,
+     fixed_bayestest_table,
+     ft.fixed,
+     brm.3.random,
+     brm.3.ngrps,
+     fit.3.summary,
+     fit.3.r2,
+     fit.3.rescor,
+     brm_vas_random,
+     vas_random_headers,
+     random_effects_labels,
+     ft.random,
+     ce.fit.3,
+     pce,
+     pce.fit.3.patch,
+     posthoc_parameter_names,
+     posthocpos_fixed_bayestest,
+     posthocneg_fixed_bayestest,
+     posthoc_fixed_bayestest,
+     univariate_headers,
+     ft.posthoc.fixed,
+     posthocpos.r2,
+     posthocpos.sum,
+     posthocpos.ngrps,
+     posthoc.pos.random,
+     posthocneg.r2,
+     posthocneg.sum,
+     posthocneg.ngrps,
+     posthoc.neg.random,
+     posthoc_random,
+     random_univariate_headers,
+     ft.posthoc.random,
+     posthocpos.ce,
+     posthocneg.ce,
+     posthocpos.pce,
+     pce.posthoc.patch,
+     theta_parameter_names,
+     thetapos_fixed_bayestest,
+     thetaneg_fixed_bayestest,
+     theta_fixed_bayestest,
+     theta_parameter_labels,
+     ft.theta.fixed,
+     thetapos.r2,
+     thetapos.sum,
+     thetapos.ngrps,
+     theta.pos.random,
+     thetaneg.r2,
+     thetaneg.sum,
+     thetaneg.ngrps,
+     theta.neg.random,
+     theta_random,
+     ft.theta.random,
+     thetapos.ce,
+     thetaneg.ce,
+     thetapos.pce,
+     thetaneg.pce,
+     pce.thetavar.patch,
+     pce.theta.int1,
+     pce.theta.int2,
+     pce.theta.patch,
+     # manually making non-interaction cond eff plot for theta model
+     test,
+     df,
+     negthetavar,
+     test2,
+     df2,
+     posthetavar,
+     manual.thetavar.patch, # made from negthetavar and posthetavar
+     auto.thetavar.patch, # made from pce.theta.int1 and pce.theta.int2
+     manual.theta.patch, # made from manual.thetavar.patch and auto.thetavar.patch
+     # making of interaction cond eff plot for theta model
+     full.range.pointvar,
+     median.var,
+     uppermad.var,
+     lowermad.var,
+     int_conditions,
+     interact.pos,
+     df3,
+     int.pos.plot,
+     interact.neg,
+     df4,
+     int.neg.plot,
+     slopevartheta.patch,
+      file = "Rdata/st1-post-analysis-active-working-space.Rdata")
+```
+
+```{r reload-rdata}
+# if session restarts, load in the data made here - be careful with this
+load(file = save.data.file)
+load(file = "Rdata/st1-post-analysis-active-working-space.Rdata")
+```
+
+
+```{r plot-themes}
+# set consistent colors to use in plots
+
+# bright seven from ggpubfigs
+# https://github.com/JLSteenwyk/ggpubfigs?tab=readme-ov-file#color-palettes
+bright_seven <- c("#4477AA", "#228833", "#AA3377", "#BBBBBB", "#66CCEE", "#CCBB44", "#EE6677")
+tol_eight <- c("#332288", "#117733", "#44AA99", "#88CCEE", "#DDCC77", "#CC6677", "#AA4499", "#882255")
+
+# when comparing language
+lang_colors = c("English" = "#AA4499", "Japanese" = "#4477AA")
+
+# when looking at slope vs response var, maybe just change shape? maybe don't need to do anything different
+```
+
+```{r flextable-settings}
+get_flextable_defaults()
+
+# set_table_properties(layout = "autofit", align = "center", opts_word = list("keep_with_next" = T)) %>% 
+    
+    
+set_flextable_defaults(font.family = "Times New Roman", eastasia.family = "MS Mincho", line_spacing = 1.2, table.layout = "fixed", big.mark = "", split = FALSE, "")
+```
+
+--------------------
+
+# in methodology section
+
+```{r study1-procedures-table}
+# table that describes procedure for study 1
+st1_proc_colnames = c("task_order" = "Task Order", "task" = "Task", "purpose" = "Purpose", "duration" = "Approximate duration (mins)")
+
+st1_procedure <- data.frame(
+  task_order = c(1, 2, 3),
+  task = c("Consent form, system and headphone checks", "L1 and L2 VAS", "LDQ"),
+  purpose = c("- Obtain consent\n- Ensure browser auto plays audio and volume is set to comfortable listening level\n- Ensure participant is wearing wired binaural headphones", "- Measure L1 and L2 speech categorization gradiency\n- Measure L1 and L2 secondary cue use", "- Measure experiential linguistic diversity from active and passive use of and exposure to known and unknown languages"),
+  duration = c(5, 30, 25)) 
+
+
+ft.st1.proc <- flextable(st1_procedure) %>%
+  labelizor(part = "header", labels = st1_proc_colnames) %>%
+  align(j = c("task_order", "duration"), part = "body", align = "left") %>%
+  align(part = "header", align = "left") %>%
+  valign(part = "body", valign = "top") %>%
+  bold(part = "header") %>%
+  hline() %>%
+  width(j = c(1, 2, 3, 4), width = c(0.7, 1.2, 2.5, 1.2)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: VAS = Visual Analog Scale; LDQ = Linguistic Diversity Questionnaire",
+    "")))
+ft.st1.proc
+save_as_image(res = 300, ft.st1.proc, paste(save.tables.path, "st1-ft-proc.png", sep = "/"))
+```
+
+```{r demographics}
+# I just need these numbers to add in text, no tables
+# only the 76 with MLD data
+demographics <- MLD_scores %>%
+  select(ID, age, gender)
+
+summary(demographics)
+get_summary_stats(demographics)
+
+# figure out how many people had non-zero scores
+MLD_scores %>%
+  mutate(MLD_A_binary = ifelse(MLD_A != 0, 1, 0),
+         MLD_P_binary = ifelse(MLD_P != 0, 1, 0),
+         MLD_both_binary = ifelse(MLD_A != 0 & MLD_P != 0, 1, 0)) %>%
+  summarize(n_a = sum(MLD_A_binary), n_p = sum(MLD_P_binary), n_both = sum(MLD_both_binary))
+  
+# n_a   n_p   n_both
+# 35	  31	  22	
+```
+
+
+```{r vas-continua-characteristics}
+continua.table.2d <- import("../../VAS/continua-table-2d.xlsx")
+
+new_line_continua_header <- c(
+  "indent-intent /d/-/t/"	= "indent-intent\\\n/d/-/t/",
+  "reason-risen /i/-/ɪ/" = "reason-risen\\\n/i/-/ɪ/", 
+  "kata-katta /t/-/tt/" = "kata-katta\\\n/t/-/tt/",	
+  "toru-tooru /o/-/oː/" = "toru-tooru\\\n/o/-/oː/"
+)
+
+ft.continua <- continua.table.2d %>%
+  flextable() %>%
+  labelizor(labels = new_line_continua_header, part = "header") %>%
+  colformat_md(part = "header") %>%
+  bold(part = "header") %>%
+  bold(part = "body", i = c(1, 9)) %>%
+  width(j = c(1, 2, 3, 4, 5), width = 1.2) %>%
+  footnote(part = "body", i = c(1, 9, 9, 9), j = c(3, 3, 4, 5), ref_symbols = c("1", "2", "3", "4"), value = as_paragraph_md(c(
+    "Values at vowel midpoint",
+    "Vowel duration includes [ɹ]",
+    "Max F0 of first syllable/min F0 of second syllable",
+    "F0 at start of first syllable/F0 at end of first syllable/F0 at end of second syllable"
+  ))) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Note for the *toru*-*tooru* continuum**: The pitch accent of *toru* is HL while the pitch accent of *tooru* is HLL, so the F0 landmarks occur at different time points between the two words. F0 was interpolated between the words at each of the primary dimension duration steps, which resulted in slightly different, though comparable, F0 values across the different duration continua. The Secondary Dimension Steps 1-5 pitch contour values reported here are from the Duration Step 4 continuum.",
+    "")))
+ft.continua
+  
+save_as_image(res = 300, ft.continua, paste(save.tables.path, "ft-continua-2d.png", sep = "/"))
+```
+
+
+
+```{r ldq-contexts-table}
+
+ldq_contexts <- data.frame(
+  category = c(rep("Entertainment contexts", 4), rep("Interpersonal contexts (in person or digitally)", 5), "None of these"),
+  context = c("Watching TV, film, videos on websites like YouTube or Twitch (with or without subtitles)",
+              "Listening to radio, music, podcasts, audiobooks",
+              "Playing video games, mobile games, online games",
+              "Using social media or browsing the internet, (with or without the use of automatic translation tools) – include here interacting with generative AI and using language learning apps",
+              "At home (e.g., with your partner, child(ren), roommates)",
+              "With family (parents, siblings, grandparents, caregivers, extended family – note: this may be the same as the context above for you)",
+              "In social contexts with friends, neighbors, peers from hobbies or communities (e.g., religious community, neighborhood coalition, online community)",
+             "In work or school contexts with co-workers/colleagues/classmates (this context can include taking language classes)",
+             "Out of home in commercial or official contexts (e.g., restaurants, stores, doctor’s office, bank)",
+             "Situations and settings not listed above. Please specify:"),
+  shorthand = c("Watching",
+                "Listening",
+                "Games",
+                "Online",
+                "Home",
+                "Family",
+                "Social",
+                "Work/school",
+                "Out of home",
+                "Other"))
+
+ft.ldq <- flextable(ldq_contexts) %>%
+  merge_v(j = "category") %>%
+  hline() %>%
+  bold(part = "header") %>%
+  labelizor(part = "header", label = c("shorthand" = "Context Label")) %>%
+  labelizor(part = "header", label = stringr::str_to_title) %>%
+  valign(j = "category", valign = "top") %>%
+  autofit(part = "body") %>%
+  set_table_properties(layout = "autofit", align = "center", opts_word = list("keep_with_next" = T)) %>% 
+  add_footer_lines(values = c(""), top = F) # to add space after table for word output
+ft.ldq
+```
+
+
+------------------------------------------------------------------------
+# results and analysis for n = 76
+
+### prep
+
+```{r data-n-76}
+# this is only for n = 76, so take the filtered_matlab csv file and filter it to reflect only those who were used in analysis
+
+matlab_input_trials_76 <- import("clean_data/filtered_study1_vas_matlab.txt") %>%
+  mutate(across(where(is.character), factor)) %>%
+  # add language
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", "Japanese")) %>%
+  mutate(ID = as.factor(ID)) %>%
+  #re-level pair
+  mutate(pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru"))) %>%
+  filter(ID %in% MLD_scores$ID)
+```
+
+
+```{r set-brms-labels}
+estimate_labels = c("logSlope" = "Slope", "PointVar" = "Response Variability", "newTheta" = "Theta")
+
+predictor_labels = c("(Intercept)" = "Intercept (English)", "MLD_A" = "MLD-A", "languageJapanese" = "Language (Japanese)", "MLD_P" = "MLD-P", "MLD_A:languageJapanese" = "MLD-A x Language (Japanese)", "languageJapanese:MLD_P" = "MLD-P x Language (Japanese)")
+```
+
+
+### in analysis section
+
+done
+```{r respvar-by-slope-scatterplot}
+
+kutlu <- cowplot::ggdraw() + cowplot::draw_image("~/Exp-Research/Dissertation/writing/thesisdown/figure/kutluetal2024-respvar-by-slope.png")
+
+kutlu <- annotate_figure(kutlu, top = text_grob("Kutlu et al. (2024) sample", size = 15))
+kutlu
+cowplot::draw_text("Kutlu et al. (2024) sample", x = 0.5, y = 1.2, hjust = 0.5, vjust = 1, size = 16, colour = "black")
+kutlu
+# for comparison to Kutlu et al 2024 response variability by slope scatterplot
+kutlu <- kutlu + plot_annotation(title = "Kutlu et al. (2024) sample") &
+  theme(plot.title = element_text(hjust = 0.5, size = 15, face = "bold"))
+
+slope.by.var76 <- rl_estimates %>%
+  filter(ID %in% MLD_scores$ID) %>%
+  mutate(logSlope = misty::center(log(abs(Slope))), logrmse = misty::center(log(PointVar)), logvar = misty::center(log(LS))) %>%
+  group_by(ID, language) %>%
+  summarize(slope = mean(logSlope), rmse = mean(logrmse), var = mean(logvar))
+
+# plot_grid(kutlu, p.japanese, p.english)
+  
+p.english <- ggplot(slope.by.var76 %>% filter(language == "English"), aes(x = slope, y = var)) + 
+  geom_point(aes(color = language)) +
+  labs(x = "Slope", y = "Response Variability") +
+  theme_pubr(legend = "none") + labs(title = "Study 1 sample, English contrasts") +
+  scale_color_manual(values = lang_colors) +
+  theme(aspect.ratio = 3/4, axis.title = element_text(size = 9), axis.text = element_text(size = 9), plot.title = element_text(hjust = 0.5))
+
+
+p.japanese <- ggplot(slope.by.var76 %>% filter(language == "Japanese"), aes(x = slope, y = var)) + 
+  geom_point(aes(color = language)) +
+  labs(x = "Slope", y = "Response Variability") +
+  scale_color_manual(values = lang_colors) +
+  theme_pubr(legend = "none") + labs(title = "Study 1 sample, Japanese contrasts") +
+  theme(aspect.ratio = 3/4, axis.title = element_text(size = 9), axis.text = element_text(size = 9), plot.title = element_text(hjust = 0.5))
+
+
+kutlu.patch <- free(kutlu) + p.english + p.japanese + plot_layout(widths = c(1.3, 1, 1))
+
+
+cowplot::save_plot(kutlu.patch, filename = paste(save.figures.path, "st1-kutlu-mysample-respvar-by-slope.png", sep = "/"),  ncol = 3, nrow = 1, base_asp = 1.25)
+```
+
+done
+```{r loo-compare-table}
+loo_focus <- compare %>%
+  select(Row.names, elpd_loo, elpd_diff, se_diff, formula_right_side) %>%
+  mutate(across(where(is.numeric), ~ round(., digits = 1))) %>%
+  filter(!is.na(formula_right_side)) %>%
+  arrange(desc(elpd_diff))
+  
+ft.loo <- loo_focus %>%
+  flextable() %>%
+  labelizor(part = "header", labels = c("Row.names" = "Model", "elpd_loo" = "ELPD", "elpd_diff" = "\u394 ELPD", "se_diff" = "SE of\n\u394 ELPD", "formula_right_side" = "Right Side of Formula")) %>% 
+  bold(part = "header") %>%
+  labelizor(part = "body", labels = estimate_labels) %>%
+  #align(part = "header", align = "left") %>%
+  bold(part = "body", i = 1) %>%
+  colformat_num(j = "elpd_loo", big.mark = "") %>%
+  ftExtra::colformat_md() %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(3, 4, 5), width = c(0.8, 0.8, 3)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: ELPD = Expected Log Predictive Density (ELPD); \u394 = delta (difference); SE = Standard Error. The model `brm.fit.3` was used in the analyses.", 
+    "")))
+
+ft.loo
+```
+
+### in summary stats section
+
+done
+```{r summary-stats-table}
+# necessarily only contains the 76 (aggregated with MLD data)
+estimates_summary_pair <- aggregate %>%
+  group_by(pair) %>%
+  get_summary_stats(logSlope, PointVar, newTheta, show = c("min", "max", "mean", "median", "sd")) %>%
+  mutate(across(where(is.numeric), ~ round(., digits = 2))) %>%
+  mutate(range = paste0("(", min, ", ", max, ")"), .after = n) %>%
+  select(-c(min, max, n)) %>%
+  # add language column
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", "Japanese"), .before = pair)
+
+estimates_summary_pair_wide <- estimates_summary_pair%>%
+  pivot_wider(id_cols = "pair", names_from = "variable", values_from = c("range", "mean", "median", "sd"), names_vary = "slowest")
+
+
+
+ft.estimates.grouped <- estimates_summary_pair %>%
+  flextable() %>%
+  border_remove() %>%
+  merge_v(j = c("pair", "language")) %>%
+  labelizor(part = "body", labels = estimate_labels) %>%
+  bold(j = c("pair", "language"), bold = TRUE, part = "body") %>%
+  bold(bold = TRUE, part = "header") %>%
+  align(j = "range", align = "center", part = "all") %>%
+  valign(j = c("language", "pair"), valign = "top") %>%
+  width(j = c(1, 2, 3, 4, 5, 6, 7), width = c(0.9, 0.9, 0.9, 1, 0.6, 0.7, 0.5)) %>%
+  hline(j = 2:7, i = c(3, 9), border = fp_border_default(width = 1)) %>% 
+  hline(i = 6, border = fp_border_default(width = 1)) %>%
+  labelizor(part = "header", labels = c("language" = "Language", "pair" = "Contrast Pair", "variable" = "VAS Measure", "range" = "Range", "mean" = "Mean", "median" = "Median", "sd" = "SD")) %>% 
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Notes**: Slope was log-transformed and group mean-centered. Theta was re-centered around 90 by the formula (90 - original theta), transforming the original 0-180 range to -90-90, such that original 90 --> 0 = re-centered 0 --> 90 and original 90 --> 180 = re-centered 0 --> -90.",
+    ""))) %>%
+  hline_top(part = "all", border = fp_border_default(width = 1.5))
+
+ft.estimates.grouped
+save_as_image(res = 300, ft.estimates.grouped, paste(save.tables.path, "st1-ft-estimates-grouped.png", sep = "/"))
+```
+
+
+done
+```{r avg-pair-heatmap}
+group76_heatmap_pair <- matlab_input_trials_76 %>%
+  # add language
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", ifelse(pair == "toru-tooru" | pair == "kata-katta", "Japanese", "")), .after = "pair") %>%
+  group_by(pair, first_dim_step, second_dim_step) %>%
+  summarize(norm_resp = mean(norm_response), n = n())
+
+p.heatmap.group <- ggplot(data = group76_heatmap_pair, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_resp)) + facet_wrap(vars(pair)) +
+  scale_fill_viridis_c(option = "mako", direction = -1, limits = c(0, 100), n.breaks = 5, labels = c("0\n(Word A)", "25", "50", "75", "100\n(Word B)")) +
+  labs(x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Secondary Dimension Step\n(1 = Word A, 5 = Word B)", fill = "Average VAS rating") +
+  theme_pubr(legend = "bottom") +
+  theme(legend.title = element_text(vjust = 0.95), legend.key.width = unit(20, "points"), legend.key.spacing = unit(5, "points"), legend.key.height = unit(10, "points"), legend.box.spacing = unit(5, "points"))
+
+cowplot::save_plot(p.heatmap.group, filename = paste(save.figures.path, "st1-heatmap-avg-per-pair.png", sep = "/"), nrow = 1.5, ncol = 1.5, base_asp = 1.1)
+```
+
+done - but no longer going with these choices
+```{r response-histograms}
+
+plot_histograms <- function(..., i = 1, subtitle){
+  ggplot(...) + 
+  geom_histogram(aes(fill = language), binwidth = 5) +
+  scale_fill_manual(values = lang_colors) +
+  theme_pubr(legend = "bottom") +
+    # ID is rows, pair is cols
+  ggforce::facet_grid_paginate(pair~ID, ncol = 6, nrow = 4, page = i) +
+  labs(x = "VAS Rating (0 = Word A, 100 = Word B)", title = subtitle, fill = "Contrast Language") 
+}
+
+
+# consistent <- c(7189, 7172, 6998, 5098, 6015) # categorical, gradient, middle, bimodal, gradient in a different way
+# inconsistent <- c(6235, 5178, 5816, 5724, 5730) # categorical/gradient by language, same, somewhat messy, very inconsistent, somewhat messy
+# 
+# plot_histograms(data = matlab_input_trials_76[matlab_input_trials_76$ID %in% consistent,], aes(x = norm_response), subtitle = "Consistent Responders") -> x
+# 
+# plot_histograms(data = matlab_input_trials_76[matlab_input_trials_76$ID %in% inconsistent,], aes(x = norm_response), subtitle = "Inconsistent Responders") -> y
+# 
+# hist.patch <- (x | y) + plot_annotation(tag_levels = "A") + plot_layout(guides = "collect", axis_titles = "collect_x") & theme(legend.position = "bottom")
+
+# cowplot::save_plot(hist.patch, filename = paste(save.figures.path, "st1-histograms-examples.png", sep = "/"), ncol = 2, base_height = 5, base_asp = 1.2)
+
+
+
+```
+
+done
+```{r scatterplot-with-matlab-pred-means}
+# averaged across second_dim_step, used to show variation in response variabilities
+# matlab_input_avg_across_sec_dim <- matlab_input_trials_76 %>%
+#   group_by(ID, language, first_dim_step) %>%
+#   mutate(mean_response = mean(norm_response))
+
+# by language, but for each step of second_dim_step as well
+# matlab_input_pair_avg <- matlab_input_trials_76 %>%
+#   group_by(ID, language, first_dim_step, second_dim_step) %>%
+#   mutate(mean_response = mean(norm_response))
+
+# or load mean predicted response per first and second dim step, predicted by curvefitter and filter out those without MLD scores
+matlab_rl_curvefit_preds <- import("clean_data/outcome_data/study1_vas_rl_curvefit.data.txt") %>%
+  mutate(ID = as.factor(ID), first_dim_step = as.factor(first_dim_step), second_dim_step = as.factor(second_dim_step), pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru"))) %>%
+  filter(ID %in% MLD_scores$ID) %>%
+  mutate(language = case_when(
+    pair == "indent-intent" | pair == "reason-risen" ~ "English",
+    pair == "kata-katta" | pair == "toru-tooru" ~ "Japanese"
+  ),
+  language = factor(language, levels = c("English", "Japanese")))
+
+# CURRENTLY ONLY WORKS WITH matlab_rl_curvefit_preds WITH COLUMN PRED
+plot_scatterplots <- function(..., option, i = 1){
+  ggplot(...) +
+  geom_point(aes(color = factor(second_dim_step)), alpha = 0.4) +
+  geom_point(aes(y = pred, color = factor(second_dim_step))) +
+  geom_line(aes(y = pred, group = factor(second_dim_step), color = factor(second_dim_step))) +
+  scale_color_viridis_d(option = option, direction = -1, labels = c(paste0("1 (Word A)"), "2", "3", "4", paste0("5 (Word B)"))) +
+  #geom_point(aes(y = mean_response), color = "red") +
+  #geom_line(aes(y = mean_response, group = 1), color = "red") +
+  # geom_smooth(method = "loess", se = F, aes(group = language), color = "black") +
+    coord_cartesian(y = c(0, 100)) +
+  labs(x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Mean Predicted VAS Rating\n(0 = Word A, 100 = Word B)", color = "Secondary Dimension Step") +
+  ggforce::facet_grid_paginate(pair~ID, ncol = 6, nrow = 4, page = i) +
+    theme_pubr(legend = "bottom") +
+    theme()
+}
+
+
+# CURRENTLY ONLY WORKS WITH matlab_rl_curvefit_preds WITH COLUMN PRED
+# showing just one of the second dimension steps
+# curves are colored by language, not second dimension step
+plot_scatterplots_1d <- function(..., i = 1){
+  ggplot(...) +
+  geom_point(aes(color = language), alpha = 0.4) +
+  geom_point(aes(y = pred, color = language)) +
+  geom_line(aes(y = pred, group = factor(second_dim_step), color = language)) +
+  scale_color_manual(values = lang_colors) +
+    coord_cartesian(y = c(0, 100)) +
+  labs(x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Mean Predicted VAS Rating\n(0 = Word A, 100 = Word B)", color = "VAS Contrast Language") +
+  ggforce::facet_grid_paginate(pair~ID, ncol = 4, nrow = 4, page = i) +
+    theme_pubr(legend = "bottom") +
+    theme()
+}
+
+```
+
+done
+```{r theta-heatmaps}
+
+indiv76_heatmap_pair <- matlab_input_trials_76 %>%
+  group_by(ID, pair, first_dim_step, second_dim_step) %>%
+  summarize(norm_response = mean(norm_response), n = n())
+
+
+# transform theta into radians to generate slope for abline that will represent the primary dimension boundary, because the tan function on R works on radians not degrees
+# also because the angle for Theta is under the boundary line on the *left* (aka negative-direction) of the x-axis, and angle-to-slope calculation is handled according to the standard position of angles, I must calculate the linear pair (when two angles equal 180 degrees, or pi radians) complementary angle in order to calculate the slope of the boundary line
+  # but the direct radians transformation will be used in drawing the arc of the angle
+visualize_theta76 <- rl_estimates %>%
+  filter(ID %in% MLD_scores$ID) %>%
+  mutate(radians = (Theta * (pi / 180)), complement = pi - radians, theta_slope = tan(complement), yint = 1 -(theta_slope*X1)) %>%
+  left_join(indiv76_heatmap_pair, by = c("ID", "pair")) %>%
+  select(ID, pair, language, X1, X2, Theta, radians, complement, theta_slope, yint, first_dim_step, second_dim_step, norm_response)
+
+# indent_intent_theta76 <- visualize_theta76 %>%
+#   filter(pair == "indent-intent")
+# 
+# reason_risen_theta76 <- visualize_theta76 %>%
+#   filter(pair == "reason-risen")
+# 
+# toru_tooru_theta76 <- visualize_theta76 %>%
+#   filter(pair == "toru-tooru")
+# 
+# kata_katta_theta76 <- visualize_theta76 %>%
+#   filter(pair == "kata-katta")
+
+# for geom_arc, the arc is measured in radians, and radians = 0/2*pi is at the 12 o'clock position, and the radian positions specified in the arguments start and end going clockwise
+# because Theta is the angle between the x-axis going in the *negative* direction and the boundary line, I need to start my angle at 3/2*pi (9 o'clock position) and move clockwise Theta amount (in radians)
+
+
+plot_heatmaps <- function(data, option, i = 1){
+  ggplot(data = data, aes(x = factor(first_dim_step), y = factor(second_dim_step))) + 
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+  scale_fill_viridis_c(option = option, direction = -1, limits = c(0, 100), labels = c(paste0("0\n(Word A)"), "25", "50", "75", paste0("100\n(Word B)")), n.breaks = 5) +
+  labs(x = "Primary Dimension Step (1 = Word A, 7 = Word B)", y = "Secondary Dimension Step\n(1 = Word A, 5 = Word B)", fill = "Mean VAS Rating") +
+  theme_pubr(legend = "bottom") + 
+    theme(legend.title = element_text(vjust = 0.95), legend.key.width = unit(20, "points"), legend.key.spacing = unit(5, "points"), legend.key.height = unit(10, "points"), legend.box.spacing = unit(5, "points")) +
+  ggforce::facet_grid_paginate(pair~ID, ncol = 6, nrow = 4, page = i)
+}
+
+# plot_heatmaps(indent_intent_theta76, option = "plasma", word1 = "indent", word2 = "intent") +
+#    labs(x = "VOT Step (1 = Indent, 7 = Intent)", y = "F0 Step (1 = Indent, 5 = Intent)")
+# 
+# plot_heatmaps(reason_risen_theta76, option = "viridis", word1 = "reason", word2 = "risen") +
+#   labs(x = "Spectral Step (1 = Reason, 7 = Risen)", y = "Duration Step (1 = Reason, 5 = Risen)")
+# 
+# plot_heatmaps(kata_katta_theta76, option = "rocket", word1 = "kata", word2 = "katta") +
+#   labs(x = "Duration Step (1 = kata, 7 = katta)", y = "F0 Contour Step (1 = kata, 5 = katta)")
+
+# plot_heatmaps(toru_tooru_theta76, option = "mako", word1 = "toru", word2 = "tooru") +
+#   labs(x = "Duration Step (1 = toru, 7 = tooru)", y = "F0 Contour Step (1 = toru, 5 = tooru)")
+```
+
+done
+```{r save-example-plots}
+# best to correspond IDs between histograms, scatterplots, and, heatmaps to show use of entire scale, both response variability, slope, and expected vs reversed categorization (two-three different ways to be reversed)
+combined_choices <- c("5178", "7187", "5837", "5627", "5386", "5737")
+
+
+a <- plot_histograms(data = matlab_input_trials_76[matlab_input_trials_76$ID %in% combined_choices,], aes(x = norm_response), subtitle = "", i = 1)
+
+b <- plot_scatterplots(matlab_rl_curvefit_preds[matlab_rl_curvefit_preds$ID %in% combined_choices,], option = "mako", aes(x = as.factor(first_dim_step), y = norm_response), i = 1)
+
+c <- plot_heatmaps(visualize_theta76[visualize_theta76$ID %in% combined_choices,], option = "mako", i = 1)
+
+a
+b
+c
+
+cowplot::save_plot(a, filename = paste(save.figures.path, "st1-sample-histograms.png", sep = "/"), nrow = 1.5, ncol = 2.25, base_asp = 1.2)
+
+
+cowplot::save_plot(b, filename = paste(save.figures.path, "st1-sample-scatterplots.png", sep = "/"), nrow = 1.5, ncol = 2.25, base_asp = 1.2)
+
+cowplot::save_plot(c, filename = paste(save.figures.path, "st1-sample-heatmaps.png", sep = "/"), nrow = 1.5, ncol = 2.25, base_asp = 1.2)
+
+
+
+```
+
+
+```{r scatterplot-example-2nd-dim-step-3-only}
+# scatterplot with example participants but only showing one curve from the secondary dimension at step 3
+# for the defense presentation, to simplify what I'm showing
+
+presentation_choices <- c("5178", "7187", "5096", "5585")
+presentation_scatterplot_df <- matlab_rl_curvefit_preds %>%
+  filter(second_dim_step == "3") %>%
+  filter(ID %in% presentation_choices)
+
+d <- plot_scatterplots_1d(presentation_scatterplot_df, aes(x = as.factor(first_dim_step), y = norm_response), i = 1)
+
+d
+
+cowplot::save_plot(d, filename = paste(save.figures.path, "st1-sample-scatterplots-1d.png", sep = "/"), nrow = 1.5, ncol = 1.5, base_asp = 1.2)
+```
+
+
+done
+```{r mld-plot}
+MLD_scores %>%
+  cor_test(MLD_A, MLD_P) %>% flextable()
+cor.test(MLD_scores$MLD_A, MLD_scores$MLD_P)
+
+mld.plot <- ggplot(MLD_scores, aes(x = MLD_A, y = MLD_P)) +
+  geom_point(position = "jitter") +
+  labs(x = "MLD-A", y = "MLD-P") +
+  scale_x_continuous(breaks = c(0, 1, 1.58, 2)) +
+  scale_y_continuous(breaks = c(0, 1, 1.58, 2)) +
+  coord_cartesian(xlim = c(0, 2), ylim = c(0, 2), clip = "off") +
+  theme_pubr() +
+  theme(panel.grid.major.x = element_line(colour = "gray", linetype = "dotted"), 
+        panel.grid.major.y = element_line(colour = "gray", linetype = "dotted"),
+        plot.margin = margin(t = 20, r = 20, 7, 7)) +
+  annotate(geom = "text", x = 0, y = 2.20, label = "n = 1") +
+  annotate(geom = "text", x = 1, y = 2.20, label = "n = 2") +
+  annotate(geom = "text", x = 1.58, y = 2.20, label = "n = 3") +
+  annotate(geom = "text", x = 2, y = 2.20, label = "n = 4") +
+  annotate(geom = "text", x = 2.2, y = 0, label = "n = 1", angle = 270) +
+  annotate(geom = "text", x = 2.2, y = 1, label = "n = 2", angle = 270) +
+  annotate(geom = "text", x = 2.2, y = 1.58, label = "n = 3", angle = 270) +
+  annotate(geom = "text", x = 2.2, y = 2, label = "n = 4", angle = 270)
+
+mld.a.hist <- ggplot(MLD_scores, aes(x = MLD_A)) +
+  geom_histogram() +
+  labs(x = "MLD-A")  +
+  scale_x_continuous(breaks = c(0, 1, 1.58, 2)) +
+  coord_cartesian(xlim = c(0, 2), ylim = c(0, 41), clip = "off") +
+  theme_pubr() +
+  theme(panel.grid.major.x = element_line(colour = "gray", linetype = "dotted"),
+        plot.margin = margin(t = 20, 7, 7, 7)) +
+  labs(y = "count") +
+  annotate(geom = "text", x = 0, y = 50, label = "n = 1") +
+  annotate(geom = "text", x = 1, y = 50, label = "n = 2") +
+  annotate(geom = "text", x = 1.58, y = 50, label = "n = 3") +
+  annotate(geom = "text", x = 2, y = 50, label = "n = 4")
+
+mla.p.hist <- ggplot(MLD_scores, aes(x = MLD_P)) +
+  geom_histogram() +
+  labs(x = "MLD-P")  +
+  scale_x_continuous(breaks = c(0, 1, 1.58, 2)) +
+  coord_cartesian(xlim = c(0, 2)) +
+  theme_pubr() +
+  theme(panel.grid.major.x = element_line(colour = "gray", linetype = "dotted")) +
+  labs(y = "count")
+
+{{mld.a.hist / mla.p.hist} | mld.plot } + plot_annotation(tag_levels = "A") -> mld.patch
+
+cowplot::save_plot(mld.patch, filename = paste(save.figures.path, "st1-mld-plot.png", sep = "/"))
+
+# see how many people had non-zero scores
+MLD_scores %>%
+  mutate(MLD_A_binary = ifelse(MLD_A != 0, 1, 0),
+         MLD_P_binary = ifelse(MLD_P != 0, 1, 0),
+         MLD_both_binary = ifelse(MLD_A != 0 & MLD_P != 0, 1, 0)) %>%
+  summarize(n_a = sum(MLD_A_binary), n_p = sum(MLD_P_binary), n_both = sum(MLD_both_binary))
+
+#   n_a n_p n_both
+#   35  31  22
+```
+
+### in multivariate outcomes section
+
+planning
+```{r brm-fit-3-summarize-results-different-attempts}
+
+
+## if I want to plot the posterior distributions with 95% HDI
+
+pdirection <- p_direction(brm.fit.3) %>% pd_to_p()
+plot(pdirection) # clean up, but can use this in the results summary section of the discussion
+hdi <- hdi(brm.fit.3, ci = 0.95) %>%
+  format() %>%
+  print_parameters(x = cleaned_parameter_names, by = NULL) %>%
+  select(Response, Parameter = Cleaned_Parameter, "95% CI", pd_p)
+
+hdi %>% filter(Response == "logSlope" & !str_detect(Parameter, "Intercept")) %>% plot()
+hdi %>% filter(Response == "PointVar" & !str_detect(Parameter, "Intercept")) %>% plot()
+hdi %>% filter(Response == "newTheta" & !str_detect(Parameter, "Intercept")) %>% plot()
+
+
+
+## sjPlot method - only useful as inspiration
+
+# sjplot.table <- tab_model(
+#   brm.fit.3,
+#   show.est = TRUE,
+#   transform = NULL,
+#   show.std = FALSE,
+#   show.ci = 0.95,
+#   collapse.ci = TRUE,
+#   string.est = "<i>b</i> Estimate \n(95% CI)",
+#   show.p = FALSE,
+#   show.r2 = TRUE,
+#   show.icc = TRUE,
+#   show.re.var = TRUE,
+#   show.ngroups = TRUE,
+#   show.obs = TRUE,
+#   show.reflvl = TRUE,
+#   show.dev = FALSE,
+#   show.fix.ef = FALSE,
+#   pred.labels = c("MLD_A" = "MLD-A", "MLD_P" = "MLD-P"),
+#   prefix.labels = "none",
+#   dv.labels = c("logSlope" = "Slope", "PointVar" = "Response Variability", "newTheta" = "Theta"))
+# sjplot.table
+
+# using model_parameters and describe_posterior can result in the exact same output
+
+# standardize_posteriors(brm.fit.3, method = "refit", two_sd = TRUE, include_response = TRUE, centrality = "median", ci.method = "hdi")
+
+
+# okay, so I'll report the median as the estimate, the 95% HDI as the 95% CI, and the p_value calculated from probability of direction (pd) - it's the most simple, I don't need to be robust about this
+# things I want to add to table: median estimate, 95% HDI CI, p-value from p_direction, R2 for each - IF I CAN: standardized beta coefficient (need to refit model with stadnardized data, either using standardize_parameters, or just doing it manually, which I won't do)
+# in the supplementary materials/appendix, I can state that the model converged stably with reliable indices based on Rhat and ESS
+# example from package report: Convergence and stability of the Bayesian sampling has been assessed using R-hat, which should be below 1.01 (Vehtari et al., 2019), and Effective Sample Size (ESS), which should be greater than 1000 (Burkner, 2017).
+
+# I can also state model specification details in appendix
+# from package report: (estimated using MCMC sampling with 4 chains of 300 iterations and a warmup of 150)
+
+# plot_model(brm.fit.3, type = "std2", transform = NULL, ci.style = "bar", prob.inner = 0.95, prob.outer = 0.95) 
+# this completely refits the model, and froze
+```
+
+done
+```{r brm-fit-3-fixef-tables}
+## bayestestR method, with insight
+cleaned_parameter_names <- insight::clean_parameters(brm.fit.3)
+
+# fixed effects
+fixed_bayestest_table <- describe_posterior(
+  brm.fit.3,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = cleaned_parameter_names, by = NULL) %>%
+  format_table() %>%
+  select("VAS Measure" = Response, Predictor = Cleaned_Parameter, Estimate = Median, "95% CrI" = `95% CI`, pd_p) %>%
+  arrange(match(`VAS Measure`, c("logSlope", "PointVar", "newTheta")), 
+          match(Predictor, c("(Intercept)", "languageJapanese", "MLD_A", "MLD_P", "MLD_A:languageJapanese", "languageJapanese:MLD_P")))
+
+fit.3.summary$formula
+# logSlope ~ (MLD_A * language) + (MLD_P * language) + (1 + language | ID) + (1 | pair)
+# PointVar ~ (MLD_A * language) + (MLD_P * language) + (1 + language | ID) + (1 | pair)
+# newTheta ~ (MLD_A * language) + (MLD_P * language) + (1 + language | ID) + (1 | pair) 
+
+
+ft.fixed <- as_grouped_data(fixed_bayestest_table, groups = "VAS Measure") %>%
+  as_flextable() %>%
+  labelizor(part = "body", labels = c(estimate_labels, predictor_labels)) %>%
+  italic(j = "pd_p", part = "header") %>%
+  bold(j = 1, i = ~ !is.na(`VAS Measure`), bold = TRUE, part = "body") %>%
+  bold(bold = TRUE, part = "header") %>%
+  hline(i = c(7, 14), part = "body", border = fp_border_default(width = 1.5)) %>%
+  align(i = ~ is.na(`VAS Measure`), align = "right") %>%
+  align(j = c("Estimate", "95% CrI", "pd_p"), align = "right", part = "header") %>%
+  align(j = "Predictor", align = "left") %>%
+  align(i = ~ !is.na(`VAS Measure`), align = "center") %>%
+  set_header_labels("pd_p" = "pd-p") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3, 4), width = c(2.1, 0.9, 1.1, 0.5)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: Estimate = median of the posterior probability distribution; CrI = Credible Interval (95% highest density interval); *pd-p* = *p*-value calculated from Probability of Direction (pd)", 
+    "**Model formula**: (Slope, Response Variability, Theta) ~ (MLD_A * Language) + (MLD_P * Language) + (1 + Language | Participant) + (1 | VAS Pair)", 
+    "**Notes**: Language was dummy coded (English = reference level). *pd-p* was calculated using the *bayestestR* R package (v0.16.0; Makowski et al., 2019).",
+    "")))
+ft.fixed
+# add to word doc to see how its printed
+doc <- officer::read_docx() %>% body_add_flextable(ft.fixed) %>% print(target = "check_ft_print.docx")
+save_as_image(res = 300, ft.fixed, paste(save.tables.path, "st1-ft-fixed.png", sep = "/"))
+
+```
+
+done
+```{r brm-fit-3-ranef-tables}
+## random effects and model components
+
+# I want the random slopes and intercepts (sd) for language|ID for each response
+# I want correlations between random slope and intercepts (cor) for language|ID for each response
+# I want the random intercepts (sd) for pair for each response
+# I want N = 76(ID) and N = 4(pair) for each response
+# I want number of observations that went into the model for each response
+# I want R^2 for each response
+# I want sigma for each response
+# and I want rescor between the three responses
+# now possible with the tables/functions below: brm.3.random (sd/cor), brm.3.sigma, fit.3.rescor, fit.3.r2, and n_obs() & n_grouplevels()
+
+# random variances (sd and cor) but the names are ugly
+brm.3.random <- describe_posterior(
+  brm.fit.3,
+  effects = "all",
+  component = "all",
+  centrality = "median",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL)  %>% 
+  print_parameters(x = cleaned_parameter_names, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group:Response, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "_Intercept ~") ~ "Cor",
+    .default = "SD"),
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "logSlope_"),
+    Random_Effect = str_remove_all(Random_Effect, "PointVar_"),
+    Random_Effect = str_remove_all(Random_Effect, "newTheta_"),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\["),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, ",  ", ", ")) %>%
+  select(-c(Median:`95% CI`))
+
+fit.3.r2 <- bayes_R2(brm.fit.3) %>%
+  as.data.frame() %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[", Q2.5,", ", Q97.5, "]"),
+         r2_quant = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_quant) %>%
+  mutate(Response = str_remove_all(Response, "R2"))
+
+
+fit.3.summary <- summary(brm.fit.3, robust = T)
+fit.3.rescor <- fit.3.summary$rescor_pars %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(uncertainty = paste0("[", `l-95% CI`,", ", `u-95% CI`, "]"),
+         rescor_ci = paste0(Estimate, "\\\n", uncertainty)) %>%
+  select(Response, rescor_ci) %>%
+  mutate(Response = str_remove_all(Response, "rescor\\(|\\)"),
+         Response = str_replace_all(Response, ",", " ~ "))
+
+
+fit.3.summary$nobs
+brm.3.ngrps <- n_grouplevels(brm.fit.3)
+
+
+brm_vas_random <- brm.3.random %>%
+  arrange(match(Response, c("logSlope", "PointVar", "newTheta"))) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`) %>%
+  pivot_wider(names_from = Response, values_from = c(SD, Cor), names_vary = "slowest") %>%
+  mutate(Group = ifelse(Group == "ID" & Random_Effect != "(Intercept)", NA, Group)) %>%
+  # add model fit stuff, the columns won't make sense but this is just for positioning
+  add_row(Group = "**Bayes R^2^**") %>%
+  add_row(SD_logSlope = fit.3.r2$r2_quant[1], SD_PointVar = fit.3.r2$r2_quant[2], SD_newTheta = fit.3.r2$r2_quant[3]) %>%
+  add_row(Group = "**Residual Correlation**") %>%
+  add_row(Random_Effect = fit.3.rescor$Response[1], Cor_logSlope = fit.3.rescor$rescor_ci[1]) %>%
+  add_row(Random_Effect = fit.3.rescor$Response[2], Cor_logSlope = fit.3.rescor$rescor_ci[2]) %>%
+  add_row(Random_Effect = fit.3.rescor$Response[3], Cor_logSlope = fit.3.rescor$rescor_ci[3]) 
+
+
+
+  
+vas_random_headers <- c("Random_Effect" = "Random Effect", "SD_logSlope" = "SD\n[95% CrI]", "Cor_logSlope" = "Int. ~ Slope Corr.", "SD_PointVar" = "SD\n[95% CrI]", "Cor_PointVar" = "Int. ~ Slope Corr.", "SD_newTheta" = "SD\n[95% CrI]", "Cor_newTheta" = "Int. ~ Slope Corr.")
+
+random_effects_labels <- c("languageJapanese" = "Language (Japanese)", "(Intercept)" = "Intercept", "logSlope ~ PointVar" = "Slope ~ Response Variability", "logSlope ~ newTheta" = "Slope ~ Theta", "PointVar ~ newTheta" = "Response Variability ~ Theta", "ID" = "Participant", "pair" = "VAS Pair")
+
+ft.random <- brm_vas_random %>%
+  flextable() %>%
+  set_header_labels(values = vas_random_headers) %>%
+  add_header_row(values = c("", "Slope", "Response Variability", "Theta"), colwidths = c(2, 2, 2, 2)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 3:8, i = 1) %>% # add back one just under the spanner headers
+  labelizor(part = "body", labels = c(estimate_labels, random_effects_labels)) %>%
+  bold(part = "header") %>%
+  colformat_md() %>%
+  align(part = "header", align = "center") %>%
+  hline(i = 4, border = fp_border_default(width = 1.5)) %>%
+  add_footer_row(values = as_paragraph_md(c("N~Participant~ ", brm.3.ngrps$N_levels[1], "N~VAS~ ~Pair~ ", brm.3.ngrps$N_levels[2], "N~observations~ ", fit.3.summary$nobs, "")), colwidths = c(1, 1, 1, 1, 1, 1, 2)) %>%
+  hline(i = 10, border = fp_border_default(width = 0), part = "body") %>% # remove border added by add_footer_row
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3:8), width = c(1, 0.8, rep(1, 6))) %>%
+  merge_h_range(i = c(5, 7), j1 = 1, j2 = 3, part = "body") %>%
+  merge_h_range(i = 6, j1 = 3, j2 = 4, part = "body") %>%
+  merge_h_range(i = 6, j1 = 5, j2 = 6, part = "body") %>%
+  merge_h_range(i = 6, j1 = 7, j2 = 8, part = "body") %>%
+  merge_h_range(i = 8:10, j1 = 2, j2 = 3, part = "body") %>%
+  merge_h_range(i = 8:10, j1 = 4, j2 = 5, part = "body") %>%
+  align(j = 3:8, part = "body", align = "center") %>%
+  add_footer_lines(top = FALSE, values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation (median of posterior probability distribution of SD); CrI = Credible Interval (95% highest density interval); Int. = Intercept; Corr. = Correlation",
+    "**Model formula**: (Slope, Response Variability, Theta) ~ (MLD_A * Language) + (MLD_P * Language) + (1 + Language | Participant) + (1 | VAS Pair)"))) %>%
+  footnote(j = 1, i = c(5, 7), ref_symbols = c("Note"),
+           value = as_paragraph_md(c(
+            "The estimated Bayes R^2^ values for each response variable are presented with the 2.5% and 97.5% quantile range. The estimated Residual Correlation between the response variables is presented with the 95% uncertainty interval."))) %>%
+  add_footer_lines(top = FALSE, values = "") %>%
+  hline(i = 1, border = fp_border_default(width = 1.5), part = "footer") # add border above the real footer
+ft.random
+
+save_as_image(res = 300, ft.random, paste(save.tables.path, "st1-ft-random.png", sep = "/"))
+```
+
+done
+```{r brm-fit-3-conditional-effects-plots}
+ce.fit.3 <- conditional_effects(brm.fit.3) # this shows VERY interesting trends, even if not significant
+pce <- plot(ce.fit.3, points = T, point_args = list(alpha = 0.5), ask = F) # save all the plots so that I can index them individually
+
+
+pce$`logSlope.logSlope_MLD_A:language` + labs(y = "Slope", x = "MLD-A", color = "Contrast Language", fill = "Contrast Language") +
+  pce$`logSlope.logSlope_MLD_P:language` + labs(y = "Slope", x = "MLD-P", color = "Contrast Language", fill = "Contrast Language") +
+ free(pce$`PointVar.PointVar_MLD_A:language`) + labs(y = "Response\nVariability", x = "MLD-A", color = "Contrast Language", fill = "Contrast Language") +
+  pce$`PointVar.PointVar_MLD_P:language` + labs(y = "", x = "MLD-P", color = "Contrast Language", fill = "Contrast Language") +
+  pce$`newTheta.newTheta_MLD_A:language` + labs(y = "Theta", x = "MLD-A", color = "Contrast Language", fill = "Contrast Language") +
+  pce$`newTheta.newTheta_MLD_P:language` + labs(y = "Theta", x = "MLD-P", color = "Contrast Language", fill = "Contrast Language") +
+  plot_layout(nrow = 3, guides = "collect", axis_titles = "collect_y") + 
+  plot_annotation(tag_levels = "A") & theme_pubr(legend = "bottom") -> pce.fit.3.patch
+
+pce.fit.3.patch <- pce.fit.3.patch & scale_color_manual(values = lang_colors) & scale_fill_manual(values = lang_colors)
+
+cowplot::save_plot(pce.fit.3.patch, filename = paste(save.figures.path, "st1-multivariate-condeffs.png", sep = "/"), ncol = 2, nrow = 3, base_asp = 1.2)
+
+# calculating conditional effects
+# For English b (reference level estimate: just main effects for MLD-A and MLD-P)
+# For Japanese b (reference level estimate + interaction estimate)
+
+# logSlope, PointVar, newTheta
+interaction.conditional.effects <- hypothesis(brm.fit.3, c(
+  "logSlope_MLD_A + logSlope_MLD_A:languageJapanese = 0",
+  "logSlope_MLD_P + logSlope_languageJapanese:MLD_P = 0",
+  "PointVar_MLD_A + PointVar_MLD_A:languageJapanese = 0",
+  "PointVar_MLD_P + PointVar_languageJapanese:MLD_P = 0",
+  "newTheta_MLD_A + newTheta_MLD_A:languageJapanese = 0",
+  "newTheta_MLD_P + newTheta_languageJapanese:MLD_P = 0"))$hypothesis
+
+
+
+```
+
+Post-hoc on theta
+
+done - kind of (want to add random effects directly)
+```{r posthoc-fixef-tables}
+# tab_model(brm.posthoc.pos, brm.posthoc.neg, show.ci = 0.95, collapse.ci = TRUE)
+# summary(brm.posthoc.pos, robust = TRUE)
+# summary(brm.posthoc.neg, robust = TRUE)
+# 
+# bayes_R2(brm.posthoc.pos, robust = TRUE)
+# bayes_R2(brm.posthoc.neg, robust = TRUE)
+# 
+# hdi.posthoc.pos
+# hdi.posthoc.neg 
+# 
+# hdi(brm.posthoc.pos, ci = 0.95) %>% plot()
+# hdi(brm.posthoc.neg, ci = 0.95) %>% plot()
+# 
+# # posterior distribution
+# hdi.posthoc %>% filter(!str_detect(Parameter, "Intercept")) %>% plot()
+# hdi.posthoc.neg %>% filter(!str_detect(Parameter, "Intercept")) %>% plot()
+# 
+# 
+# conditional_effects(brm.posthoc.pos)
+# conditional_effects(brm.posthoc.neg)
+
+
+
+posthoc_parameter_names <- clean_parameters(brm.posthoc.pos) # should be the same for both
+posthocpos_fixed_bayestest <- describe_posterior(
+  brm.posthoc.pos,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  arrange(match(Predictor, c("(Intercept)", "languageJapanese", "MLD_A", "MLD_P", "MLD_A:languageJapanese", "languageJapanese:MLD_P")))
+
+posthocneg_fixed_bayestest <- describe_posterior(
+  brm.posthoc.neg,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  arrange(match(Predictor, c("(Intercept)", "languageJapanese", "MLD_A", "MLD_P", "MLD_A:languageJapanese", "languageJapanese:MLD_P")))
+
+posthoc_fixed_bayestest <- full_join(posthocpos_fixed_bayestest, posthocneg_fixed_bayestest, by = "Predictor", suffix = c("_pos", "_neg"))
+
+# rename header columns for the univariate models (for posthoc and theta)
+univariate_headers = c("Median_pos" = "Estimate", "Median_neg" = "Estimate", "95% CI_pos" = "95% CrI", "95% CI_neg" = "95% CrI", "pd_p_pos" = "pd-p", "pd_p_neg" = "pd-p")
+
+brm.posthoc.pos$formula
+brm.posthoc.neg$formula
+# newTheta ~ (MLD_A * language) + (MLD_P * language) + (1 + language | ID) + (1 | pair) 
+# same formula run on separate data sets
+
+ft.posthoc.fixed <- posthoc_fixed_bayestest %>%
+  flextable() %>%
+  labelizor(labels = univariate_headers, part = "header") %>%
+  labelizor(labels = predictor_labels, part = "body") %>%
+  add_header_row(values = c("", "Positive Theta", "Negative Theta"), colwidths = c(1, 3, 3)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 2:7, i = 1) %>% # add back one just under the spanner headers
+  align(part = "all", align = "right") %>%
+  align(part = "header", align = "center") %>%  
+  align(part = "all", j = c("Predictor"), align = "left") %>%
+  italic(j = c("pd_p_pos", "pd_p_neg"), part = "header") %>%
+  bold(part = "header") %>%
+  hline(i = 6, part = "body", border = fp_border_default(width = 1.5)) %>%
+  padding(j = 4, padding.right = 10, part = "all") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 3, 6), width = c(1.5, 1.05, 1.05)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: Estimate = median of the posterior probability distribution; CrI = Credible Interval (95% highest density interval); *pd-p* = *p*-value calculated from Probability of Direction (pd)", 
+    "**Model formula**: Theta ~ (MLD_A * Language) + (MLD_P * Language) + (1 + Language | Participant) + (1 | VAS Pair); same formula run separately on Positive Theta and Negative Theta datasets", 
+    "**Notes**: Language was dummy coded (English = reference level). *pd-p* was calculated using the *bayestestR* R package (v0.16.0; Makowski et al., 2019).",
+    "")))
+ft.posthoc.fixed
+save_as_image(res = 300, ft.posthoc.fixed, paste(save.tables.path, "st1-ft-posthoc-fixed.png", sep = "/"))
+```
+
+done
+```{r posthoc-ranef-tables}
+posthocpos.r2 <- bayes_R2(brm.posthoc.pos) %>%
+  as.data.frame() %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[", Q2.5,", ", Q97.5, "]"),
+         r2_quant = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_quant)
+
+posthocpos.sum <- summary(brm.posthoc.pos, robust = T)
+posthocpos.sum$nobs
+posthocpos.ngrps <- n_grouplevels(brm.posthoc.pos)
+
+posthoc.pos.random <- describe_posterior(
+  brm.posthoc.pos,
+  centrality = "median",
+  effects = "all",
+  component = "all",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL)  %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "Intercept ~") ~ "Cor",
+    .default = "SD"),
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\["),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, ",  ", ", ")) %>%
+  select(-c(Median:`95% CI`)) %>%
+  # adding model fit rows
+  add_row(Parameter = "SD", Group = "**Bayes R^2^**", `SD [95% CrI]` = posthocpos.r2$r2_quant) %>%
+  add_row(Parameter = "SD", Group = "N~Participant~ ", `SD [95% CrI]` = as.character(posthocpos.ngrps$N_levels[1])) %>%
+  add_row(Parameter = "SD", Group = "N~VAS~ ~Pair~ ", `SD [95% CrI]` = as.character(posthocpos.ngrps$N_levels[2])) %>%
+  add_row(Parameter = "SD", Group = "N~observations~ ", `SD [95% CrI]` = as.character(posthocpos.sum$nobs)) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`)
+
+
+
+
+posthocneg.r2 <- bayes_R2(brm.posthoc.neg) %>%
+  as.data.frame() %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[", Q2.5,", ", Q97.5, "]"),
+         r2_quant = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_quant)
+
+posthocneg.sum <- summary(brm.posthoc.neg, robust = T)
+posthocneg.sum$nobs
+posthocneg.ngrps <- n_grouplevels(brm.posthoc.neg)
+
+posthoc.neg.random <- describe_posterior(
+  brm.posthoc.neg,
+  centrality = "median",
+  effects = "all",
+  component = "all",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL)  %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "Intercept ~") ~ "Cor",
+    .default = "SD"),
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\["),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, ",  ", ", ")) %>%
+  select(-c(Median:`95% CI`)) %>%
+  # adding model fit rows
+  add_row(Parameter = "SD", Group = "**Bayes R^2^**", `SD [95% CrI]` = posthocneg.r2$r2_quant) %>%
+  add_row(Parameter = "SD", Group = "N~Participant~ ", `SD [95% CrI]` = as.character(posthocneg.ngrps$N_levels[1])) %>%
+  add_row(Parameter = "SD", Group = "N~VAS~ ~Pair~ ", `SD [95% CrI]` = as.character(posthocneg.ngrps$N_levels[2])) %>%
+  add_row(Parameter = "SD", Group = "N~observations~ ", `SD [95% CrI]` = as.character(posthocneg.sum$nobs)) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`)
+
+
+posthoc_random <- full_join(posthoc.pos.random, posthoc.neg.random, by = c("Group", "Random_Effect"), suffix = c("_pos", "_neg")) %>%
+  mutate(Group = ifelse(Group == "ID" & Random_Effect != "(Intercept)", NA, Group))
+
+# rename header columns for random effects for the univariate models (for posthoc and theta)
+random_univariate_headers = c("Random_Effect" = "Random Effect", "SD_pos" = "SD\n[95% CrI]", "SD_neg" = "SD\n[95% CrI]", "Cor_pos" = "Int. ~ Slope Corr.", "Cor_neg" = "Int. ~ Slope Corr.")
+
+
+ft.posthoc.random <- posthoc_random %>%
+  flextable() %>%
+  labelizor(labels = random_univariate_headers, part = "header") %>%
+  labelizor(labels = random_effects_labels, part = "body") %>%
+  add_header_row(values = c("", "Positive Theta", "Negative Theta"), colwidths = c(2, 2, 2)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 3:6, i = 1) %>% # add back one just under the spanner headers
+  bold(part = "header") %>%
+  colformat_md() %>%
+  align(part = "header", align = "center") %>%
+  hline(i = 4, border = fp_border_default(width = 1.5)) %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3:6), width = c(1, 0.8, rep(1, 4))) %>%
+  merge_h_range(i = 5, j1 = 1, j2 = 2, part = "body") %>%
+  merge_h_range(i = 5, j1 = 3, j2 = 4, part = "body") %>%
+  merge_h_range(i = 5, j1 = 5, j2 = 6, part = "body") %>%
+  align(j = 3:6, part = "body", align = "center") %>%
+  add_footer_lines(top = FALSE, values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation (median of posterior probability distribution of SD); CrI = Credible Interval (95% highest density interval); Int. = Intercept; Corr. = Correlation",
+    "**Model formula**: Theta ~ (MLD_A * Language) + (MLD_P * Language) + (1 + Language | Participant) + (1 | VAS Pair); same formula run separately on Positive Theta and Negative Theta datasets"))) %>%
+  footnote(j = 1, i = 5, ref_symbols = c("Note"),
+           value = as_paragraph_md(c(
+            "The estimated Bayes R^2^ values for each response variable are presented with the 2.5% and 97.5% quantile range."))) %>%
+  add_footer_lines(top = FALSE, values = "")
+ft.posthoc.random
+save_as_image(res = 300, ft.posthoc.random, paste(save.tables.path, "st1-ft-posthoc-random.png", sep = "/"))
+```
+
+done
+```{r posthoc-condeff-plots}
+posthocpos.ce <- conditional_effects(brm.posthoc.pos)
+posthocneg.ce <- conditional_effects(brm.posthoc.neg)
+
+posthocpos.pce <- plot(posthocpos.ce, points = T, point_args = list(alpha = 0.5), ask = F) # save all the plots so that I can index them individually
+posthocneg.pce <- plot(posthocneg.ce, points = T, point_args = list(alpha = 0.5), ask = F) # save all the plots so that I can index them individually
+
+
+posthocpos.pce$`MLD_A:language` + labs(y = "Positive Theta", x = "MLD-A", color = "Contrast Language", fill = "Contrast Language") + 
+  posthocpos.pce$`MLD_P:language` + labs(y = "Positive Theta", x = "MLD-P", color = "Contrast Language", fill = "Contrast Language") +
+  posthocneg.pce$`MLD_A:language` + labs(y = "Negative Theta", x = "MLD-A", color = "Contrast Language", fill = "Contrast Language") + 
+  posthocneg.pce$`MLD_P:language` + labs(y = "Negative Theta", x = "MLD-P", color = "Contrast Language", fill = "Contrast Language") +
+  plot_layout(guides = "collect") + plot_annotation(tag_levels = "A") & 
+  theme_pubr(legend = "bottom") -> pce.posthoc.patch
+
+pce.posthoc.patch <- pce.posthoc.patch & scale_color_manual(values = lang_colors) & scale_fill_manual(values = lang_colors)
+  
+
+cowplot::save_plot(pce.posthoc.patch, filename = paste(save.figures.path, "st1-posthoc-condeffs.png", sep = "/"), ncol = 2, nrow = 2, base_asp = 1.25)
+
+hypothesis(brm.posthoc.pos, "MLD_A:languageJapanese > languageJapanese:MLD_P")
+```
+
+### in univariate outcomes section
+
+done - kind of (want to add random effects directly)
+```{r theta-model-fixef-tables}
+# tab_model(brm.theta.pos, brm.theta.neg)
+# summary(brm.theta.pos, robust = TRUE)
+# summary(brm.theta.neg, robust = TRUE)
+# 
+# bayes_R2(brm.theta.pos, robust = TRUE)
+# bayes_R2(brm.theta.neg, robust = TRUE)
+# 
+# hdi.theta.pos
+# hdi.theta.neg 
+# 
+# hdi(brm.theta.pos, ci = 0.95) %>% plot()
+# hdi(brm.theta.neg, ci = 0.95) %>% plot()
+# 
+# # posterior distribution
+# hdi.theta %>% filter(!str_detect(Parameter, "Intercept")) %>% plot()
+# hdi.theta.neg %>% filter(!str_detect(Parameter, "Intercept")) %>% plot()
+# 
+# 
+# conditional_effects(brm.theta.pos)
+# conditional_effects(brm.theta.neg)
+
+theta_parameter_names <- clean_parameters(brm.theta.pos) # should be the same for both
+thetapos_fixed_bayestest <- describe_posterior(
+  brm.theta.pos,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = theta_parameter_names, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  arrange(match(Predictor, c("(Intercept)", "languageJapanese", "logSlope", "PointVar", "logSlope:PointVar", "logSlope:languageJapanese", "PointVar:languageJapanese", "logSlope:PointVar:languageJapanese")))
+
+thetaneg_fixed_bayestest <- describe_posterior(
+  brm.theta.neg,
+  centrality = "median",
+  dispersion = FALSE,
+  ci = 0.95,
+  ci_method = "hdi",
+  effects = "fixed",
+  component = "location",
+  pretty_names = TRUE,
+  digits = 2,
+  include_reference = TRUE,
+  test = "pd",
+  diagnostic = NULL) %>%
+  mutate(pd_p = pd_to_p(pd)) %>% 
+  print_parameters(x = theta_parameter_names, by = NULL) %>%
+  format_table(zap_small = T) %>%
+  select(Predictor = Cleaned_Parameter, Median:pd_p, -pd) %>%
+  arrange(match(Predictor, c("(Intercept)", "languageJapanese", "logSlope", "PointVar", "logSlope:PointVar", "logSlope:languageJapanese", "PointVar:languageJapanese", "logSlope:PointVar:languageJapanese")))
+
+theta_fixed_bayestest <- full_join(thetapos_fixed_bayestest, thetaneg_fixed_bayestest, by = "Predictor", suffix = c("_pos", "_neg"))
+
+theta_parameter_labels = c("(Intercept)" = "Intercept (English)", "logSlope" = "Slope", "PointVar" = "Response Variability (RV)", "languageJapanese" = "Language (Japanese)", "logSlope:PointVar" = "Slope x RV", "logSlope:languageJapanese" = "Slope x Language (Japanese)", "PointVar:languageJapanese" = "RV x Language (Japanese)", "logSlope:PointVar:languageJapanese" = "Slope x RV x Language (Japanese)")
+
+brm.theta.pos$formula
+brm.theta.neg$formula
+# newTheta ~ logSlope * PointVar * language + (1 + language | ID) + (1 | pair) # same formula ran on different datasets for positive and negative theta
+
+ft.theta.fixed <- theta_fixed_bayestest %>%
+  flextable() %>%
+  labelizor(labels = univariate_headers, part = "header") %>%
+  labelizor(labels = theta_parameter_labels, part = "body") %>%
+  add_header_row(values = c("", "Positive Theta", "Negative Theta"), colwidths = c(1, 3, 3)) %>%
+   hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 2:7, i = 1) %>% # add back one just under the spanner headers
+  align(part = "all", align = "right") %>%
+  align(part = "header", align = "center") %>%  
+  align(part = "all", j = c("Predictor"), align = "left") %>%
+  italic(j = c("pd_p_pos", "pd_p_neg"), part = "header") %>%
+  bold(part = "header") %>%
+  padding(j = 4, padding.right = 10, part = "all") %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 3, 6), width = c(1.5, 1.05, 1.05)) %>%
+  add_footer_lines(values = as_paragraph_md(c(
+    "**Key**: Estimate = median of the posterior probability distribution; CrI = Credible Interval (95% highest density interval); *pd-p* = *p*-value calculated from Probability of Direction (pd)", 
+    "**Model formula**: Theta ~ Slope * Response Variability * Language + (1 + Language | Participant) + (1 | VAS Pair); same formula run separately on Positive Theta and Negative Theta datasets", 
+    "**Notes**: Language was dummy coded (English = reference level). *pd-p* was calculated using the *bayestestR* R package (v0.16.0; Makowski et al., 2019).",
+    "")))
+ft.theta.fixed
+save_as_image(res = 300, ft.theta.fixed, paste(save.tables.path, "st1-ft-theta-fixed.png", sep = "/"))
+```
+
+done
+```{r theta-model-ranef-tables}
+
+thetapos.r2 <- bayes_R2(brm.theta.pos) %>%
+  as.data.frame() %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[", Q2.5,", ", Q97.5, "]"),
+         r2_quant = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_quant)
+
+thetapos.sum <- summary(brm.theta.pos, robust = T)
+thetapos.sum$nobs
+thetapos.ngrps <- n_grouplevels(brm.theta.pos)
+
+theta.pos.random <- describe_posterior(
+  brm.theta.pos,
+  centrality = "median",
+  effects = "all",
+  component = "all",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL)  %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "Intercept ~") ~ "Cor",
+    .default = "SD"),
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\["),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, ",  ", ", ")) %>%
+  select(-c(Median:`95% CI`)) %>%
+  # adding model fit rows
+  add_row(Parameter = "SD", Group = "**Bayes R^2^**", `SD [95% CrI]` = thetapos.r2$r2_quant) %>%
+  add_row(Parameter = "SD", Group = "N~Participant~ ", `SD [95% CrI]` = as.character(thetapos.ngrps$N_levels[1])) %>%
+  add_row(Parameter = "SD", Group = "N~VAS~ ~Pair~ ", `SD [95% CrI]` = as.character(thetapos.ngrps$N_levels[2])) %>%
+  add_row(Parameter = "SD", Group = "N~observations~ ", `SD [95% CrI]` = as.character(thetapos.sum$nobs)) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`)
+
+
+
+
+thetaneg.r2 <- bayes_R2(brm.theta.neg) %>%
+  as.data.frame() %>%
+  rownames_to_column("Response") %>%
+  format_table(zap_small = TRUE) %>%
+  mutate(quantile = paste0("[", Q2.5,", ", Q97.5, "]"),
+         r2_quant = paste0(Estimate, "\\\n", quantile)) %>%
+  select(Response, r2_quant)
+
+thetaneg.sum <- summary(brm.theta.neg, robust = T)
+thetaneg.sum$nobs
+thetaneg.ngrps <- n_grouplevels(brm.theta.neg)
+
+theta.neg.random <- describe_posterior(
+  brm.theta.neg,
+  centrality = "median",
+  effects = "all",
+  component = "all",
+  ci = 0.95,
+  ci_method = "hdi",
+  diagnostic = NULL,
+  test = NULL)  %>% 
+  print_parameters(x = posthoc_parameter_names, by = NULL) %>%
+  filter(str_detect(Parameter, "sd|cor|sigma")) %>%
+  format_table(zap_small = T) %>%
+  select(Group, Random_Effect = Cleaned_Parameter, Median:`95% CI`) %>%
+  separate_wider_delim(Group, delim = ": ", names = c("Parameter", "Group"), too_few = "align_start") %>%
+  mutate(Parameter = case_when(
+    str_detect(Random_Effect, "Intercept ~") ~ "Cor",
+    .default = "SD"),
+    Group = ifelse(Random_Effect == "sigma", "Residual", Group),
+    Random_Effect = ifelse(Random_Effect == "sigma", "Residual", Random_Effect),
+    Random_Effect = str_remove_all(Random_Effect, "Intercept ~ "),
+    `SD [95% CrI]` = paste0(Median, "\\\n", `95% CI`),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, "\\[ ", "\\["),
+    `SD [95% CrI]` = str_replace_all(`SD [95% CrI]`, ",  ", ", ")) %>%
+  select(-c(Median:`95% CI`)) %>%
+  # adding model fit rows
+  add_row(Parameter = "SD", Group = "**Bayes R^2^**", `SD [95% CrI]` = thetaneg.r2$r2_quant) %>%
+  add_row(Parameter = "SD", Group = "N~Participant~ ", `SD [95% CrI]` = as.character(thetaneg.ngrps$N_levels[1])) %>%
+  add_row(Parameter = "SD", Group = "N~VAS~ ~Pair~ ", `SD [95% CrI]` = as.character(thetaneg.ngrps$N_levels[2])) %>%
+  add_row(Parameter = "SD", Group = "N~observations~ ", `SD [95% CrI]` = as.character(thetaneg.sum$nobs)) %>%
+  pivot_wider(names_from = Parameter, values_from = `SD [95% CrI]`)
+
+
+theta_random <- full_join(theta.pos.random, theta.neg.random, by = c("Group", "Random_Effect"), suffix = c("_pos", "_neg")) %>%
+  mutate(Group = ifelse(Group == "ID" & Random_Effect != "(Intercept)", NA, Group))
+
+
+ft.theta.random <- theta_random %>%
+  flextable() %>%
+  labelizor(labels = random_univariate_headers, part = "header") %>%
+  labelizor(labels = random_effects_labels, part = "body") %>%
+  add_header_row(values = c("", "Positive Theta", "Negative Theta"), colwidths = c(2, 2, 2)) %>%
+  hline(i = 1, border = fp_border_default(width = 0), part = "header") %>% # remove border added by add_header_row
+  hline(part = "header", j = 3:6, i = 1) %>% # add back one just under the spanner headers
+  bold(part = "header") %>%
+  colformat_md() %>%
+  merge_h_range(i = 5, j1 = 1, j2 = 2, part = "body") %>%
+  merge_h_range(i = 5, j1 = 3, j2 = 4, part = "body") %>%
+  merge_h_range(i = 5, j1 = 5, j2 = 6, part = "body") %>%
+  align(part = "header", align = "center") %>%
+  hline(i = 4, border = fp_border_default(width = 1.5)) %>%
+  set_table_properties(layout = "fixed") %>%
+  width(j = c(1, 2, 3:6), width = c(1, 0.8, rep(1, 4))) %>%
+  align(j = 3:6, part = "body", align = "center") %>%
+  add_footer_lines(top = FALSE, values = as_paragraph_md(c(
+    "**Key**: SD = Standard Deviation (median of posterior probability distribution of SD); CrI = Credible Interval (95% highest density interval); Int. = Intercept; Corr. = Correlation",
+    "**Model formula**: Theta ~ Slope * Response Variability * Language + (1 + Language | Participant) + (1 | VAS Pair); same formula run separately on Positive Theta and Negative Theta datasets"))) %>%
+  footnote(j = 1, i = 5, ref_symbols = c("Note"),
+           value = as_paragraph_md(c(
+            "The estimated Bayes R^2^ values for each response variable are presented with the 2.5% and 97.5% quantile range."))) %>%
+  add_footer_lines(top = FALSE, values = "")
+ft.theta.random
+
+save_as_image(res = 300, ft.theta.random, paste(save.tables.path, "st1-ft-theta-random.png", sep = "/"))
+```
+
+done
+```{r theta-model-condeff-plots}
+thetapos.ce <- conditional_effects(brm.theta.pos)
+thetaneg.ce <- conditional_effects(brm.theta.neg)
+
+thetapos.pce <- plot(thetapos.ce, points = T, point_args = list(alpha = 0.5), ask = F) # save all the plots so that I can index them individually
+thetaneg.pce <- plot(thetaneg.ce, points = T, point_args = list(alpha = 0.5), ask = F) # save all the plots so that I can index them individually
+
+{thetapos.pce$PointVar + labs(y = "Positive Theta", x = "Response Variability")} |
+  {thetaneg.pce$PointVar + labs(y = "Negative Theta", x = "Response Variability")} -> pce.thetavar.patch
+
+
+{thetapos.pce$`logSlope:language` + labs(y = "Positive Theta", x = "Slope")} |
+   {thetaneg.pce$`logSlope:language` + labs(y = "Negative Theta", x = "Slope")} -> pce.theta.int1
+
+{thetapos.pce$`PointVar:language` + labs(y = "Positive Theta", x = "Response Variability")} |
+  {thetaneg.pce$`PointVar:language` + labs(y = "Negative Theta", x = "Response Variability")} -> pce.theta.int2
+
+
+
+{pce.thetavar.patch / pce.theta.int2 / pce.theta.int1} +
+   plot_layout(guides = "collect") + plot_annotation(tag_levels = "A") &
+   theme_pubr(legend = "bottom") & scale_color_manual(values = lang_colors) & scale_fill_manual(values = lang_colors) -> pce.theta.patch
+
+cowplot::save_plot(pce.theta.patch, filename = paste(save.figures.path, "st1-theta-condeffs.png", sep = "/"), ncol = 2, nrow = 3, base_asp = 1.25)
+# it seems like some data points are missing
+
+####### replot the marginal effects of slope manually to show more data points
+test <- conditional_effects(
+    brm.theta.neg, 
+    effects = "PointVar", 
+    re_formula = NA
+  )
+df <- test[[1]]
+
+ggplot(df, aes(x = effect1__, y = estimate__)) +
+  geom_point(data = aggregate.neg, aes(x = PointVar, y = newTheta), inherit.aes = F, alpha = 0.5) +
+  geom_line(color = "black", linewidth = 2) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "gray", alpha = 0.4) +
+  labs(x = "Response Variability", y = "Negative Theta") -> negthetavar
+
+test2 <- conditional_effects(
+    brm.theta.pos, 
+    effects = "PointVar", 
+    re_formula = NA
+  )
+df2 <- test2[[1]]
+
+ggplot(df2, aes(x = effect1__, y = estimate__)) +
+  geom_point(data = aggregate.pos, aes(x = PointVar, y = newTheta), inherit.aes = F, alpha = 0.5) +
+  geom_line(color = "black", linewidth = 2) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "gray", alpha = 0.4) +
+  labs(x = "Response Variability", y = "Positive Theta") -> posthetavar
+
+posthetavar | negthetavar -> manual.thetavar.patch
+
+(pce.theta.int2 / pce.theta.int1) & scale_color_manual(values = lang_colors) & scale_fill_manual(values = lang_colors) -> auto.thetavar.patch
+
+{manual.thetavar.patch / auto.thetavar.patch} +
+  plot_layout(guides = "collect", heights = c(1,2)) + plot_annotation(tag_levels = "A") & 
+  theme_pubr(legend = "bottom") & labs(color = "Contrast Language", fill = "Contrast Language") -> manual.theta.patch
+
+cowplot::save_plot(manual.theta.patch, filename = paste(save.figures.path, "st1-theta-condeffs2.png", sep = "/"), ncol = 2, nrow = 3, base_asp = 1.25)
+
+```
+
+done
+```{r theta-model-interaction-condeffs-plot}
+
+## for the interaction effects of slope and repsonse variability, manually plot to show all points
+
+# set "levels" of response variability to plot as groups against slope x theta two-dimensional space
+
+get_summary_stats(as.data.frame(aggregate.pos$PointVar), type = "median_mad")
+get_summary_stats(as.data.frame(aggregate.neg$PointVar), type = "median_mad")
+
+full.range.pointvar <- get_summary_stats(as.data.frame(aggregate$PointVar), type = "median_mad")
+median.var <- full.range.pointvar$median
+lowermad.var <- full.range.pointvar$median - (1.5* full.range.pointvar$mad)
+uppermad.var <- full.range.pointvar$median + (1.5* full.range.pointvar$mad)
+
+int_conditions <- list(
+  PointVar = setNames(c(lowermad.var, median.var, uppermad.var), c("-1.5 MAD: 8.152", "Median: 17.737", "+1.5 MAD: 27.322"))
+)
+
+interact.pos <- conditional_effects(
+  brm.theta.pos,
+  effects = "logSlope:PointVar",
+  int_conditions = int_conditions
+)
+df3 <- interact.pos[[1]]
+ggplot(df3, aes(x = effect1__, y = estimate__, group = effect2__)) +
+  geom_point(data = aggregate.pos, aes(x = logSlope, y = newTheta), inherit.aes = F, alpha = 0.5) +
+  geom_line(aes(color = effect2__), size = 2) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "gray", alpha = 0.3) +
+  labs(x = "Slope", y = "Positive Theta", color = "Levels of\nResponse\nVariability") +
+  theme_pubr() -> int.pos.plot
+
+interact.neg <- conditional_effects(
+  brm.theta.neg,
+  effects = "logSlope:PointVar",
+  int_conditions = int_conditions
+)
+df4 <- interact.neg[[1]]
+ggplot(df4, aes(x = effect1__, y = estimate__, group = effect2__)) +
+  geom_point(data = aggregate.neg, aes(x = logSlope, y = newTheta), inherit.aes = F, alpha = 0.5) +
+  geom_line(aes(color = effect2__), size = 2) +
+  geom_ribbon(aes(ymin = lower__, ymax = upper__), fill = "gray", alpha = 0.3) +
+  labs(x = "Slope", y = "Negative Theta", color = "Levels of\nResponse\nVariability") +
+  theme_pubr() -> int.neg.plot
+
+{(int.pos.plot + plot_layout(guides = 'auto')) | int.neg.plot} + plot_layout(guides = "collect")  + plot_annotation(tag_levels = "A") & theme_pubr(legend = "right") &
+  theme(legend.text = element_text(size = 9), legend.title = element_text(size = 9)) -> slopevartheta.patch
+
+cowplot::save_plot(slopevartheta.patch, filename = paste(save.figures.path, "st1-slopevartheta-condeffs.png", sep = "/"), ncol = 3, nrow = 1, base_asp = 0.75)
+```
+
+------------------------------------------------------------------------
+
+
+
+# Tables and plots of VAS for n = 100 (appendix)
+Maybe for supplementary material
+
+```{r visualize-thetas-on-heatmaps}
+# load the data used for the heatmaps
+matlab_input100 <- import("clean_data/filtered_study1_vas_matlab.txt") %>%
+  mutate(ID = as.factor(ID), as.factor(pair)) %>%
+  group_by(ID, pair, first_dim_step, second_dim_step) %>%
+  summarize(norm_response = mean(norm_response))
+
+
+# transform theta into radians to generate slope for abline that will represent the primary dimension boundary, because the tan function on R works on radians not degrees
+# also because the angle for Theta is under the boundary line on the *left* (aka negative-direction) of the x-axis, and angle-to-slope calculation is handled according to the standard position of angles, I must calculate the linear pair (when two angles equal 180 degrees, or pi radians) complementary angle in order to calculate the slope of the boundary line
+  # but the direct radians transformation will be used in drawing the arc of the angle
+visualize_theta100 <- rl_estimates %>%
+  mutate(radians = (Theta * (pi / 180)), complement = pi - radians, theta_slope = tan(complement), yint = 1 -(theta_slope*X1)) %>%
+  left_join(matlab_input100, by = c("ID", "pair")) %>%
+  select(ID, pair, language, X1, X2, Theta, radians, complement, theta_slope, yint, first_dim_step, second_dim_step, norm_response)
+
+indent_intent_theta100 <- visualize_theta100 %>%
+  filter(pair == "indent-intent")
+
+reason_risen_theta100 <- visualize_theta100 %>%
+  filter(pair == "reason-risen")
+
+toru_tooru_theta100 <- visualize_theta100 %>%
+  filter(pair == "toru-tooru")
+
+kata_katta_theta100 <- visualize_theta100 %>%
+  filter(pair == "kata-katta")
+
+library(ggforce) 
+# to draw theta arcs with geom_arc
+# for geom_arc, the arc is measured in radians, and radians = 0/2*pi is at the 12 o'clock position, and the radian positions specified in the arguments start and end going clockwise
+# because Theta is the angle between the x-axis going in the *negative* direction and the boundary line, I need to start my angle at 3/2*pi (9 o'clock position) and move clockwise Theta amount (in radians)
+
+# see how the heatmap looks with just one participant
+test <- indent_intent_theta100 %>%
+  filter(ID == 5341)
+
+ggplot(data = test, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+  scale_fill_viridis_c(option = "plasma", direction = -1, limits = c(0, 100), labels = c("0 (indent)", "25", "50", "75", "100 (intent)"), n.breaks = 5) +
+  labs(title = "2-dimensional VAS responses for indent vs. intent", x = "VOT Step (1 = Indent, 7 = Intent)", y = "F0 Step (1 = Indent, 5 = Intent)", fill = "Average VAS rating") +
+  theme(axis.ticks = element_blank())
+```
+
+```{r theta-heatmap-indent-intent}
+
+ggplot(data = indent_intent_theta100, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+  scale_fill_viridis_c(option = "plasma", direction = -1, n.breaks = 5, labels = c("0 (indent)", "25", "50", "75", "100 (intent)")) +
+  labs(title = "2-dimensional VAS responses for indent vs. intent", x = "VOT Step (1 = Indent, 7 = Intent)", y = "F0 Step (1 = Indent, 5 = Intent)", fill = "Average VAS rating") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+
+
+ggsave(filename = "heatmaps_theta/indent-intent100.png", width = 100, height = 80, unit = "cm")
+  
+
+
+```
+
+```{r theta-heatmap-reason-risen}
+
+ggplot(data = reason_risen_theta100, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+  scale_fill_viridis_c(option = "viridis", direction = -1,  n.breaks = 5, labels = c("0 (reason)", "25", "50", "75", "100 (risen)")) +
+  labs(title = "2-dimensional VAS responses for reason vs. risen", x = "Spectral Step (1 = Reason, 7 = Risen)", y = "Duration Step (1 = Reason, 5 = Risen)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+
+
+ggsave(filename = "heatmaps_theta/reason-risen100.png", width = 100, height = 80, unit = "cm")
+  
+
+
+```
+
+```{r theta-heatmap-toru-tooru}
+
+ggplot(data = toru_tooru_theta100, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+ scale_fill_viridis_c(option = "mako", direction = -1,  n.breaks = 5, labels = c("0 (toru)", "25", "50", "75", "100 (tooru)")) +
+  labs(title = "2-dimensional VAS responses for toru vs. tooru", x = "Duration Step (1 = toru, 7 = tooru)", y = "F0 Contour Step (1 = toru, 5 = tooru)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+
+
+ggsave(filename = "heatmaps_theta/toru-tooru100.png", width = 100, height = 80, unit = "cm")
+  
+```
+
+```{r theta-heatmap-kata-katta}
+
+ggplot(data = kata_katta_theta100, aes(x = factor(first_dim_step), y = factor(second_dim_step))) +
+  geom_raster(aes(fill = norm_response), vjust = 1, hjust = 1) +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 2, color = "white") +
+  geom_arc(aes(x0 = X1, y0 = 1, r = 0.75, start = 3*pi/2, end = 3*pi/2 + radians), inherit.aes = F, linewidth = 1, color = "black") +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "white", linewidth = 2) +
+  geom_abline(aes(slope = theta_slope, intercept = yint), color = "black", linewidth = 1) +
+  coord_cartesian(expand = F) +
+ scale_fill_viridis_c(option = "rocket", direction = -1, n.breaks = 5, labels = c("0 (kata)", "25", "50", "75", "100 (katta)")) +
+  labs(title = "2-dimensional VAS responses for kata vs. katta", x = "Duration Step (1 = kata, 7 = katta)", y = "F0 Contour Step (1 = kata, 5 = katta)", fill = "Average VAS Response") +
+  theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
+  facet_wrap(vars(ID))
+
+
+ggsave(filename = "heatmaps_theta/kata-katta100.png", width = 100, height = 80, unit = "cm")
+  
+```
+
+
+------------------------------------------------------------------------
+
+# Session Info
+
+```{r sessionInfo}
+sessionInfo()
+```

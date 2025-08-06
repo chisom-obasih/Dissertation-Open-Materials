@@ -1,0 +1,1113 @@
+---
+title: "Study 1 Data Analysis"
+author: "Chisom"
+date: "Apr 2025"
+subtitle: "Data preparation and analysis of Study 1 VAS and questionnaire data - latent profile analysis of VAS slopes and response variabilities, language entropy to calculate multilingual linguistic diversity (MLD) measures from Linguistic Diversity Questionnaire reponses, and subsequent statistical analyses using LPA profiles and MLD values"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+
+## Libraries
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+
+library(tidyLPA)
+library(mclust)
+# default package used to estimate profiles is mclust (MPlus is not installed on my computer)
+
+# for Bayesian multivariate regression modeling
+# installation of package rstan is required to run brms
+library(brms)
+
+# fit data distributions
+library(fitdistrplus)
+
+library(flextable)
+```
+
+------------------------------------------------------------------------
+
+
+## Read in data
+
+```{r read-data, message = FALSE}
+# set path to the data
+path.to.data <- "clean_data/outcome_data"
+
+# rotated logistic estimates, convert ID to factor, and add language column, and set factors for language and pair
+rl_estimates<-import(paste(path.to.data, "study1_vas_rl_curvefit.txt", sep = "/")) %>%
+  mutate(ID = as.factor(ID)) %>%
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", ifelse(pair == "toru-tooru" | pair == "kata-katta", "Japanese", "")), .after = "pair") %>%
+  mutate(language = factor(language, levels = c("English", "Japanese"))) %>%
+  mutate(pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru")))
+
+# read in MLD scores from questionnaire scoring output
+# convert ID and gender to factors
+MLD_A <- import(paste(path.to.data, "study1_mld-a_scores.csv", sep = "/")) %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender))
+MLD_P <- import(paste(path.to.data, "study1_mld-p_scores.csv", sep = "/")) %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender))
+MLD_scores <- import(paste(path.to.data, "study1_mld_scores.csv", sep = "/")) %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender))
+
+
+```
+
+------------------------------------------------------------------------
+
+## Analysis on rotated logistic estimates
+
+```{r rotated-logistic-estimate-distributions}
+# visualize distributions of estimates
+
+
+hist(rl_estimates$Slope) # skewed left and very high kurtosis
+hist(misty::center(log(abs(rl_estimates$Slope)))) # near gaussian
+
+
+hist(rl_estimates$PointVar) # skewed right
+hist(log(rl_estimates$PointVar)) # now wayyy skewed left
+hist(sqrt(rl_estimates$PointVar)) # near gaussian, but the interpretation is much harder
+
+hist(rl_estimates$Theta) # kind of heavy tailed, like student's t-distribution
+mean(rl_estimates$Theta) # 84.18347
+sd(rl_estimates$Theta) # 30.29947
+
+descdist(misty::center(log(abs(rl_estimates$Slope)))) # indicates data is close to normal
+fitdist(misty::center(log(abs(rl_estimates$Slope))), "norm") %>% plot() # fairly decent fit
+fitdist(misty::center(log(abs(rl_estimates$Slope))), "t", start = list(df = 1)) %>% plot()
+
+# can use skew_normal() with brms or Gamma()
+descdist(rl_estimates$PointVar) # on the gamma line
+fitdist(rl_estimates$PointVar, "gamma") %>% plot() # very good fit of gamma
+
+descdist(rl_estimates$Theta) # outside of any of the provided theoretical distributions
+fitdist(rl_estimates$Theta, "cauchy") %>% plot() # this seems to fit almost perfectly
+# also read that cauchy distribution is basically a t-distribution where df = 1
+fitdist(rl_estimates$Theta, "t", start(list(df = 1, mu = 84, sigma = 30))) %>% plot()
+
+broom::glance(fitdistr(rl_estimates$Theta, "cauchy"))
+broom::glance(fitdistr(rl_estimates$Theta, "t"))
+# however, according to AIC and BIC, t-distribution fits slightly better than cauchy distribution
+
+```
+
+```{r rotated-logistic-estimates-data-prep}
+# rotated logistic estimates don't work well with lpa, so analyzing these with multivariate mixed effect regression
+
+
+
+
+# transform Slope to logSlope to normalize distribution and center on group mean
+# also transform Theta to be centered around 90 (90 = 0) and reoriented such that original theta values from 0-90 (0 = +90) are positive and original theta values from 90-180 are negative values (180 = -90)
+# in this way, newTheta values close to 0 in magnitude indicate heavier use of the primary dimension, newTheta values closer to 90 in mangitude indicate heavier use of the secondary dimension, and newTheta values near 45 in magnitude indicate near equal use of both dimensions, with positive values indicating "accurate" dimension use and negative values indicating "inaccurate" dimension use (flipping the phoneme across the boundary at some points)
+# then convert pair and langauge to factors, and select only relevant data columns
+df.rl <- rl_estimates %>%
+  mutate(logSlope = misty::center(log(abs(Slope))), newTheta = (90 - Theta)) %>%
+  select(ID, language, pair, Slope, logSlope, PointVar, Theta, newTheta)
+
+ggplot(df.rl, aes(x = logSlope, y = PointVar)) + geom_point() + labs(title = "four data points per ID")
+
+
+# put together slope, pointvar, theta, MLD-A, and MLD-P scores, and remove from data those who do not have MLD scores due to being filtered out of questionnaire data
+# n_ID = 76
+aggregate <- left_join(df.rl, MLD_scores, by = "ID") %>%
+  filter(!is.na(MLD_A) | !(is.na(MLD_P))) %>%
+  # include binary indicates for MLD_A and MLD_P if greater than 0
+  mutate(MLD_A_binary = ifelse(MLD_A > 0, 1, 0), MLD_P_binary = ifelse(MLD_P > 0, 1, 0)) 
+
+ggplot(aggregate, aes(x = MLD_A, y = newTheta)) + geom_point()
+ggplot(aggregate, aes(x = MLD_P, y = newTheta)) + geom_point()
+
+# bin the ranges of interest for newTheta, because interpretation differs based on original value, added just for fullness of data
+
+aggregate$thetaBin <- cut(
+  aggregate$newTheta, 
+  breaks = c(-90, -45, 0, 45, 90),
+  labels = c("reversed_secondary", "reversed_balanced", "expected_balanced", "expected_secondary"))
+```
+
+```{r multivariate-attempt-1}
+
+# multivariate analysis
+# y1, y2, y3 are logSlope, PointVar, and Theta
+# maximal structure of fixed and random effects is as follows:
+# predictor variables are MLD_A, MLD_P (both between-subjects, within-item variables), language (within-subjects, between_items variable)
+# random effects are ID (subject-level, nested) and pair (item-level, crossed)
+# random slopes for language | ID, MLD_A | pair, MLD_P | pair
+# maximal structure of predictor variables: ~ (MLD_A*language) + (MLD_P*language) + (1 + language||ID) + (1 + MLD_A||pair) + (1 + MLD_P||pair))
+# but I'm going to take away the random slopes for pair and just do a random intercept
+
+# from Kushani
+# brm(
+#   mvbind(y1, y2) ~ predictors + (1 | group),
+#   data = my_data,
+#   family = gaussian(),
+#   rescor = TRUE
+# )
+
+# conflicts that arise when running brm()
+# conflicts_prefer(brms::ar)
+# conflicts_prefer(flextable::as_image)
+# conflicts_prefer(ggpubr::border)
+# conflicts_prefer(janitor::chisq.test) 
+# conflicts_prefer(purrr::compose) 
+# conflicts_prefer(flextable::continuous_summary) 
+# conflicts_prefer(tidyr::expand)
+# conflicts_prefer(lme4::factorize) 
+# conflicts_prefer(janitor::fisher.test)
+# conflicts_prefer(ggpubr::font)
+# conflicts_prefer(flextable::footnote) 
+# conflicts_prefer(lme4::golden) 
+# conflicts_prefer(janitor::make_clean_names) 
+# conflicts_prefer(brms::ngrps)
+# conflicts_prefer(tidyr::pack)
+# conflicts_prefer(janitor::remove_empty_cols)
+# conflicts_prefer(ggpubr::rotate)
+# conflicts_prefer(flextable::separate_header)
+# conflicts_prefer(lmerTest::step)
+# conflicts_prefer(tidyr::unpack)
+# conflicts_prefer(brms::kidney)
+
+# with help from chatgpt
+
+brm.fit.dif.dist <- brm(
+  mvbind(logSlope, PointVar, newTheta) ~ (MLD_A * language) * (MLD_P * language) + (1 + language | ID) + (1 | pair),
+  data = aggregate,
+  family = list(
+    gaussian(),  # logSlope follows a Normal distribution
+    skew_normal(), # PointVar follows a Gamma/skewed distribution
+    student()  # newTheta follows a Student's t distribution
+  ), # different families mean rescor has to be set to FALSE by default
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+# Extract posterior residuals for each response variable
+resid.slope <- residuals(brm.fit.dif.dist, resp = "logSlope", summary = TRUE)
+resid.var <- residuals(brm.fit.dif.dist, resp = "PointVar", summary = TRUE)
+resid.theta <- residuals(brm.fit.dif.dist, resp = "newTheta", summary = TRUE)
+
+# Add IDs to preserve row alignment
+resid.df <- data.frame(
+  row = 1:nrow(resid.slope),
+  resid_slope = resid.slope[, "Estimate"],
+  resid_var = resid.var[, "Estimate"],
+  resid_theta = resid.theta[, "Estimate"]
+)
+
+# Basic correlation matrix
+cor(resid.df[, c("resid_slope", "resid_var", "resid_theta")])
+# some weak negative correlation between logSlope and PointVar residuals (-0.11), which means the model isn't fully capturing the dependency
+# weak positive correlation between logSlope and newTheta residuals (0.17)
+# neglible correlation between PointVar and newTheta residuals (-0.05)
+# so the residual correlations should be modeled (rescor should be set to TRUE)
+```
+
+```{r multivariate-attempt-2}
+# lots of help from chatgpt
+
+# because there is some correlation between response variables that are not allowed to be capture in the model due to the response variables being set to different distributions, I am now setting all to be modeled as student's t-distributions
+# however, because each distribution is in fact different, I am setting priors to reflect that
+# logSlope is mostly gaussian, though it's possible it is a bit heavy-tailed and ever so slightly skewed
+# PointVar is definitely right (positively) skewed, best modeled by a Gamma or skew_normal() distribution
+# newTheta has high kurtosis and some heavy tails (looks like cowboy hat), and is best modeled by a cauchy distribution, or a student's t-distribution when df = 1
+
+# according to chatgpt, I can set priors to reflect this, that despite the fact that I am going to model all of them as student's t-distributions, the priors allow for the following
+# for logSlope, encourage gaussian-like shape, but allow heavy tails
+# for PointVar, allow moderate skew and tails
+# for newTheta, emphasize extreme tail heaviness, allow distribution to be capable of being cauchy-like, but allow flexibility for df = 2-5, if supported by data
+
+# save the formula so if I change it, I only have to change it in one location
+brm.formula.1 <- bf(mvbind(logSlope, PointVar, newTheta) ~ (MLD_A *language) + (MLD_P * language) + (MLD_A:MLD_A_binary * language) + (MLD_P:MLD_P_binary * language) + (1 + language | ID) + (1 | pair))
+
+brm.formula.2 <- bf(mvbind(logSlope, PointVar, newTheta) ~ MLD_A + MLD_P + language + MLD_A:MLD_A_binary + MLD_P:MLD_P_binary + (1 + language | ID) + (1 | pair))
+
+# same formula used in brm.fit.dif.dist
+brm.formula.3 <- bf(mvbind(logSlope, PointVar, newTheta) ~ (MLD_A *language) + (MLD_P * language) + (1 + language | ID) + (1 | pair))
+
+# examine the default priors
+default_prior <- default_prior(
+brm.formula.1,
+family = student(),
+data = aggregate
+)
+
+# run model with default priors to compare against models with set priors (using brm.formula.1)
+brm.fit.default <- brm(
+  brm.formula.1,
+  data = as.data.frame(aggregate),
+  family = student(), # rescor set to TRUE by default
+  # no prior set, so using default
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+# set new priors: with help from chatgpt
+priors1 <- default_prior %>%
+  # for class b
+  mutate(prior = case_when(
+    class == "b" & resp %in% c("logSlope", "newTheta") ~ "normal(0, 1)", # expect moderate effect of all predictors on logSlope, newTheta,
+    class == "b" & resp == "PointVar" ~ "normal(0, 2)", # expect larger effect of all predictors on PointVar
+    class == "b" & str_detect(coef, "binary") ~ "normal(0, 2)", # expect larger effect of MLD_A/MLD_P when non-zero (interaction with MLD_A_binary/MLD_P_binary) on all predictors
+    
+    # adjusting priors for newTheta to account for cauchy-like distribution
+    class %in% c("sigma", "sd") & resp == "newTheta" ~ "student_t(1, 0, 10)", # robust to large residuals for sigma, random effect variation for sd
+    class == "Intercept" & resp == "newTheta" ~ "student_t(1, 0, 20)", # heavy-tailed, centered
+    
+    # for classes Intercept, sigma, sd for logSlope - these are the same as the defaults, which I think are fine, df = 3 is robust to skewness
+    class %in% c("Intercept", "sigma", "sd") & resp == "logSlope" ~ "student_t(3, 0, 2.5)",
+    
+    # for Intercept, sigma, sd for PointVar - these are the same as the defaults, which I think are fine, df = 3 is robust to skewness
+    class %in% c("sigma", "sd") & resp == "PointVar" ~ "student_t(3, 0, 6.4)",
+    class == "Intercept" & resp == "PointVar" ~ "student_t(3, 17.7, 6.4)",
+    # for correlation values
+    class %in% c("cor", "rescor") ~ "lkj(1)",
+    .default = prior
+  ))
+
+priors2 <- priors1 %>%
+  filter(coef != "languageJapanese:MLD_P" & 
+           coef != "languageJapanese:MLD_P:MLD_P_binary" &
+           coef != "MLD_A:languageJapanese" &
+           coef != "MLD_A:languageJapanese:MLD_A_binary")
+
+priors3 <- priors1 %>%
+  filter(coef != "languageJapanese:MLD_P:MLD_P_binary" &
+           coef != "MLD_A:languageJapanese:MLD_A_binary" &
+           coef != "MLD_P:MLD_P_binary" &
+           coef != "MLD_A:MLD_A_binary")
+
+
+
+
+brm.fit.1 <- brm(
+  brm.formula.1,
+  data = as.data.frame(aggregate),
+  family = student(), # rescor set to TRUE by default
+  prior = priors1,
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+brm.fit.2 <- brm(
+  brm.formula.2,
+  data = as.data.frame(aggregate),
+  family = student(), # rescor set to TRUE by default
+  prior = priors2,
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+brm.fit.3 <- brm(
+  brm.formula.3,
+  data = as.data.frame(aggregate),
+  family = student(), # rescor set to TRUE by default
+  prior = priors3,
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+
+brm.fit.dif.dist <- add_criterion(brm.fit.dif.dist, "loo")
+brm.fit.default <- add_criterion(brm.fit.default, "loo")
+brm.fit.1 <- add_criterion(brm.fit.1, "loo")
+brm.fit.2 <- add_criterion(brm.fit.2, "loo")
+brm.fit.3 <- add_criterion(brm.fit.3, "loo")
+
+
+compare <- loo_compare(brm.fit.dif.dist, brm.fit.default, brm.fit.1, brm.fit.2, brm.fit.3)
+# according to loo_compare, brm.fit.3 and brm.fit.1 are the best models (brm.fit.1 only -0.1 lower in elpd_diff but se_diff is 0.4, so they're likely equivalent)
+# I am choosing brm.fit.3 since it is the simpliest/most parsimonious model and easiest to interpret, and also because there are no significant effects for either of them, so simpliest is best
+
+formula_right_side <- data.frame(
+  row.names = c("brm.fit.1", "brm.fit.2", "brm.fit.3"),
+  formula_right_side = c("(MLD_A * language) + (MLD_P * language) + (MLD_A:MLD_A_binary * language) + (MLD_P:MLD_P_binary * language) + (1 + language | ID) + (1 | pair)", "MLD_A + MLD_P + language + MLD_A:MLD_A_binary + MLD_P:MLD_P_binary + (1 + language | ID) + (1 | pair)", "(MLD_A * language) + (MLD_P * language) + (1 + language | ID) + (1 | pair)"))
+
+
+compare <- merge(compare, formula_right_side, by = "row.names", all = TRUE)
+
+
+
+```
+
+Attempt 2 of the multivariate modeling had the most parsimonious and interpretable models, so the final analysis will be based on brms.fit.3 from Attempt 2
+
+### Univariate modeling focused on theta, split into positive and negative distributions (non-overlapping)
+
+#### Post-hoc (response: newTheta (split into pos and neg); predictors: MLD-A * language + MLD-P * language)
+```{r newtheta-post-hoc}
+
+# try Bayesian with brms
+
+aggregate.pos <- aggregate %>% filter(newTheta >= 0)
+aggregate.neg <- aggregate %>% filter(newTheta < 0)
+
+
+aggregate.pos %>% select(ID, pair, newTheta) %>% get_summary_stats(show = c("n", "min", "max", "median", "mean", "sd"))
+aggregate.neg %>% select(ID, pair, newTheta) %>% get_summary_stats(show = c("n", "min", "max", "median", "mean", "sd"))
+
+# based on brm.formula.3 - same formula for both positive and negative, the only thing that changes is the data
+brm.formula.3.posthoc <- bf(newTheta ~ (MLD_A *language) + (MLD_P * language) + (1 + language | ID) + (1 | pair))
+
+
+posthoc.pos.default.prior <- default_prior(
+brm.formula.3.posthoc,
+family = student(),
+data = aggregate.pos
+)
+
+# set priors with help from chatgpt
+posthoc.priors.pos <- posthoc.pos.default.prior %>%
+  mutate(prior = case_when(
+    # Intercept: capture fat tails and uncertainty
+    class == "Intercept" ~ "student_t(3, 20, 20)", # location near mean with scale roughly equal to SD to allow broad coverage
+    # Fixed effects: moderately wide due to post-hoc nature
+    class == "b" ~ "normal(0, 5)", # exploratory, allowing moderate-to-large shifts
+    # Random slopes/intercepts
+    class == "sd" ~ "student_t(3, 0, 10)", # moderate to wide, reflecting uncertainty in variability among subjects/pairs
+    class == "sigma" ~ "student_t(3, 0, 20)", # residual scale, robust to outliers
+    # nu for student distribution
+    class == "nu" ~ "gamma(2, 1)", # Supports very low nu values, making it flexible enough to allow Cauchy-like behavior, but still allows nu to increase if the data prefer it
+    .default = prior
+))
+
+posthoc.priors.neg <- posthoc.pos.default.prior %>%
+  mutate(prior = case_when(
+    # Intercept: capture fat tails and uncertainty
+    class == "Intercept" ~ "student_t(3, -15, 20)", # location near mean with scale roughly equal to SD to allow broad coverage
+    # Fixed effects: moderately wide due to post-hoc nature
+    class == "b" ~ "normal(0, 5)", # exploratory, allowing moderate-to-large shifts
+    # Random slopes/intercepts
+    class == "sd" ~ "student_t(3, 0, 10)", # moderate to wide, reflecting uncertainty in variability among subjects/pairs
+    class == "sigma" ~ "student_t(3, 0, 20)", # residual scale, robust to outliers
+    # nu for student distribution
+    class == "nu" ~ "gamma(2, 1)", # Supports very low nu values, making it flexible enough to allow Cauchy-like behavior, but still allows nu to increase if the data prefer it
+    .default = prior
+))
+
+brm.posthoc.pos <- brm(
+  brm.formula.3.posthoc,
+  data = as.data.frame(aggregate.pos),
+  family = student(),
+  prior = posthoc.priors.pos,
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+brm.posthoc.neg <- brm(
+  brm.formula.3.posthoc,
+  data = as.data.frame(aggregate.neg),
+  family = student(),
+  prior = posthoc.priors.neg,
+  cores = 4,
+  chains = 4, 
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+pp_check(brm.posthoc.pos, type = "boxplot")
+pp_check(brm.posthoc.neg, type = "boxplot")
+
+summary(brm.posthoc.pos)
+summary(brm.posthoc.neg)
+
+```
+
+#### Second confirmatory analysis (response: newTheta (split into pos and neg); predictors: logSlope * PointVar * language)
+
+```{r second-confirmatory-newtheta-modeling}
+# secondary confirmatory analysis to look at the effects of slope and response variability on theta
+# doing this also on the split data to make interpretation easier
+
+# same formula for both positive and negative, the only thing that changes is the data
+brm.formula.theta.split <- bf(newTheta ~ logSlope * PointVar * language + (1 + language|ID) + (1|pair))
+
+
+theta.pos.default.prior <- default_prior(
+brm.formula.theta.split,
+family = student(),
+data = aggregate.pos
+)
+
+# set priors with help from chatgpt
+theta.priors.pos <- theta.pos.default.prior %>%
+  mutate(prior = case_when(
+    # Intercept: narrower priors centered near means since the models are confirmatory
+    class == "Intercept" ~ "normal(20, 10)", # normal for tighter concentration
+    # Fixed effects: moderately because of theoretical interest
+    class == "b" ~ "normal(0, 2)", # expect moderate effect sizes, less uncertainty
+    # Random slopes/intercepts
+    class == "sd" ~ "student_t(3, 0, 7)", # a bit tighter reflecting more confidence in variance components
+    class == "sigma" ~ "student_t(3, 0, 15)", # still allowing some heavy tails but more constrained than post-hoc
+    class == "nu" ~ "gamma(2, 1)", # Supports very low nu values, making it flexible enough to allow Cauchy-like behavior, but still allows nu to increase if the data prefer it
+    .default = prior
+))
+
+theta.priors.neg <- theta.pos.default.prior %>%
+  mutate(prior = case_when(
+    # Intercept: narrower priors centered near means since the models are confirmatory
+    class == "Intercept" ~ "normal(-15, 10)", # normal for tighter concentration
+    # Fixed effects: moderately because of theoretical interest
+    class == "b" ~ "normal(0, 2)", # expect moderate effect sizes, less uncertainty
+    # Random slopes/intercepts
+    class == "sd" ~ "student_t(3, 0, 7)", # a bit tighter reflecting more confidence in variance components
+    class == "sigma" ~ "student_t(3, 0, 15)", # still allowing some heavy tails but more constrained than post-hoc
+    class == "nu" ~ "gamma(2, 1)", # Supports very low nu values, making it flexible enough to allow Cauchy-like behavior, but still allows nu to increase if the data prefer it
+    .default = prior
+))
+
+brm.theta.pos <- brm(
+  brm.formula.theta.split,
+  data = as.data.frame(aggregate.pos),
+  family = student(),
+  prior = theta.priors.pos,
+  cores = 4,
+  chains = 4,
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+
+brm.theta.neg <- brm(
+  brm.formula.theta.split,
+  data = as.data.frame(aggregate.neg),
+  family = student(),
+  prior = theta.priors.neg,
+  cores = 4,
+  chains = 4,
+  iter = 4000, 
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+pp_check(brm.theta.pos, type = "boxplot")
+pp_check(brm.theta.neg, type = "boxplot")
+
+summary(brm.theta.pos)
+summary(brm.theta.neg)
+
+```
+
+
+
+
+
+```{r save-workspace-objects}
+# because the brm models took so long, I want to save them for easy loading later on
+save(list = c("aggregate", # dataframe used in multivariate model (n = 304)
+          "aggregate.pos", # dataframe subset by positive values of newTheta (n = 182)
+          "aggregate.neg", # dataframe subset by negative value of newTheta (n = 122)
+          "brm.fit.dif.dist", # multivariate model with different distribution families for response variables, uses same formula as brm.formula.3
+          "brm.fit.default", # multivariate model fit with default priors, based on brm.formula.1
+          "brm.fit.1", # multivariate model with response variables all fit with student distribution
+          "brm.fit.2", # multivariate model with simpler formula, response variables all fit with student distribution
+          "brm.fit.3", # multivariate model with different formula, response variables all fit with student distribution
+          "brm.posthoc.pos", # univariate model post-hoc analysis for positive values of newTheta, using brm.formula.posthoc with data aggregate.pos, post-hoc of brm.fit.3
+          "brm.posthoc.neg", # univariate model post-hoc analysis for negative values of newTheta, using brm.formula.posthoc with data aggregate.neg, post-hoc of brm.fit.3
+          "brm.theta.pos", # univariate model testing effects of slope and response variability on positive values of newTheta, using brm.formula.theta.split and data aggregate.pos
+          "brm.theta.neg", # univariate model testing effects of slope and response variability on negative values of newTheta, using brm.formula.theta.split and data aggregate.neg
+          "brm.formula.1", # formula fit in brm.fit.1: interactions between each MLD and language, and interactions between each MLD:MLD_binary variables and language
+          "brm.formula.2", # formula fit in brm.fit.2: MLD vars, language, MLD_binary vars, no interactions
+          "brm.formula.3", # formula fit in brm.fit.3: MLD variables and language interactions without any MLD_binary variables
+          "brm.formula.3.posthoc", # formula fit on the two univariate posthoc brm models, based on brm.formula.3
+          "brm.formula.theta.split", # formula fit on the two univariate brm models testing effects of slope and response variability on newTheta
+          "default_prior", # dataframe of default brm priors for brm.formula.1, used in brm.fit.default
+          "posthoc.pos.default.prior", # dataframe of default brm priors for brm.formula.3.posthoc and data aggregate.pos, used to create posthoc.priors.pos and posthoc.priors.neg
+          "theta.pos.default.prior", # dataframe of default brm priors for brm.formula.theta.split and data aggregate.pos, used to create theta.priors.pos and theta.priors.neg
+          "df.rl", # dataframe of rotated logistic estimates with transformed data
+          "MLD_A", # dataframe loaded in with MLD_A scores and other part1 scores
+          "MLD_P", # dataframe loaded in with MLD_P scores and other part2 scores
+          "MLD_scores", # dataframe loaded in with just MLD_A and MLD_P scores
+          "priors1", # dataframe of priors used in brm.fit.1
+          "priors2", # dataframe of priors used in brm.fit.2
+          "priors3", # dataframe of priors used in brm.fit.3
+          "posthoc.priors.pos", # dataframe of priors used in brm.posthoc.pos
+          "posthoc.priors.neg", # dataframe of priors used in brm.posthoc.neg
+          "theta.priors.pos", # dataframe of priors used in brm.theta.pos
+          "theta.priors.neg", # dataframe of priors used in brm.theta.neg
+          "rl_estimates", # original dataframe of rotated logistic estimates
+          "compare" # loo compare of different models
+          ), # dataframe loaded in with original rotated logistic curvefitting output
+          file = "Rdata/study1_analysis_workspace.Rdata")
+```
+
+```{r save-data-for-visualization-objects}
+# save just the dataframes that will be used in post-analysis visualizations and tables
+save(list = c("rl_estimates", # original output from MATLAB
+          "df.rl", # un-transformed and transformed variables from rl_estimates
+          "MLD_A",
+          "MLD_P",
+          "MLD_scores",
+          "aggregate", # joined dataframe between df.rl and MLD_scores
+          "aggregate.pos", # subset by positive newTheta values
+          "aggregate.neg", # subset by negative newTheta values
+          "brm.fit.3", # best model
+          "brm.posthoc.pos", # univariate model post-hoc analysis for positive values of newTheta, using brm.formula.posthoc with data aggregate.pos, post-hoc of brm.fit.3
+          "brm.posthoc.neg", # univariate model post-hoc analysis for negative values of newTheta, using brm.formula.posthoc with data aggregate.neg, post-hoc of brm.fit.3
+          "brm.theta.pos", # univariate model testing effects of slope and response variability on positive values of newTheta, using brm.formula.theta.split and data aggregate.pos
+          "brm.theta.neg", # univariate model testing effects of slope and response variability on negative values of newTheta, using brm.formula.theta.split and data aggregate.neg
+          "brm.formula.3", # formula for the chosen model of the main analysis
+          "brm.formula.3.posthoc", # formula fit on the two univariate posthoc brm models, based on brm.formula.3
+          "brm.formula.theta.split", # formula fit on the two univariate brm models testing effects of slope and response variability on newTheta
+          "priors3", # priors for brm.fit.3
+          "posthoc.priors.pos", # dataframe of priors used in brm.posthoc.pos
+          "posthoc.priors.neg", # dataframe of priors used in brm.posthoc.neg
+          "theta.priors.pos", # dataframe of priors used in brm.theta.pos
+          "theta.priors.neg", # dataframe of priors used in brm.theta.neg
+          "compare" # loo compare of different models (brm.fit.default, brm.fit.dif.dist, brm.fit.1, brm.fit.2, brm.fit.3)
+              ),
+     file = "Rdata/study1_post_analysis_visualization_workspace.Rdata")
+```
+
+
+------------------------------------------------------------------------
+
+
+
+## Session Info
+
+```{r sessionInfo, results='hide'}
+sessionInfo()
+```
+
+
+# extra code, do not run
+
+Keeping this code just for record-keeping sake.
+
+### Try LPA
+
+Based on running regular logistic models on two-dimensional VAS data (second-dim-step was used as a grouping variable along with ID and pair).
+
+```{r filter-collapse-visualize-data, eval=FALSE}
+# read in data tables from MATLAB logistic curve-fitting output
+logm_estimates <- import(paste(path.to.data, "study1_vas_logisticfit.txt", sep = "/")) %>%
+  # change the ID column to be character to remove "1287" from all ID (making the ID shorter and more manageable)
+  mutate(ID = str_remove(as.character(ID), "1287")) %>%
+  # convert ID to factor
+  mutate(ID = as.factor(ID))
+
+logm_pred <- import(paste(path.to.data, "study1_vas_logisticfit.data.txt", sep = "/")) %>%
+  mutate(ID = str_remove(as.character(ID), "1287")) %>%
+  mutate(ID = as.factor(ID))
+
+
+# filter out negative slopes, which is 114 data points
+nrow(logm_estimates) #2000
+df <- logm_estimates %>%
+  filter(Slope >= 0) %>% #nrow = 1886
+# add language column
+  mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "english", ifelse(pair == "toru-tooru" | pair == "kata-katta", "japanese", "")), .after = "pair") %>%
+  # make sure ID is a factor
+  mutate(ID = as.factor(ID))
+
+
+
+df.id.lang <- df %>%
+  # collapse data so that each participant has two data points (one for each language)
+  group_by(ID, language) %>%
+  summarise(mean_slope = mean(Slope), mean_var = mean(PointVar)) %>%
+  ungroup() %>%
+  # Z transform
+  mutate(RespVar=(mean_var - mean(mean_var))/sd(mean_var),SlopeZ=(mean_slope - mean(mean_slope))/sd(mean_slope)) 
+
+
+ggplot(df.id.lang, aes(x = SlopeZ, y = RespVar, color = language)) + geom_point()
+
+
+df.id <- df %>%
+  # collapse data so that each participant has one data point
+  group_by(ID) %>%
+  summarise(mean_slope = mean(Slope), mean_var = mean(PointVar)) %>%
+  ungroup() %>%
+  # Z transform
+  mutate(RespVar=(mean_var - mean(mean_var))/sd(mean_var),SlopeZ=(mean_slope - mean(mean_slope))/sd(mean_slope)) 
+
+ggplot(df.id, aes(x = SlopeZ, y = RespVar)) + geom_point()
+
+
+```
+
+```{r lpa-by-id, eval=FALSE}
+
+# one data point per ID
+lpa.compare.id <- df.id %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 1:3, select_vars = c("SlopeZ", "RespVar"),  models = c(1:3, 6))
+
+lpa.id.fit <- get_fit(lpa.compare.id) %>% select(Model, Classes, AIC, BIC, Entropy, prob_min, prob_max, n_min, n_max, BLRT_p)
+
+lpa.id.fit
+# 3 class model was better than 2 class model for model types 1 and 2 based on BLRT, and between these, model type 1 with 3 classes had better AIC and BIC
+
+plot_profiles(lpa.compare.id)
+
+lpa3.id <- df.id %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 3, select_vars = c("SlopeZ", "RespVar"),  models = 1)
+data.id <- get_data(lpa3.id)
+
+#merge LPA class probabilities (CPROB1, 2,3 )
+head(cbind(data.id$CPROB1,
+           data.id$CPROB2,
+           data.id$CPROB3))
+
+data.id<-data.id[,c("Class",
+              "CPROB1",
+              "CPROB2",
+              "CPROB3")]
+
+#bind the two dfs
+classdata.id<-cbind(data.id,df.id)
+#class as factor 
+classdata.id$Class<-as.factor(classdata.id$Class)
+
+```
+
+```{r lpa-by-id-lang, eval=FALSE}
+# two data points per ID (one per language)
+lpa.compare.id.lang <- df.id.lang %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 1:3, select_vars = c("SlopeZ", "RespVar"),  models = c(1:3, 6))
+
+
+lpa.id.lang.fit <- get_fit(lpa.compare.id.lang) %>% select(Model, Classes, AIC, BIC, Entropy, prob_min, prob_max, n_min, n_max, BLRT_p)
+
+lpa.id.lang.fit
+# 3 class model was better than 2 class model for model types 1 and 3 based on BLRT, and between these, model type 3 with 3 classes had better AIC and BIC
+
+plot_profiles(lpa.compare.id.lang)
+
+lpa3.id.lang <- df.id.lang %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 3, select_vars = c("SlopeZ", "RespVar"),  models = 3)
+data.id.lang <- get_data(lpa3.id.lang)
+
+#merge LPA class probabilities (CPROB1, 2,3 )
+head(cbind(data.id.lang$CPROB1,
+           data.id.lang$CPROB2,
+           data.id.lang$CPROB3))
+
+data.id.lang<-data.id.lang[,c("Class",
+              "CPROB1",
+              "CPROB2",
+              "CPROB3")]
+#bind the two dfs
+classdata.id.lang<-cbind(data.id.lang, df.id.lang)
+#class as factor 
+classdata.id.lang$Class<-as.factor(classdata.id.lang$Class)
+
+```
+
+```{r separate-lpas-per-lang,eval=FALSE}
+
+lpa.eng.compare <- df.id.lang %>%
+  filter(language == "english") %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 1:3, select_vars = c("SlopeZ", "RespVar"),  models = c(1:3, 6))
+
+lpa.jpn.compare <- df.id.lang %>%
+  filter(language == "japanese") %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 1:3, select_vars = c("SlopeZ", "RespVar"),  models = c(1:3, 6))
+
+lpa.eng.fit <- get_fit(lpa.eng.compare) %>% select(Model, Classes, AIC, BIC, Entropy, prob_min, prob_max, n_min, n_max, BLRT_p)
+
+lpa.jpn.fit <- get_fit(lpa.jpn.compare) %>% select(Model, Classes, AIC, BIC, Entropy, prob_min, prob_max, n_min, n_max, BLRT_p)
+
+View(lpa.eng.fit)
+# 3 class model was better than 2 class model for model types 1 and 3 based on BLRT, and between these, model type 3 with 3 classes had better AIC, BIC, and Entropy
+
+View(lpa.jpn.fit)
+# 3 class model was better than 2 class model only for model type 2, but the AIC, BIC, and Entropy values are not that great
+
+plot_profiles(lpa.eng.compare)
+plot_profiles(lpa.jpn.compare)
+
+lpa3.eng <- df.id.lang %>%
+  filter(language == "english") %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 3, select_vars = c("SlopeZ", "RespVar"),  models = 3)
+data.eng <- get_data(lpa3.eng)
+
+lpa3.jpn <- df.id.lang %>%
+  filter(language == "japanese") %>%
+  single_imputation() %>%
+  estimate_profiles(n_profiles = 3, select_vars = c("SlopeZ", "RespVar"),  models = 2)
+data.jpn <- get_data(lpa3.jpn)
+
+#merge LPA class probabilities (CPROB1, 2,3 )
+head(cbind(data.eng$CPROB1,
+           data.eng$CPROB2,
+           data.eng$CPROB3))
+head(cbind(data.jpn$CPROB1,
+           data.jpn$CPROB2,
+           data.jpn$CPROB3))
+
+data.eng<-data.eng[,c("Class",
+              "CPROB1",
+              "CPROB2",
+              "CPROB3")]
+data.jpn<-data.jpn[,c("Class",
+              "CPROB1",
+              "CPROB2",
+              "CPROB3")]
+
+#bind the two dfs
+classdata.eng<-cbind(data.eng, filter(df.id.lang, language == "english"))
+classdata.jpn<-cbind(data.jpn, filter(df.id.lang, language == "japanese"))
+#class as factor 
+classdata.eng$Class<-as.factor(classdata.eng$Class)
+classdata.jpn$Class<-as.factor(classdata.jpn$Class)
+```
+
+```{r visualize-LPA, eval=FALSE}
+#visualize the classes with one data point per ID
+ggplot(classdata.id) +
+  aes(x = SlopeZ, y = RespVar, colour = Class) +
+  geom_point(shape = "circle", size = 4) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()+
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20), 
+        plot.title=element_text(size=20), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20)) +
+  labs(title="One Data Point Per ID")
+
+#visualize the classes with two data points per ID
+ggplot(classdata.id.lang) +
+  aes(x = SlopeZ, y = RespVar, colour = Class) +
+  geom_point(shape = "circle", size = 4) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()+
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20), 
+        plot.title=element_text(size=20), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20)) +
+  labs(title = "Two Data Points Per ID, by Language")
+
+ggplot(classdata.eng) +
+  aes(x = SlopeZ, y = RespVar, colour = Class) +
+  geom_point(shape = "circle", size = 4) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()+
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20), 
+        plot.title=element_text(size=20), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20)) +
+  labs(title = "English, one data point per ID")
+
+ggplot(classdata.jpn) +
+  aes(x = SlopeZ, y = RespVar, colour = Class) +
+  geom_point(shape = "circle", size = 4) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()+
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20), 
+        plot.title=element_text(size=20), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20)) +
+  labs(title = "Japanese, one data point per ID")
+
+
+# two data points per ID but one LPA model
+ggplot(classdata.id.lang) +
+  geom_density(aes(x = SlopeZ, color = Class)) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()
+
+ggplot(classdata.id.lang) +
+  geom_density(aes(x = RespVar, color = Class)) +
+  scale_color_viridis_d(option = "viridis", direction = 1) +
+  theme_classic()
+
+
+
+
+
+
+
+```
+
+Didn't really work out...data did not make sense with LPA based on a priori assumptions of how the data should look
+
+-----
+
+### New brm multivariate fit
+
+Trying a new way to transform Theta variable (from rotated logistic fit) into a three-part variable to capture qualitative dimensions of the data.
+
+```{r multivariate-attempt-3, eval=FALSE}
+# because this three-part transformation of Theta is pretty uninterpretable, I'm actually not going to run this again, but keeping for records
+
+# changing transformation of Theta
+# breaking Theta down into 3 parts:
+# thetaMag: magnitude of theta, centered on 90 (primary cue use) such that 0 = pure primary cue and 90 = pure secondary cue - remains as a main response variable in mutlivariate model
+# thetaDevfromBalanced: deviation from balanced use of primary and secondary cue, centered on 45 (and 135) such that 0 = balanced use and 45 = pure use of either primary or secondary cue - will model separately as a response in a univariate model, and add to multivariate model if it shows low enough colinearity, can add to multivariate model (I think?)
+# thetaDir: categorical indicator of whether cue use (primary and/or secondary) is in the expected categorization direction (e.g. low VOT values, which are acoustically [t]-like, are categorized as [t]-like) or the reverse direction (e.g. acoustically [t]-like tokens are categorized as [d]-like) - if original theta <= 90, expected, if > 90, reversed
+
+df.rl.new <- rl_estimates %>%
+  mutate(logSlope = misty::center(log(abs(Slope))),
+         pair = as.factor(pair),
+         language = as.factor(language),
+         newTheta = (90 - Theta),
+         thetaMag = abs(Theta - 90),
+         thetaDevfromBalanced = ifelse(Theta <= 90,
+                                      # expected direction deviation from 45°
+                                      abs(Theta - 45),
+                                      # reversed direction → deviation from 135°
+                                      abs(Theta - 135)),
+         thetaDir = ifelse(Theta <= 90, "expected", "reversed"),
+         thetaDir = factor(thetaDir, levels = c("expected", "reversed"))) %>%
+  select(ID, language, pair, Slope, logSlope, PointVar, Theta, newTheta, thetaMag, thetaDevfromBalanced, thetaDir)
+
+aggregate.new <- left_join(df.rl.new, MLD_scores, by = "ID") %>%
+  filter(!is.na(MLD_A) | !(is.na(MLD_P))) %>%
+  # include binary indicates for MLD_A and MLD_P if greater than 0
+  mutate(MLD_A_binary = ifelse(MLD_A > 0, 1, 0), MLD_P_binary = ifelse(MLD_P > 0, 1, 0))
+
+# check distribution of theta_mag
+
+hist(aggregate.new$thetaMag) # heavily right-skewed
+
+# based off of brm.formula.2
+brm.formula.new <- bf(mvbind(logSlope, PointVar, thetaMag) ~ MLD_A + MLD_P + language + MLD_A:MLD_A_binary + MLD_P:MLD_P_binary + thetaDir + (1 + language | ID) + (1 | pair))
+
+# examine the default priors
+default_prior.new <- default_prior(
+brm.formula.new,
+family = student(),
+data = aggregate.new
+)
+
+# set new priors: with help from chatgpt
+priors.new <- default_prior.new %>%
+  mutate(prior = case_when(
+    # for class b - prior distribution is based on units of response variable
+    class == "b" & resp == "logSlope" ~ "normal(0, 1)", # expect moderate effect of all predictors on logSlope
+    class == "b" & resp == "PointVar" ~ "normal(0, 2)", # expect larger effect of all predictors on PointVar
+    class == "b" & str_detect(coef, "binary") ~ "normal(0, 2)", # expect larger effect of MLD_A/MLD_P when non-zero (interaction with MLD_A_binary/MLD_P_binary) on all predictors
+    class == "b" & resp == "thetaMag" ~ "normal(0, 5)", # expect small/moderate effect of all predictors on thetaMag
+
+    # for classes Intercept, sigma, sd for thetaMag - these are the same as the defaults, which I think are fine, df = 3 is robust to skewness
+    class %in% c("sigma", "sd") & resp == "thetaMag" ~ "student_t(3, 0, 9.1)",
+    class == "Intercept" & resp == "thetaMag" ~ "student_t(3, 10.2, 9.1)",
+    # for classes Intercept, sigma, sd for logSlope - these are the same as the defaults, which I think are fine, df = 3 is robust to skewness
+    class %in% c("Intercept", "sigma", "sd") & resp == "logSlope" ~ "student_t(3, 0, 2.5)",
+    # for Intercept, sigma, sd for PointVar - these are the same as the defaults, which I think are fine, df = 3 is robust to skewness
+    class %in% c("sigma", "sd") & resp == "PointVar" ~ "student_t(3, 0, 6.4)",
+    class == "Intercept" & resp == "PointVar" ~ "student_t(3, 17.7, 6.4)",
+
+    # for correlation values
+    class %in% c("cor", "rescor") ~ "lkj(1)",
+    .default = prior
+  ))
+
+
+brm.fit.new <- brm(
+  brm.formula.new,
+  data = as.data.frame(aggregate.new),
+  family = student(),
+  prior = priors.new,
+  chains = 4,
+  cores = 4,
+  iter = 4000,
+  warmup = 1000,
+  control = list(adapt_delta = 0.99)
+)
+
+summary(brm.fit.new)
+pp_check(brm.fit.new, resp = "thetaMag", type = "boxplot")
+brm.fit.new <- add_criterion(brm.fit.new, "loo")
+loo_compare(brm.fit.2.alt, brm.fit.new)
+
+brm.fit.new %>% tbl_regression()
+posterior_summary(brm.fit.new, pars = "^rescor")
+```
+
+Way too complex, and still very hard to interpret, so provided no benefit.
+
+------
+### Frequentist regression modeling
+
+Got a lot of singular fit warnings, decided to use brm Bayesian modeling instead, even though these are all univariate.
+
+```{r regression-modeling, eval = FALSE}
+# using packages lme4u and/or report
+# devtools::install_github("hollyyfc/lme4u")
+library(lme4u)
+library(report)
+
+theta.model1 <- lmer(data = aggregate, newTheta ~ logSlope * PointVar * language + (1|pair)) # received boundary(singular) fit warning
+allFit(theta.model1) -> fits
+summary(fits)$msgs
+summary(theta.model1)
+
+theta.model2 <- lmer(data = aggregate, newTheta ~ logSlope + PointVar + language + (1 + language|ID) + (1|pair)) # received boundary(singular) fit warning
+allFit(theta.model2) -> fits
+summary(fits)$msgs
+
+theta.model3 <- lmer(data = aggregate, newTheta ~ (logSlope * language) + (PointVar * language) + (1 + language|ID) + (1|pair)) # received boundary(singular) fit warning
+allFit(theta.model3) -> fits
+summary(fits)$fixef
+
+theta.model4 <- lmer(data = aggregate, newTheta ~ (logSlope * language) + (PointVar * language) + (1|ID) + (1|pair)) # received boundary(singular) fit warning
+allFit(theta.model4) -> fits
+summary(fits)$msgs
+anova(theta.model1, theta.model2, theta.model3, theta.model4)
+
+theta.simple1 <- lmer(data = aggregate, newTheta ~ PointVar + (1|ID) + (1|pair))
+lm <- lm(data = aggregate, newTheta ~ (logSlope * language) + (PointVar * language))
+summary(lm)
+
+
+newtheta.model.pos <- lmer(data = aggregate.pos, newTheta ~  logSlope * PointVar * language + (1 + language|ID) + (1|pair))
+summary(newtheta.model.pos)
+
+newtheta.model.neg <- lmer(data = aggregate.neg, newTheta ~  logSlope * PointVar * language + (1|pair)) # is singular when any random effects with ID
+summary(newtheta.model.neg)
+
+
+newtheta.model.pos %>% tbl_regression()
+newtheta.model.neg %>% tbl_regression()
+newtheta.model %>% tbl_regression()
+```
+
+
+### Attempt at post-hoc analysis
+
+Tried to do post-hoc analysis to see if any of the predictors would have different estimates at different levels of newTheta, since the interpretation would be different depending on the original newTheta value, but it got too complicated and the results are not significant anyway, so giving up on that.
+
+```{r brm-fit-3-post-hoc-newtheta, eval=FALSE}
+# perform post-hoc analysis within certain ranges of qualitative interest for newTheta
+# with help from chatgpt
+# library(tidybayes)
+
+# get fitted values with posterior samples
+fitted_vals <- fitted.brmsfit(brm.fit.3, resp = "newTheta", summary = FALSE)
+
+# compute the mean or median of posterior samples within each bin
+# Bind posterior predictions to the original data
+# fitted_long <- as.data.frame(fitted_vals) %>%
+#   pivot_longer(cols = everything(), names_to = "obs", values_to = "fitted") %>%
+#   mutate(obs = as.integer(gsub("V", "", obs)))  # if names are like V1, V2, etc.
+# 
+# fitted_long <- fitted_long %>%
+#   mutate(thetaBin = aggregate$thetaBin[obs])
+
+# Step 2: Convert to long format with draw index
+fitted_long <- as.data.frame(fitted_vals) %>%
+  mutate(draw = row_number()) %>%
+  pivot_longer(
+    cols = starts_with("V"),
+    names_to = "obs",
+    names_prefix = "V",
+    names_transform = list(obs = as.integer),
+    values_to = "fitted"
+  ) %>%
+  mutate(thetaBin = aggregate$thetaBin[obs])
+
+# Step 4: Average fitted values *within each draw per bin*
+bin_summary <- fitted_long %>%
+  group_by(draw, thetaBin) %>%
+  summarise(mean_fitted = mean(fitted), .groups = "drop")
+
+# Step 5: Pivot wider to compare draws across bins
+bin_wide <- bin_summary %>%
+  pivot_wider(names_from = thetaBin, values_from = mean_fitted)
+
+# Compute difference in posterior
+
+reversed_dif <- bin_wide$reversed_secondary - bin_wide$reversed_balanced
+expected_dif <- bin_wide$expected_secondary - bin_wide$expected_balanced
+
+# Summarize the difference
+mean_diff_rev <- mean(reversed_dif)
+ci_diff_rev   <- quantile(reversed_dif, c(0.025, 0.975))
+mean_diff_rev
+ci_diff_rev
+
+mean_diff_exp <- mean(expected_dif)
+ci_diff_exp   <- quantile(expected_dif, c(0.025, 0.975))
+
+
+ggplot(bin_summary, aes(x = factor(thetaBin), y = mean_fitted)) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2) +
+  labs(x = "newTheta Bin", y = "Mean Predicted newTheta")
+
+
+# Conditional effects plot for MLD_A
+ce <- conditional_effects(brm.fit.3, effects = "MLD_A", resp = "newTheta")
+
+# Plot with posterior intervals
+plot(ce)
+
+coef(brm.fit.2.alt)
+fixef(brm.fit.2.alt)
+ranef(brm.fit.2.alt)
+emmeans(brm.fit.2.alt)
+```
