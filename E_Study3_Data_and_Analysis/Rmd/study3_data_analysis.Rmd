@@ -1,0 +1,1588 @@
+---
+title: "Study 3 Data Analysis"
+author: "Chisom"
+date: "June 2025"
+subtitle: "Data preparation and analysis of Study 3 VAS, AX discrimination, multiple-choice partial dictation (MCPD), and questionnaire data - statistical analyses"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+
+# Libraries
+```{r load-libraries, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+
+# library(tidyLPA)
+# library(mclust)
+# default package used to estimate profiles is mclust (MPlus is not installed on my computer)
+
+# for Bayesian multivariate regression modeling
+# installation of package rstan is required to run brms
+library(brms)
+library(tidybayes)
+library(bayestestR)
+library(parameters)
+library(insight)
+library(glmmTMB)
+
+# fit data distributions
+library(fitdistrplus)
+
+library(flextable)
+```
+
+
+```{r brm-call-conflicts, message=FALSE}
+# conflicts that arise when running brm()
+conflicts_prefer(
+    brms::ar,      
+    flextable::as_image,      
+    ggpubr::border,      
+    janitor::chisq.test,      
+    purrr::compose,      
+    flextable::continuous_summary,      
+    tidyr::expand,      
+    lme4::factorize,      
+    janitor::fisher.test,      
+    ggpubr::font,      
+    flextable::footnote,      
+    lme4::golden,      
+    janitor::make_clean_names,      
+    brms::ngrps,      
+    tidyr::pack,      
+    janitor::remove_empty_cols,      
+    ggpubr::rotate,      
+    flextable::separate_header,      
+    lmerTest::step,      
+    tidyr::unpack,      
+    brms::kidney,    
+    brms::ar,      
+    flextable::as_image,      
+    ggpubr::border,      
+    janitor::chisq.test,      
+    purrr::compose,      
+    flextable::continuous_summary,      
+    tidyr::expand,      
+    lme4::factorize,      
+    janitor::fisher.test,      
+    ggpubr::font,      
+    flextable::footnote,      
+    lme4::golden,      
+    janitor::make_clean_names,      
+    brms::ngrps,      
+    tidyr::pack,      
+    janitor::remove_empty_cols,      
+    ggpubr::rotate,      
+    flextable::separate_header,      
+    lmerTest::step,      
+    tidyr::unpack,      
+    brms::kidney,      
+    brms::dstudent_t,      
+    insight::get_data,      
+    bayestestR::hdi,      
+    purrr::map,      
+    brms::me,      
+    parameters::parameters,      
+    brms::pstudent_t,      
+    brms::qstudent_t,      
+    brms::rstudent_t,      
+    janitor::clean_names)  
+```
+
+------------------------------------------------------------------------
+
+# Read in data
+
+```{r read-data, message = FALSE}
+# Set folder path to current working directory
+# folder.path <- getwd()
+
+# set path to the data
+path.to.data <- "clean_data/outcome_data"
+
+# logistic estimates, convert ID to factor and set factor levels for pair and prepost
+l_estimates <-import(paste(path.to.data, "study3_vas_l_curvefit.txt", sep = "/")) %>%
+  mutate(ID = as.factor(ID),
+         pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru")),
+         prepost = factor(prepost, levels = c("pretraining", "posttraining"))) %>%
+  # recode prepost factor levels
+  mutate(prepost = recode(prepost, pretraining = "Pre", posttraining = "Post")) %>%
+  arrange(ID, prepost, pair)
+
+# load in MLD scores
+MLD_scores <- import(file = "clean_data/outcome_data/study3_mld_scores.csv") %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender), exp_group = factor(exp_group, levels = c("Control", "Low LD", "High LD")))
+```
+
+```{r load-Rdata}
+# load in cleaned and filtered data
+load("Rdata/study3_filtered_data.Rdata")
+
+# load in clean_IDs dataframe to use new IDs rather than Gorilla generated privateIDs
+clean_IDs <- readRDS("Rdata/study3_clean_IDs.rds")
+
+
+# if session restarts, load the workspace - be careful with this
+# load("Rdata/study3_analysis_workspace.Rdata")
+# alternatively use
+# attach("Rdata/study3_analysis_workspace.Rdata")
+# or use a new environment
+# e = local({load("Rdata/study3_analysis_workspace.Rdata"); environment()})
+```
+
+
+
+
+```{r save-workspace-objects}
+# run this everytime I make a new object I want to save
+save(# loaded in
+     l_estimates, 
+     df.l, # created here
+     clean_IDs,
+     MLD_scores,
+     filtered_vas_mad,
+     filtered_matlab,
+     filtered_ax_test,
+     test_dprime_interim,
+     filtered_ax_test_dprime,
+     filtered_training,
+     training_dprime_interim,
+     filtered_training_dprime,
+     filtered_mcpd,
+     mcpd_accuracy,
+     # created here
+     pretest_dprime,
+     pretest_mcpd,
+     aggregate_interim, 
+     aggregate,
+     aggregate.centered,
+     brm.vas.formula.1,
+     brm.vas.priors.1,
+     brm.vas.fit.1,
+     brm.vas.formula.2,
+     brm.vas.priors.2,
+     brm.vas.fit.2,
+     brm.vas.priors.1.default,
+     brm.vas.fit.default,
+     brm.vas.formula.3,
+     brm.vas.fit.3,
+     brm.vas.fit, # identical to brm.vas.fit.3 - model used for main analysis
+     brm.vas.fit.complex, # identical to brm.vas.fit.1 - model used for visualizing random slopes only
+     vas_means_lang,
+     ax.dprime,
+     ax.dprime.centered,
+     trial.model.12tmb,
+     tmb.ax.dprime.model, # identical to trial.model.12tmb
+     ax.rt,
+     ax.rt.centered,
+     trial.rt.model.6,
+     lm.ax.rt.model, # identical to trial.rt.model.6,
+     training.dprime,
+     training.dprime.centered,
+     training.model.4tmb,
+     tmb.training.dprime.model, # identical to training.model.4tmb
+     mcpd.acc,
+     mcpd.acc.centered,
+     mcpd.trial.model.4,
+     glm.mcpd.acc.model, # identical to mcpd.trial.model.4
+     file = "Rdata/study3_analysis_workspace.Rdata") 
+
+# save the large models in their own Rdata file (failed preposttest dprime and mcpd models and RT models converged but with really awful collinearity)
+save(method.table, # methods to run on allFit
+     trial.model.1, # dprime models
+     trial.model.2,
+     trial.model.3,
+     trial.model.4,
+     trial.model.5,
+     trial.model.6,
+     trial.model.7,
+     trial.model.8,
+     trial.model.9,
+     trial.model.10,
+     trial.model.11,
+     trial.model.12,
+     trial.model.13,
+     trial.model.13tmb,
+     ax.dprime,
+     ax.dprime.centered,
+     glm.all.summary, # allfit of model.trial.6
+     summary.10, # allfit of trial.model.10
+     summary.12, # allfit of trial.model.12
+     mcpd.trial.model.1, # mcpd models
+     mcpd.trial.model.2,
+     mcpd.trial.model.3,
+     mcpd.acc,
+     mcpd.acc.centered,
+     trial.rt.model.1, # ax test RT models that failed
+     trial.rt.model.2,
+     trial.rt.model.3,
+     trial.rt.model.4,
+     trial.rt.model.5,
+     rt.all.fit,
+     rt.all.summary,
+     ax.rt,
+     ax.rt.centered,
+     file = "Rdata/study3_analysis_failed_models.Rdata")
+```
+
+
+
+```{r save-data-for-visualization-objects}
+# save just the dataframes that will be used in post-analysis visualizations and tables
+save(# loaded in
+     clean_IDs,
+     MLD_scores,
+     filtered_vas_mad,
+     filtered_matlab,
+     filtered_ax_test,
+     test_dprime_interim,
+     filtered_ax_test_dprime,
+     filtered_training,
+     training_dprime_interim,
+     filtered_training_dprime,
+     filtered_mcpd,
+     mcpd_accuracy,
+     l_estimates,
+     # created here
+     df.l, 
+     aggregate_interim,
+     aggregate,
+     aggregate.centered,
+     brm.vas.fit, # new name for brm.vas.fit.3
+     brm.vas.fit.complex, # new name for brm.vas.fit.1
+     vas_means_lang,
+     ax.dprime,
+     ax.dprime.centered,
+     tmb.ax.dprime.model, # new name for trial.model.12tmb
+     ax.rt,
+     ax.rt.centered,
+     lm.ax.rt.model, # new name for trial.rt.model.6
+     training.dprime,
+     training.dprime.centered,
+     tmb.training.dprime.model, # new name for training.model.4tmb
+     mcpd.acc,
+     mcpd.acc.centered,
+     glm.mcpd.acc.model, # new name for mcpd.trial.model.4
+     file = "Rdata/study3_post_analysis_visualization_workspace.Rdata")
+```
+
+
+------------------------------------------------------------------------
+
+# Analysis on VAS logistic estimates - done!
+
+## data prep and visualization
+```{r logistic-estimate-distributions}
+# visualize distributions of estimates
+
+
+plot(data = l_estimates, PointVar ~ Slope)
+
+
+hist(l_estimates$Slope, breaks = 30) # slightly skewed right
+hist(log(abs(l_estimates$Slope)), breaks = 30) # skewed left, didn't help
+
+
+descdist(l_estimates$Slope) # in the beta region
+fitdist(abs(l_estimates$Slope), "gamma") %>% plot() # meh
+
+
+hist(l_estimates$PointVar, breaks = 30) # slightly skewed right
+hist(sqrt(l_estimates$PointVar), breaks = 30) # near gaussian, but the interpretation is much harder
+
+# can use skew_normal() or student() with brms
+descdist(l_estimates$PointVar) # in the beta distribution zone near gamma line
+fitdist(l_estimates$PointVar, "gamma") %>% plot() # meh
+descdist(sqrt(l_estimates$PointVar)) # in between normal and logistic
+fitdist(sqrt(l_estimates$PointVar), "norm") %>% plot() # meh
+
+```
+
+
+```{r data-prep-and-visualization}
+
+df.l <- l_estimates %>%
+  # standardize slope and pointvar using scale (z-transforms, both centers to 0 and scales by 1 SD) and add language
+  mutate(zslope = scale(Slope)[,1], 
+         zvar = scale(PointVar)[,1],
+         language = case_when(
+           pair == "indent-intent" ~ "English",
+           pair == "reason-risen" ~ "English",
+           pair == "kata-katta" ~ "Japanese",
+           pair == "toru-tooru" ~ "Japanese")) %>%
+  #turn language into factor
+  mutate(language = factor(language, levels = c("English", "Japanese")), .after = pair) %>%
+  # add experimental group from clean_IDs
+  inner_join(select(clean_IDs, -c(course, privateID)), by = "ID", unmatched = c(x = "error", y = "drop"), relationship = "many-to-one") %>%
+  relocate(exp_group, .after = ID) %>%
+  select(ID, exp_group, prepost, pair, language, Min, Max, Crossover, Slope, zslope, PointVar, zvar)
+
+hist(df.l$zslope, breaks = 30)
+hist(df.l$zvar, breaks = 30)
+
+
+ggplot(df.l, aes(x = zslope, y = zvar)) +
+  geom_point(aes(color = prepost)) +
+   geom_path(aes(group = ID), alpha = 0.7, arrow = arrow(type = "closed", length = unit(0.075, "inches"))) +
+  facet_grid(pair~exp_group)
+
+
+# need to add pretest dprime scores as covariate to aggregated dataframe, so filtering just for pretest scores
+# also has days between in the dataframe, which is anoter covariate
+pretest_dprime <- filtered_ax_test_dprime %>%
+  ungroup() %>%
+  filter(prepost == "Pre") %>%
+  select(-c(corr_reject:miss, criterion))
+
+# same with mcpd pretest
+pretest_mcpd <- mcpd_accuracy %>%
+  ungroup() %>%
+  filter(prepost == "Pre") %>%
+  select(-c(sd_acc:se_acc))
+
+
+aggregate_interim <- pretest_dprime %>%
+  left_join(pretest_mcpd, join_by(ID, exp_group, prepost)) %>%
+  left_join(MLD_scores, join_by(ID, exp_group)) %>%
+  rename(pretest_dprime = dprime, pretest_mcpd_acc = mean_acc) %>%
+  select(-c(prepost))
+
+aggregate <- df.l %>%
+  left_join(aggregate_interim, join_by(ID, exp_group)) %>%
+  select(-c(Min:Crossover)) 
+
+
+# contrast coding for language
+contrasts(aggregate$language) <- c("English" = -0.5, "Japanese" = 0.5)
+# orthogonal coding for exp_group
+# first contrast compares control group to experimental groups (does training do anything beyond classroom instruction?) while the second contrast compares within the experimental groups (how does type of training change things?)
+contrasts(aggregate$exp_group) <- cbind(c("Control" = -2/3, "Low LD" = 1/3, "High LD" = 1/3), c("Control" = 0, "Low LD" = -0.5, "High LD" = 0.5))
+
+# change contrast names for regression printing
+colnames(contrasts(aggregate$language)) <- c("Eng.vs.Jpn")
+colnames(contrasts(aggregate$exp_group)) <- c("Cntl.vs.Trng", "LowLD.vs.HighLD")
+
+
+# check that these worked
+contrasts(aggregate$language)
+contrasts(aggregate$exp_group)
+# check the prepost contrast (kept this as dummy coding)
+contrasts(aggregate$prepost)
+
+```
+
+```{r center-control-variables}
+
+# center all the control variables to see if maybe that helps with interpretation (it will change the intercept)
+# because I don't want to overwrite the original data but I don't want to update the new variable terms in all the models, I'm running the models with an updated dataframe
+
+# pretest_dprime, pretest_mcpd_acc, MLD_A, and MLD_P are grand-mean centered (note that although MLD scores have a meaningful 0 value, 0 is very rarely observed (one observation for MLD_P, not observations for MLD_A) so mean-centering is helpful)
+# days_between is minimum-centered
+aggregate.centered <- aggregate %>%
+  mutate(pretest_dprime = scale(pretest_dprime, scale = FALSE)[,1],
+         pretest_mcpd_acc = scale(pretest_mcpd_acc, scale = FALSE)[,1], 
+         MLD_A = scale(MLD_A, scale = FALSE)[,1],
+         MLD_P = scale(MLD_P, scale = FALSE)[,1],
+         days_between = days_between - min(days_between))
+
+# check that these still work since copying from aggregate data frame directly
+contrasts(aggregate.centered$language)
+contrasts(aggregate.centered$exp_group)
+contrasts(aggregate.centered$prepost)
+# perfect
+```
+
+## Multivariate mixed-effects regression modeling for VAS outcomes slope and response variability
+
+```{r brm-vas-model-attempt-1}
+# first brms model will include MLD_A and MLD_P just as controls (along with pretest_dprime and days_between)
+# the second model will include them as main variables (potentially with interactions with the other main variables)
+
+# formula
+brm.vas.formula.1 <- bf(mvbind(zslope, zvar) ~ 
+   prepost * exp_group * language +
+   MLD_A + MLD_P + pretest_dprime + pretest_mcpd_acc + days_between + # control variables
+   (1 + prepost * language | ID) + # random slopes + interaction for both day and language per ID
+   (1 | pair)) + # random intercept for pair
+  set_rescor(TRUE) # manually set rescor to true
+
+
+# check to see what the default priors are and how the parameter names are specified
+default_prior(
+  brm.vas.formula.1,
+  data = aggregate.centered,
+  family = student()
+) %>% View()
+
+# with help from chatgpt
+brm.vas.priors.1 <- c( # these prior settings are identical across both response variables
+  
+  # Fixed effects (main + interaction) - more regularizing to avoid overfitting
+  prior(normal(0, 0.5), class = "b", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", resp = "zvar"),
+  
+  # control variables - narrow regularizing prior
+  prior(normal(0, 0.3), class = "b", coef = "MLD_A", resp = "zslope"),
+  prior(normal(0, 0.3), class = "b", coef = "MLD_P", resp = "zslope"),
+  prior(normal(0, 0.3), class = "b", coef = "MLD_A", resp = "zvar"),
+  prior(normal(0, 0.3), class = "b", coef = "MLD_P", resp = "zvar"),
+  prior(normal(0, 0.5), class = "b", coef = "pretest_dprime", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", coef = "pretest_dprime", resp = "zvar"),
+  prior(normal(0, 0.3), class = "b", coef = "pretest_mcpd_acc", resp = "zslope"),
+  prior(normal(0, 0.3), class = "b", coef = "pretest_mcpd_acc", resp = "zvar"),
+  prior(normal(0, 0.5), class = "b", coef = "days_between", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", coef = "days_between", resp = "zvar"),
+  
+  # Intercepts - more narrow and regularizing to avoid overfitting
+  prior(student_t(3, 0, 2), class = "Intercept", resp = "zslope"),
+  prior(student_t(3, 0, 2), class = "Intercept", resp = "zvar"),
+  
+  # Random effects standard deviations
+  # exponential(2) is a more stable estimation and reduces risk of overfitting in small-sample contexts (according to chatgpt)
+  prior(exponential(2), class = "sd", resp = "zslope"),
+  prior(exponential(2), class = "sd", resp = "zvar"),
+  
+  # Residual standard deviation
+  # also more regularized
+  prior(exponential(2), class = "sigma", resp = "zslope"),
+  prior(exponential(2), class = "sigma", resp = "zvar"),
+  
+  # Degrees of freedom for Student’s t
+  prior(gamma(2, 0.1), class = "nu"),
+  
+  # Residual correlation between outcomes
+  prior(lkj(2), class = "rescor")
+)
+
+brm.vas.fit.1 <- brm(brm.vas.formula.1,
+    data = aggregate.centered,
+    family = student(),
+    prior = brm.vas.priors.1,
+    cores = 7,
+    chains = 4,
+    iter = 4000,
+    warmup = 1000,
+    control = list(adapt_delta = 0.99),
+    save_pars = save_pars(all = TRUE)
+    )
+# this took 47 seconds total, no warnings
+
+summary(brm.vas.fit.1)
+# ESS's are very strong, and there's one (1!) robust interaction effect
+
+brm.vas.fit.1 <- add_criterion(brm.vas.fit.1, criterion = c("loo", "bayes_R2"))
+```
+
+
+```{r brm-vas-attempt-2}
+# now model MLD_A and MLD_P as main predictors by including their interactions with prepost * exp_group * languagethe second model will include them as main variables (potentially with interactions with the other main variables)
+
+# formula
+brm.vas.formula.2 <- bf(mvbind(zslope, zvar) ~ 
+   prepost * exp_group * language * (MLD_A + MLD_P) + # don't want their interactions with each other
+     + pretest_dprime + pretest_mcpd_acc + days_between + # control variables
+   (1 + prepost * language | ID) + # random slopes + interaction for both day and language per ID
+   (1 | pair)) + # random intercept for pair
+  set_rescor(TRUE) # manually set rescor to true
+
+# check to see what the default priors are and how the parameter names are specified
+default_prior(
+  brm.vas.formula.2,
+  data = aggregate.centered,
+  family = student()
+) %>% View()
+
+# with help from chatgpt
+brm.vas.priors.2 <- c( # these prior settings are identical across both response variables
+  
+  # Fixed effects (main + interaction) - more regularizing to avoid overfitting - this now includes MLD_A and MLD_P and their interactions
+  prior(normal(0, 0.5), class = "b", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", resp = "zvar"),
+  
+  # control variables - narrow regularizing prior
+  prior(normal(0, 0.5), class = "b", coef = "pretest_dprime", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", coef = "pretest_dprime", resp = "zvar"),
+  prior(normal(0, 0.3), class = "b", coef = "pretest_mcpd_acc", resp = "zslope"),
+  prior(normal(0, 0.3), class = "b", coef = "pretest_mcpd_acc", resp = "zvar"),
+  prior(normal(0, 0.5), class = "b", coef = "days_between", resp = "zslope"),
+  prior(normal(0, 0.5), class = "b", coef = "days_between", resp = "zvar"),
+  
+  # Intercepts - more narrow and regularizing to avoid overfitting
+  prior(student_t(3, 0, 2), class = "Intercept", resp = "zslope"),
+  prior(student_t(3, 0, 2), class = "Intercept", resp = "zvar"),
+  
+  # Random effects standard deviations
+  # exponential(2) is a more stable estimation and reduces risk of overfitting in small-sample contexts (according to chatgpt)
+  prior(exponential(2), class = "sd", resp = "zslope"),
+  prior(exponential(2), class = "sd", resp = "zvar"),
+  
+  # Residual standard deviation
+  # also more regularized
+  prior(exponential(2), class = "sigma", resp = "zslope"),
+  prior(exponential(2), class = "sigma", resp = "zvar"),
+  
+  # Degrees of freedom for Student’s t
+  prior(gamma(2, 0.1), class = "nu"),
+  
+  # Residual correlation between outcomes
+  prior(lkj(2), class = "rescor")
+)
+
+brm.vas.fit.2 <- brm(brm.vas.formula.2,
+    data = aggregate.centered,
+    family = student(),
+    prior = brm.vas.priors.2,
+    cores = 7,
+    chains = 4,
+    iter = 4000,
+    warmup = 1000,
+    control = list(adapt_delta = 0.99),
+    save_pars = save_pars(all = TRUE)
+    )
+# this took 50 seconds total, no warnings
+
+brm.vas.fit.2 <- add_criterion(brm.vas.fit.2, criterion = c("loo", "bayes_R2"))
+# got the warning:
+# Warning: Found 1 observations with a pareto_k > 0.7 in model 'brm.vas.fit.2'. We recommend to set 'moment_match = TRUE' in order to perform moment matching for problematic observations. 
+
+loo_compare(brm.vas.fit.1, brm.vas.fit.2)
+# wow brm.vas.fit.1 is better than brm.vas.fit.2
+```
+
+
+```{r brm-vas-default-priors}
+# just want to check against brm.vas.fit.1 against the default priors
+brm.vas.priors.1.default <- default_prior(
+  brm.vas.formula.1,
+  data = aggregate.centered,
+  family = student()
+)
+
+
+brm.vas.fit.default <- brm(brm.vas.formula.1,
+    data = aggregate.centered,
+    family = student(),
+    prior = brm.vas.priors.1.default,
+    cores = 7,
+    chains = 4,
+    iter = 4000,
+    warmup = 1000,
+    control = list(adapt_delta = 0.99),
+    save_pars = save_pars(all = TRUE)
+    )
+# this took a little over 2 mins to run in total, no warnings
+
+brm.vas.fit.default <- add_criterion(brm.vas.fit.default, criterion = c("loo", "bayes_R2"))
+
+loo_compare(brm.vas.fit.1, brm.vas.fit.2, brm.vas.fit.default)
+# surprisingly the default priors model is slightly better than brm.vas.fit.2 (not significantly), but still brm.vas.fit.1 is best, much better than both of them
+```
+
+
+```{r double-check-for-complexity-attempt-3}
+# since for study 2 the model with just the additive random slopes was better than the interacting random slopes, I want to just double check here
+# it would still use the same priors as brm.vas.fit.1, so don't need to update that
+
+# formula
+brm.vas.formula.3 <- bf(mvbind(zslope, zvar) ~ 
+   prepost * exp_group * language +
+   MLD_A + MLD_P + pretest_dprime + pretest_mcpd_acc + days_between + # control variables
+   (1 + prepost + language | ID) + # random slopes (no interaction) for both day and language per ID
+   (1 | pair)) + # random intercept for pair
+  set_rescor(TRUE) # manually set rescor to true
+
+brm.vas.fit.3 <- brm(brm.vas.formula.3,
+    data = aggregate.centered,
+    family = student(),
+    prior = brm.vas.priors.1,
+    cores = 7,
+    chains = 4,
+    iter = 4000,
+    warmup = 1000,
+    control = list(adapt_delta = 0.99),
+    save_pars = save_pars(all = TRUE)
+    )
+# this took 42 seconds total, no warnings
+
+brm.vas.fit.3 <- add_criterion(brm.vas.fit.3, criterion = c("loo", "bayes_R2"))
+
+loo_compare(brm.vas.fit.1, brm.vas.fit.2, brm.vas.fit.default, brm.vas.fit.3)
+# and I oop - the less complex model (brm.vas.fit.3) was indeed better
+# seems like I'll be doing the same thing as I did in study 2, using brm.vas.fit.3 (less complex) in the main analysis but using brm.vas.fit.1 (more complex) to visualize random slopes - unless I can figure out emmeans
+
+```
+
+
+
+```{r rename-models}
+# save them in new names so it's not confusing
+brm.vas.fit <- brm.vas.fit.3
+brm.vas.fit.complex <- brm.vas.fit.1
+```
+
+
+------------------------------------------------------------------------
+
+# Analysis on AX pre-posttest d-prime - done!
+
+
+
+```{r AX-test-data-prep}
+# even though you can manually calculate dprime and c, it is better to statistically estimate these SDT parameters with regression to have a measure of uncertainty
+# resource: https://vuorre.com/posts/sdt-regression/#lst-sdt3
+# resource: https://vuorre.com/deception-sdt/#preliminaries
+# both these resources use Bayesian models (with brms) to estimate dprime
+# generalized linear mixed effect model is also good enough to estimate dprime, and there is precent to use glmm (fuhrmeister et al., 2023)
+# dprime is estimated with the "true" signal of the trial (whether the signal of the trial is the that the two stimuli are different (signal present) or the same (noise)) as a fixed effect in a binomial regression with a probit link, which is used to predict participant's responses (outcome variable)
+
+
+# create a dataframe that averages zslope and zvar across the pairs within language (per prepost) and pivot the dataframe so that language is part of the column name instead of a column itself
+vas_means_lang <- df.l %>%
+  group_by(ID, prepost, exp_group, language) %>%
+  summarize(zslope = mean(zslope), zvar = mean(zvar)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = language, values_from = c(zslope, zvar))
+
+
+# join together the trial level data of ax test (labeled with hit, false alarm, etc.), the vas estimates, and aggregate_interim (which has MCPD pretest and MLD scores)
+# this is the data frame that goes into the model
+ax.dprime <- test_dprime_interim %>%
+  # first transform participant response to be numeric such that different = 1 (responding that the signal is present) and same = 0 (responding that the signal is absent)
+  mutate(response_int = ifelse(response == "different", 1, ifelse(response == "same", 0, NA)), .after = response) %>%
+  left_join(vas_means_lang, by = c("ID", "exp_group", "prepost")) %>%
+  left_join(aggregate_interim, by = c("ID", "exp_group", "days_between")) %>%
+  # remove unneeded columns
+  select(-c(local_date, pretest_dprime)) %>%
+  # move around some columns
+  relocate(ID, .before = everything()) %>%
+  relocate(days_between, .after = last_col())
+  
+
+# effects contrast coding is necessary for predictor variable, which is signal (the true signal of the trial)
+contrasts(ax.dprime$signal) <- c("different" = 0.5, "same" = -0.5)
+# effects coding is also necessary for speaker_signal control variable
+contrasts(ax.dprime$speaker_signal) <- c("different" = 0.5, "same" = -0.5)
+
+
+# orthogonal coding for exp_group
+# first contrast compares control group to experimental groups (does training do anything beyond classroom instruction?) while the second contrast compares within the experimental groups (how does type of training change things?)
+contrasts(ax.dprime$exp_group) <- cbind(c("Control" = -2/3, "Low LD" = 1/3, "High LD" = 1/3), c("Control" = 0, "Low LD" = -0.5, "High LD" = 0.5))
+# change contrast names for regression printing
+colnames(contrasts(ax.dprime$exp_group)) <- c("Cntl.vs.Trng", "LowLD.vs.HighLD")
+
+
+# check that these worked
+contrasts(ax.dprime$signal)
+contrasts(ax.dprime$speaker_signal)
+contrasts(ax.dprime$exp_group)
+
+
+# based on fuhrmeister et al., 2023 supplementary material, this step is necessary to add a continuous version of the signal predictor to use in the actual glmer model for dprime
+m0 <- glmer(response_int ~ signal + (1|ID) + (1|word_pair), data = ax.dprime, family = "binomial")
+
+mat_trt <- model.matrix(m0)
+head(mat_trt)
+
+# continuous version of signal
+ax.dprime$signal_cont <- mat_trt[,2]
+
+```
+
+
+```{r center-control-variables}
+
+# center control variables using new dataframe but keeping the same variable names - to preserve uncentered data in original dataframe but to keep variable names the same
+
+# pretest_mcpd_acc, MLD_A, and MLD_P are grand-mean centered (note that although MLD scores have a meaningful 0 value, 0 is very rarely observed (one observation for MLD_P, not observations for MLD_A) so mean-centering is helpful)
+# days_between is minimum-centered
+ax.dprime.centered <- ax.dprime %>%
+  mutate(pretest_mcpd_acc = scale(pretest_mcpd_acc, scale = FALSE)[,1], 
+         MLD_A = scale(MLD_A, scale = FALSE)[,1],
+         MLD_P = scale(MLD_P, scale = FALSE)[,1],
+         days_between = days_between - min(days_between))
+
+
+```
+
+
+See the graveyard for attempts 1-11
+
+```{r attempt-12-glmer-and-allFit, eval = FALSE}
+# just doing random slope for signal_cont for ID and word_pair to avoid singularity
+job::job({ # run as a background job
+trial.model.12 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont | ID) + (0 + signal_cont | word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# 10 mins, not singular, but didn't converge
+isSingular(trial.model.12)
+VarCorr(trial.model.12)
+rePCA(trial.model.12)
+car::vif(trial.model.12)
+
+job::job({ # run as a background job
+# try all different optimizers
+# run on 6 cores, which saves 2 cores for other things on my computer
+model.12.all.fit <- allFit(trial.model.12, meth.tab = method.table, parallel = "multicore", ncpus = 6, maxfun = 200000)
+# make sure to save
+saveRDS(model.12.all.fit, "Rdata/glm-dprime-model12-allfit.rds")
+}, import = c(ax.dprime.centered, trial.model.12, method.table)) # import only the necessary data to the job
+
+summary.12 <- summary(model.12.all.fit)
+summary.12$msgs
+# not a single one of them converged :(
+summary.12$which.OK # half of them didn't even work, so it only took 3 minutes
+```
+
+
+```{r attempt-12-with-glmmTMB}
+# was finally recommended to try glmmTMB by chatgpt
+library(glmmTMB)
+
+# this is the exact same as trial.model.12
+job::job({ # run as a background job
+trial.model.12tmb <- glmmTMB(
+  response_int ~ 1+ signal_cont * prepost * (exp_group + zslope_English + zvar_English + 
+                zslope_Japanese + zvar_Japanese + pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) +
+    (0 + signal_cont | ID) + (0 + signal_cont | word_pair),
+  data = ax.dprime.centered,
+  family = binomial(link = "probit")
+)
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# oh, this only took 10 seconds with no warnings
+
+summary(trial.model.12tmb)
+VarCorr(trial.model.12tmb)
+car::vif(trial.model.12tmb) # this doesn't work for getting vifs - have to use what I used below, performance::check_collinearity
+
+summary(trial.model.12tmb)$fit$convergence
+# Should return 0 for successful convergence
+# but it retruns NULL? I think that's fine
+summary(trial.model.12tmb)$optinfo$conv
+# also returns null, so that probably means there was no convergence warnings
+
+trial.model.12tmb$sdr$pdHess
+# TRUE means the Hessian is positive definite which is good
+# returned TRUE
+
+performance::check_collinearity(trial.model.12tmb)
+performance::check_convergence(trial.model.12tmb)
+
+AIC(trial.model.12)
+AIC(trial.model.12tmb)
+# roughly equivalent, but given that trial.model.12tmb ACTUALLY converged, that's the one I'm going with
+```
+
+
+```{r rename-chosen-model}
+# for readability
+tmb.ax.dprime.model <- trial.model.12tmb
+
+
+# how to get emmeans equivalent for signal_cont predictor (coefficient)
+emmeans::emtrends(tmb.ax.dprime.model, var = "signal_cont", specs = c("prepost", "exp_group"), at = list(prepost = c("Pre", "Post"), exp_group = c("Control", "Low LD", "High LD")))
+
+# then I can choose to do this at different levels of zslope, zvar
+```
+
+# Analysis on AX pre-posttest RT - done!
+
+```{r rt-lmer-model}
+# filter for only correct trials
+# do for both ax.dprime and ax.dprime.centered
+ax.rt <- ax.dprime %>%
+  filter(correct == 1)
+# nrow = 5884 (compared to ax.dprime nrow = 6760)
+
+ax.rt.centered <- ax.dprime.centered %>%
+  filter(correct == 1)
+
+
+
+# to match the trial.model.2 for dprime, include interactions between exp_group and slope/var
+trial.rt.model.1 <- lmer(
+  log_rt ~ prepost * exp_group * (zslope_English + zvar_English + 
+    zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + prepost | ID) + (1 | word_pair), # added random slope for day per ID
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+)
+# model failed to converge
+
+# added random slope prepost for word_pair as well
+trial.rt.model.2 <- lmer(
+  log_rt ~ prepost * exp_group * (zslope_English + zvar_English + 
+    zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + prepost | ID) + (1 + prepost | word_pair), # added random slope for day per ID
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+)
+# model failed to converge
+
+# try without zslope/zvar
+trial.rt.model.3 <- lmer(
+  log_rt ~ prepost * exp_group * (pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + prepost | ID) + (1 + prepost | word_pair), # added random slope for day per ID
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+)
+
+
+anova(trial.rt.model.1, trial.rt.model.2, trial.rt.model.3)
+# trial.rt.model.3 is the worst, and trial.rt.model.2 is not significantly better than 1 so trial.rt.model.1 is the best
+
+rt.all.fit <- allFit(trial.rt.model.1, meth.tab = method.table, maxfun = 200000)
+rt.all.summary <- summary(rt.all.fit)
+rt.all.summary$msgs
+# converged:
+# $nlminbwrap
+# $`optimx.L-BFGS-B`
+# $optimx.nlminb
+# $optimx.nlm
+# $optimx.hjkb
+# $nloptwrap.NLOPT_LN_PRAXIS
+# $nloptwrap.NLOPT_LN_SBPLX
+# sick
+isSingular(rt.all.fit$optimx.hjkb) # not singular!
+
+rt.all.summary$llik # all of them (except nloptwrap.NLOPT_GN_CRS2_LM) had identical loglik
+summary(rt.all.fit$nlminbwrap)
+summary(rt.all.fit$`optimx.L-BFGS-B`)
+summary(rt.all.fit$optimx.hjkb)
+# fit warnings: fixed-effect model matrix is rank deficient so dropping 18 columns / coefficients
+# so the only things significant were speaker_signal, in fact, every other coefficient that didn't interact with speaker_signal had a p value of 1....
+
+
+car::vif(rt.all.fit$optimx.hjkb) # yeah this model is in trouble
+VarCorr(rt.all.fit$optimx.hjkb) # at least the random effects look good!
+
+
+sjPlot::tab_model(rt.all.fit$optimx.hjkb) # somehow is printing different p values
+
+# updating the name of the model so I can read it easier
+
+# lm.ax.rt.model <- trial.rt.model.2
+
+
+# honestly don't know what I'm looking at - I think I should change this but don't know in what way
+```
+
+```{r rt-model-attempts-4-5-6}
+# reduce interactions - remove interactions with control variables
+trial.rt.model.4 <- lmer(
+  log_rt ~ prepost * exp_group * (zslope_English + zvar_English + 
+    zslope_Japanese + zvar_Japanese) + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal + # control variables
+    (1 + prepost | ID) + (1 + prepost | word_pair), # added random slope for day per ID
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # singular
+
+VarCorr(trial.rt.model.4) # perfect correlation between random slope and intercept for ID
+
+# remove random slope for ID
+trial.rt.model.5 <- lmer(
+  log_rt ~ prepost * exp_group * (zslope_English + zvar_English + 
+    zslope_Japanese + zvar_Japanese) + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal + # control variables
+    (1 | ID) + (1 + prepost | word_pair),
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # converged without warnings!
+
+isSingular(trial.rt.model.5) # not singular!
+VarCorr(trial.rt.model.5)
+car::vif(trial.rt.model.5) # still unstable
+
+# remove interactions with exp_group, but add back prepost interactions with control variables, and add back random prepost slope for ID
+trial.rt.model.6 <- lmer(
+  log_rt ~ prepost * (exp_group + zslope_English + zvar_English + 
+    zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + prepost | ID) + (1 + prepost | word_pair),
+  data = ax.rt.centered, 
+  control = lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # converged without warnings!
+
+isSingular(trial.rt.model.6) # not singular!
+VarCorr(trial.rt.model.6) # random slope ~ int correlation for ID went way down!
+car::vif(trial.rt.model.6) # so much more stable!
+
+# okay I can work with this model
+anova(trial.rt.model.6, trial.rt.model.2) 
+# even though the AIC for the more complex model is better, it is clearly overfitting/overparameterized compared to the amount of data I have
+```
+
+```{r rename-chosen-model}
+# renaming model for readability
+lm.ax.rt.model <- trial.rt.model.6
+
+```
+
+------------------------------------------------------------------------
+
+
+# Analysis of AX training dprime (no RT) across training sessions - done!
+
+```{r AX-training-data-prep}
+
+# here, I'm not interested in what predicts the improvement of training, but just how training improved over time across the two training groups
+
+
+# join together the trial level data of ax training (labeled with hit, false alarm, etc.) with aggregate_interim (MLD scores)
+# this is the data frame that goes into the model
+
+
+# main variables are signal_cont (true signal of trial, as continuous variable where "different" = 0.5 and "same" = -0.5), session (dummy coded, compared to reference level session 1), exp_group (low LD vs. high LD, effects coded), and language (dummy coded Japanese as reference level vs. MSA, and signal_cont interaction with language will only be relevant for high LD group, so language does not need to interact with exp_group)
+# I think the only control variables I'll include is MLD_A, MLD_P, and mayyyybe days_between (which in this case is days in between first and final training session)
+
+training.dprime <- training_dprime_interim %>%
+  # first transform participant response to be numeric such that different = 1 (responding that the signal is present) and same = 0 (responding that the signal is absent)
+  mutate(response_int = ifelse(response == "different", 1, ifelse(response == "same", 0, NA)), .after = response) %>%
+  # the days_between in aggregate interim is different from days_between for training_dprime_interim
+  left_join(select(aggregate_interim, -days_between), by = c("ID", "exp_group")) %>%
+  # remove unneeded columns
+  select(-c(local_date, pretest_dprime, pretest_mcpd_acc)) %>%
+  # move around some columns
+  relocate(ID, .before = everything()) %>%
+  relocate(days_between, .after = last_col()) %>%
+  # remove control group as a factor level so that it's just Low LD and High LD
+  droplevels()
+  
+
+# effects contrast coding is necessary for predictor variable, which is signal (the true signal of the trial)
+contrasts(training.dprime$signal) <- c("different" = 0.5, "same" = -0.5)
+# effects coding is also necessary for speaker_signal control variable
+contrasts(training.dprime$speaker_signal) <- c("different" = 0.5, "same" = -0.5)
+
+
+# contrast coding for exp_group since there's only the two levels here
+contrasts(training.dprime$exp_group) <- c("Low LD" = -0.5, "High LD" = 0.5)
+# change contrast names for regression printing
+colnames(contrasts(training.dprime$exp_group)) <- c("LowLD.vs.HighLD")
+
+
+# check that these worked
+contrasts(training.dprime$signal)
+contrasts(training.dprime$speaker_signal)
+contrasts(training.dprime$exp_group)
+
+# check contrast of language (it should be dummy coded with Japanese as reference level)
+contrasts(training.dprime$language) # all good
+
+# based on fuhrmeister et al., 2023 supplementary material, this step is necessary to add a continuous version of the signal predictor to use in the actual glmer model for dprime
+m0.0 <- glmer(response_int ~ signal + (1|ID) + (1|word_pair), data = training.dprime, family = "binomial")
+
+mat_trt0.0 <- model.matrix(m0.0)
+head(mat_trt0.0)
+
+# continuous version of signal
+training.dprime$signal_cont <- mat_trt0.0[,2]
+
+```
+
+
+```{r center-control-variables}
+# center control variables using new dataframe but keeping the same variable names - to preserve uncentered data in original dataframe but to keep variable names the same
+
+# MLD_A and MLD_P are grand-mean centered (note that although MLD scores have a meaningful 0 value, 0 is very rarely observed (one observation for MLD_P, not observations for MLD_A) so mean-centering is helpful)
+# days_between is minimum-centered
+training.dprime.centered <- training.dprime %>%
+  mutate(MLD_A = scale(MLD_A, scale = FALSE)[,1],
+         MLD_P = scale(MLD_P, scale = FALSE)[,1],
+         days_between = days_between - min(days_between))
+```
+
+
+```{r ax-training-glmer-attempt-1}
+job::job({ # run as a background job
+training.model.1 <- glmer(response_int ~
+  signal_cont * session * (exp_group + language + # don't need interaction between exp_group and language
+                             MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:session | ID) + (1 + signal_cont | word_pair), # random slopes for signal across sessions per ID, random slope for signal for session 1 for word_pair
+  family = binomial(link = "probit"),
+  data = training.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(training.dprime.centered)) # import only the necessary data to the job
+
+# holy shit
+# this took 4 hours
+# and its singular and I'm pretty sure it didn't converge, sob
+
+# but I'm making sure this is saved for sure
+saveRDS(training.model.1, "Rdata/ax-training-dprime-model1.rds")
+
+isSingular(training.model.1) # oof
+summary(training.model.1)
+VarCorr(training.model.1) # perhaps some of the random slope correlations are too high
+car::vif(training.model.1) # these are very good values
+
+```
+
+```{r ax-training-glmer-attempt-2}
+# okay now I know a little bit that I can simplify the random effects structure to reduce the correlations and to not even include the intercept (which I don't need)
+# maybe that will get the model to run faster?
+
+job::job({ # run as a background job
+training.model.2 <- glmer(response_int ~
+  signal_cont * session * (exp_group + language + # don't need interaction between exp_group and language
+                             MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (0 + signal_cont:session || ID) + (0 + signal_cont || word_pair), # random slopes for signal across sessions per ID, random slope for signal for session 1 for word_pair, no random intercepts
+  family = binomial(link = "probit"),
+  data = training.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+
+# definitely save within the job
+saveRDS(training.model.2, "Rdata/ax-training-dprime-model2.rds")
+}, import = c(training.dprime.centered)) # import only the necessary data to the job
+# 3 hours 25 mins...singular...
+
+isSingular(training.model.2)
+VarCorr(training.model.2)
+rePCA(training.model.2)
+```
+
+```{r ax-training-attempt-3-with-glmmTMB}
+library(glmmTMB)
+
+job::job({ # run as a background job
+  # identical to training.model.2 run with glmer
+training.model.3tmb <- glmmTMB(response_int ~
+  signal_cont * session * (
+    exp_group + language + # don't need interaction between exp_group and language
+      MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont:session || ID) + (0 + signal_cont || word_pair), 
+  # random slopes for signal across sessions per ID, random slope for signal for session 1 for word_pair, no random intercepts
+  family = binomial(link = "probit"),
+  data = training.dprime.centered)
+# holy shit this only took 30 seconds (i accidentlly ran this with glmer first, which took 30 MINUTES and failed to converge)
+
+# definitely save within the job
+saveRDS(training.model.3tmb, "Rdata/ax-training-dprime-model3-tmb.rds")
+}, import = c(training.dprime.centered)) # import only the necessary data to the job
+
+performance::check_singularity(training.model.3tmb) # not singular!
+summary(training.model.3tmb)
+VarCorr(training.model.3tmb) # removed correlations between random slopes
+performance::check_collinearity(training.model.3tmb) # oof - some of the high adj. VIF values are HIGH
+# session, session:exp_group, session:language, session:days_between (inconsequential since not interacting with signal_cont), but also signal_cont:session and signal_cont:session:days_between (uh oh) - maybe this is just a sign of autocorrelation though
+
+summary(training.model.3tmb)$fit$convergence
+# Should return 0 for successful convergence
+# but it retruns NULL? I think that's fine
+summary(training.model.3tmb)$optinfo$conv
+# also returns null, so that probably means there was no convergence warnings
+
+training.model.3tmb$sdr$pdHess
+# TRUE means the Hessian is positive definite which is good
+# returned TRUE
+
+
+AIC(training.model.1)
+AIC(training.model.2)
+anova(training.model.1, training.model.2)
+AIC(training.model.3tmb)
+# training.model.1 is better than training.model.2, and also better than training.model.3tmb, but training.model3tmb actually converged soooo
+# gonna try the training.model.1 structure 
+```
+
+
+```{r ax-training-attempt4-glmmTMB}
+# identical to glmer training.model.1 but now running with glmmTMB
+job::job({ # run as a background job
+training.model.4tmb <- glmmTMB(response_int ~
+  signal_cont * session * (exp_group + language + # don't need interaction between exp_group and language
+                             MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:session || ID) + (1 + signal_cont | word_pair), # random slopes for signal across sessions per ID, random slope for signal for session 1 for word_pair
+  family = binomial(link = "probit"),
+  data = training.dprime.centered)
+
+
+# definitely save within the job
+saveRDS(training.model.4tmb, "Rdata/ax-training-dprime-model4-tmb.rds")
+}, import = c(training.dprime.centered)) # import only the necessary data to the job
+# wow this only took 33 seconds and converged!
+
+sum.glmmTMB <- summary(training.model.4tmb)
+sum.glmmTMB$AICtab
+VarCorr(training.model.4tmb)
+anova(training.model.3tmb, training.model.4tmb)
+# yesss 4 is much better
+
+
+```
+
+
+```{r rename-chosen-model}
+# for readability
+
+tmb.training.dprime.model <- training.model.4tmb
+
+# yes! this is how I get dprime at the levels of the other variables
+emmeans::emtrends(tmb.training.dprime.model, var = "signal_cont", specs = c("session", "exp_group", "language"), at = list(session = c("1", "2", "3", "4", "5", "6"), exp_group = c("Low LD", "High LD"), language = c("Japanese", "MSA")))
+# though the high LD group's scores for both languages seem shifted up...
+```
+
+------------------------------------------------------------------------
+
+
+# Analysis on MCPD pre-posttest accuracy - done!
+
+
+```{r mcpd-data-prep}
+# predict trial level accuracy using glmm
+
+# left_join with aggregate_interim to get pretest_dprime, MLD scores, and days between as control variables
+# and left_join with mean_vas_lang to get zslope/zvar
+mcpd.acc <- filtered_mcpd %>%
+  left_join(aggregate_interim, join_by(ID, exp_group, days_between)) %>%
+  left_join(vas_means_lang, join_by(ID, exp_group, prepost)) %>%
+  select(ID, exp_group, prepost, response, reaction_time, log_rt, correct, sentence, key_word, "c" = "correct_answer", "cd" = "competing_distractor", "ncd1" = "non_competing_distractor_1", "ncd2" = "non_competing_distractor_2", origin_task, days_between, pretest_dprime, age:zvar_Japanese)
+
+
+# orthogonal coding for exp_group
+# first contrast compares control group to experimental groups (does training do anything beyond classroom instruction?) while the second contrast compares within the experimental groups (how does type of training change things?)
+contrasts(mcpd.acc$exp_group) <- cbind(c("Control" = -2/3, "Low LD" = 1/3, "High LD" = 1/3), c("Control" = 0, "Low LD" = -0.5, "High LD" = 0.5))
+# change contrast names for regression printing
+colnames(contrasts(mcpd.acc$exp_group)) <- c("Cntl.vs.Trng", "LowLD.vs.HighLD")
+
+# check
+contrasts(mcpd.acc$exp_group)
+
+# center control variables
+mcpd.acc.centered <- mcpd.acc %>%
+  mutate(pretest_dprime = scale(pretest_dprime, scale = FALSE)[,1],
+         MLD_A = scale(MLD_A, scale = FALSE)[,1],
+         MLD_P = scale(MLD_P, scale = FALSE)[,1],
+         days_between = days_between - min(days_between))
+
+```
+
+```{r glmer-mcpd-attempts-1-4}
+# running this without zslope/zvar - I certainly don't have enough data for that - but I can compare these to the model that does have zslope/zvar
+mcpd.trial.model.1 <- glmer(correct ~ prepost * exp_group * 
+                              (pretest_dprime + MLD_A + MLD_P + days_between) + # control variables
+    (1 + prepost | ID) + (1 + prepost | key_word), # added random slope for day per ID and key_word
+  family = binomial(link = "logit"),
+  data = mcpd.acc.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
+) # singular fit (and I think it did not converge?)
+
+summary(mcpd.trial.model.1)
+VarCorr(mcpd.trial.model.1) # random slopes correlations are a problem
+
+# reduce the random effects structure
+mcpd.trial.model.2 <- glmer(correct ~ prepost * exp_group * 
+                              (pretest_dprime + MLD_A + MLD_P + days_between) + # control variables
+    (1 | ID) + (1 | key_word), # just random intercepts
+  family = binomial(link = "logit"),
+  data = mcpd.acc.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # still singular
+summary(mcpd.trial.model.2)
+VarCorr(mcpd.trial.model.2) # oh now it's because the sd for ID random intercept is zero
+
+VarCorr(mcpd.trial.model.2)
+car::vif(mcpd.trial.model.2) # and these are also big problems
+
+# first take out exp_group interactions with everything - just two way interactions with prepost
+mcpd.trial.model.3 <- glmer(correct ~ prepost *
+                              (exp_group + pretest_dprime + MLD_A + MLD_P + days_between) + # control variables
+    (1 | ID) + (1 | key_word),
+  family = binomial(link = "logit"),
+  data = mcpd.acc.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # no warnings, not singular!
+
+isSingular(mcpd.trial.model.3)
+
+VarCorr(mcpd.trial.model.3) 
+car::vif(mcpd.trial.model.3) # all good now!
+
+# now add zslope/zvar
+mcpd.trial.model.4 <- glmer(correct ~ prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+    pretest_dprime + MLD_A + MLD_P + days_between) + # control variables
+    (1 | ID) + (1 | key_word),
+  family = binomial(link = "logit"),
+  data = mcpd.acc.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)) # better optimizer for mixed effects
+) # no warnings, not singular!
+
+isSingular(mcpd.trial.model.4)
+
+VarCorr(mcpd.trial.model.4) 
+car::vif(mcpd.trial.model.4) # some are high, but these are very manageable values (1-4.4)
+
+anova(mcpd.trial.model.1, mcpd.trial.model.2, mcpd.trial.model.3, mcpd.trial.model.4)
+# trial.model.2 is technically "better" than trial.model.3 and 4, but it was singular and the multicollinearity was bad so now it's down between trial.model.3 and trial.model.4
+anova(mcpd.trial.model.3, mcpd.trial.model.4)
+# model4 doesn't significantly improve the model, but its more relevant to answering the research question, so I'm using model 4
+
+summary(mcpd.trial.model.4)
+
+# rename for readability
+glm.mcpd.acc.model <- mcpd.trial.model.4
+
+# to get emmeans probabilities
+emmeans::emmeans(glm.mcpd.acc.model, pairwise ~ prepost + exp_group, type = "response")
+```
+
+
+
+------------------------------------------------------------------------
+
+
+
+
+## Session Info
+
+```{r sessionInfo, results='hide'}
+sessionInfo()
+```
+
+
+# extra code, do not run
+
+Keeping this code just for record-keeping sake.
+
+--------
+
+### glmer for dprime graveyard
+
+the graveyard for the lme4 glmer attempts
+
+```{r glmer-dprime-attempts-1-2-3-4, eval = FALSE}
+# more or less the maximal model, with random slope + interaction with prepost for both ID and word_pair
+
+job::job({ # run as a background job
+trial.model.1 <- glmer(response_int ~ signal_cont * prepost * exp_group *
+                 (zslope_English * zvar_English +
+                  zslope_Japanese * zvar_Japanese +
+                  pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont + signal_cont:prepost | word_pair), # random slopes for signal at pre and post per ID, random slope for signal for each pre and post per word_pair
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# took 1 hr 14 mins, singular fit, also I think it failed to converge
+isSingular(trial.model.1)
+summary(trial.model.1)
+
+# remove interactions between within-language zslope/zvar
+job::job({ # run as a background job
+trial.model.2 <- glmer(response_int ~ signal_cont * prepost * exp_group *
+                 (zslope_English + zvar_English +
+                  zslope_Japanese + zvar_Japanese +
+                  pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont + signal_cont:prepost | word_pair), # random slopes for signal at pre and post per ID, random slope for signal for each pre and post per word_pair
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# this took 1 hr 14 mins, is singular, failed to converge
+
+# remove interaction with exp_group for all of the secondary variables and control variables (i.e. just have zslope/zvar and control variables interact with signal_cont and prepost)
+job::job({ # run as a background job
+trial.model.3 <- glmer(response_int ~ signal_cont * prepost * exp_group +
+                  signal_cont * prepost * (zslope_English + zvar_English +
+                  zslope_Japanese + zvar_Japanese +
+                  pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont + signal_cont:prepost | word_pair), # random slopes for signal at pre and post per ID, random slope for signal for each pre and post per word_pair
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# took 43 mins, singular fit, failed to converge
+
+# same as trial.model.3, but simplified random structure by taking away signal_cont:prepost random slope interaction for word_pair
+job::job({ # run as a background job
+trial.model.4 <- glmer(response_int ~ signal_cont * prepost * exp_group +
+                  signal_cont * prepost * (zslope_English + zvar_English +
+                  zslope_Japanese + zvar_Japanese +
+                  pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont | word_pair), # random slopes for signal for each day 1 and day 2 per ID, random slope for signal for day 1 word_pair
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# took 41 minutes, singular fit, failed to converge
+
+# even though they all failed to converge, check which structure was the best
+anova(trial.model.1, trial.model.2, trial.model.3, trial.model.4)
+# wow, trial.model.1 and trial.model.2 were the best...that sucks considering how long they took
+# I'll use trial.model.2 since I don't care anymore about the within-language zslope/zvar interaction, and the two models have the same AIC, BIC, logLik
+# trial.model.2 is simpler
+# or it could be that trial.model.1 took away the interaction terms since it was took complex (I had received "fixed-effect model matrix is rank-deficient so dropping 60 columns/coefficients" warning for trial.model.1 (and 36 columns for trial.model.2)), according to anova they both have 96 parameters, which should not be the case if the interactions were there
+```
+
+```{r glmer-dprime-attempt-5, eval = FALSE}
+# simply don't include zslope and zvar, just based on signal_cont and prepost and exp_group, with control variables
+job::job({ # run as a background job
+trial.model.5 <- glmer(response_int ~ signal_cont * prepost * exp_group *
+                         (pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+      (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont + signal_cont:prepost | word_pair), # random slopes for signal for each day 1 and day 2 per ID and word_pair
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# took an 1 hour 5 mins, still singular and failed to converge
+
+anova(trial.model.1, trial.model.2, trial.model.5)
+# yeah trial.model.5 is worse than the other two
+
+isSingular(trial.model.2)
+VarCorr(trial.model.2)
+)
+# it looks like ID is actually the culprit of the singular fit
+
+car::vif(trial.model.2) # this model is fucked
+```
+
+```{r glmer-dprime-attempt-6, eval = FALSE}
+# this is the same as trial.model.2, but simplify random effects structure (remove ID random effects) 
+job::job({ # run as a background job
+trial.model.6 <- glmer(response_int ~ signal_cont * prepost * exp_group *
+                 (zslope_English + zvar_English +
+                  zslope_Japanese + zvar_Japanese +
+                  pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+                   + (1 + signal_cont + signal_cont:prepost | word_pair), # random slope for signal for each pre and post per word_pair only (ID causing singular fit)
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered,
+  control = glmerControl(optimizer =  "bobyqa", optCtrl = list(maxfun = 200000))) # try first with bobyqa
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# took 48 minutes, singular, I think didn't converge
+
+anova(trial.model.1, trial.model.2, trial.model.6) # okay trial 6 is in fact better than the others
+isSingular(trial.model.6)
+VarCorr(trial.model.6)
+car::vif(trial.model.6) # yeeah this model is in trouble
+```
+
+```{r allFit-model-6, eval = FALSE}
+# running allFit on trial.model.2 to see if I can get something that converges
+# different convergence optimizers
+library(optimx)
+library(dfoptim)
+library(nloptr)
+# table of methods and optimizers to use with allFit
+method.table = data.frame(
+  optimizer = c("nlminbwrap", "nmkbw", 
+                "optimx", "optimx", "optimx", "optimx", "optimx", "optimx", 
+                "nloptwrap", "nloptwrap", "nloptwrap", "nloptwrap", "nloptwrap", "nloptwrap", "nloptwrap"),
+  method = c("", "",
+            "L-BFGS-B", "nlminb", "nlm", "bobyqa", "nmkb", "hjkb",
+            "NLOPT_LN_PRAXIS", "NLOPT_GN_CRS2_LM", "NLOPT_LN_COBYLA", "NLOPT_LN_NEWUOA", "NLOPT_LN_NEWUOA_BOUND", "NLOPT_LN_SBPLX", "NLOPT_LN_BOBYQA")
+)
+
+
+job::job({ # run as a background job
+# try all different optimizers
+# run on 6 cores, which saves 2 cores for other things on my computer
+model.6.all.fit <- allFit(trial.model.6, meth.tab = method.table, parallel = "multicore", ncpus = 6, maxfun = 200000)
+# make sure to save
+saveRDS(model.6.all.fit, "Rdata/glm-dprime-model6-allfit.rds")
+}, import = c(ax.dprime.centered, trial.model.6, method.table)) # import only the necessary data to the job
+
+glm.all.summary <- summary(model.6.all.fit)
+glm.all.summary$which.OK ## logical vector: which optimizers worked?
+# only 3 of them worked
+glm.all.summary$msgs
+# the 3 that worked either didn't converge or were singular
+
+times = glm.all.summary$times
+times/60
+
+# so yeah this is not gonna work
+
+```
+
+```{r glmer-dprime-attempt-7, eval = FALSE}
+# based off of trial.rt.model.6, I will try again and reduce the interaction structure by removing the four way interactinos with exp_group and others
+
+job::job({ # run as a background job
+trial.model.7 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + signal_cont + signal_cont:prepost | ID) + (1 + signal_cont + signal_cont:prepost | word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# sigh, took 40 minutes, and it is singular
+
+isSingular(trial.model.7)
+VarCorr(trial.model.7)
+car::vif(trial.model.7)
+```
+
+```{r glmer-dprime-attempt-8, eval = FALSE}
+# remove random correlations
+job::job({ # run as a background job
+trial.model.8 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (1 + signal_cont + signal_cont:prepost || ID) + (1 + signal_cont + signal_cont:prepost || word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# okay crazy, this took 5.5 minutes to run
+# however, it is still singular :(
+VarCorr(trial.model.8)
+```
+
+```{r glmer-dprime-attempt-9, eval = FALSE}
+# change random slopes to be 0 + signal_cont:prepost to get signal_cont slope at Pre and at Post without intercept (and without correlations)
+job::job({ # run as a background job
+trial.model.9 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont:prepost || ID) + (0 + signal_cont:prepost || word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# 16 minutes, still singular
+# 
+VarCorr(trial.model.9)
+isSingular(trial.model.9)
+rePCA(trial.model.9)
+```
+
+```{r glmer-dprime-attempt-10-with-allFit, eval = FALSE}
+# the second random slope component doesn't contribute to the model (somehow) according to the rePCA output (and according to chatgpts explanation), and its struggling because I don't have enough data to justify the complexity of the random structure
+# so maybe I can avoid this random effects correlation structure if I code prepost as numeric so that the slope is an actual slope, so I'm just predicting one random slope instead of two (one at Pre and one at Post)
+# because prepost is only two levels, the interpretation is mathematically equivalent to the factor version of the variable
+ax.dprime.centered$prepost_int <- ifelse(ax.dprime.centered$prepost == "Pre", 0, 1)
+
+job::job({ # run as a background job
+trial.model.10 <- glmer(response_int ~ signal_cont * prepost_int * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont:prepost_int || ID) + (0 + signal_cont:prepost_int || word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+
+isSingular(trial.model.10) # not singular..but
+# didn't converge
+VarCorr(trial.model.10)
+car::vif(trial.model.10) # the vifs are fine
+summary(trial.model.10)$optinfo
+summary(trial.model.10)$optinfo$conv$lme4
+
+# this calls for an ALLFIT
+
+job::job({ # run as a background job
+# try all different optimizers
+# run on 6 cores, which saves 2 cores for other things on my computer
+model.10.all.fit <- allFit(trial.model.10, meth.tab = method.table, parallel = "multicore", ncpus = 6, maxfun = 200000)
+# make sure to save
+saveRDS(model.10.all.fit, "Rdata/glm-dprime-model10-allfit.rds")
+}, import = c(ax.dprime.centered, trial.model.10, method.table)) # import only the necessary data to the job
+
+summary.10 <- summary(model.10.all.fit)
+summary.10$msgs
+# not a singular one convergered :( and they weren't close to the tolerance thresholds
+```
+
+```{r attempt-11-i-guess, eval=FALSE}
+# going back to prepost as factor
+# remove prepost random slope interaction from word_pair
+job::job({ # run as a background job
+trial.model.11 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      pretest_mcpd_acc + MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont:prepost || ID) + (0 + signal_cont || word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# 13 minutes SINGULAR ARGHGH
+
+isSingular(trial.model.11)
+VarCorr(trial.model.11)
+rePCA(trial.model.11)
+```
+
+```{r attempt-13-glmer, eval = FALSE}
+# remove pretest_mcpd_acc because it seems to be causing problems (has high SD compared to the other terms)
+job::job({ # run as a background job
+trial.model.13 <- glmer(response_int ~ signal_cont * prepost * (exp_group + zslope_English + zvar_English + zslope_Japanese + zvar_Japanese + 
+      MLD_A + MLD_P + days_between + speaker_signal) + # control variables
+    (0 + signal_cont | ID) + (0 + signal_cont | word_pair),
+  family = binomial(link = "probit"),
+  data = ax.dprime.centered, 
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))) # better optimizer for mixed effects
+}, import = c(ax.dprime.centered)) # import only the necessary data to the job
+# 6 minutes, not singular but still failed to converge
+
+anova(trial.model.12, trial.model.13) # like with the TMB, trial.model.12 is better
+```
+
+```{r attempt-13-with-glmmTMB}
+library(glmmTMB)
+
+# remove pretest_mcpd_acc as it seemed to be very unstable
+trial.model.13tmb <- glmmTMB(
+  response_int ~ 1+ signal_cont * prepost * (exp_group + zslope_English + zvar_English + 
+                zslope_Japanese + zvar_Japanese + MLD_A + MLD_P + days_between + speaker_signal) +
+    (0 + signal_cont | ID) + (0 + signal_cont | word_pair),
+  data = ax.dprime.centered,
+  family = binomial(link = "probit")
+)
+
+# this took less than 10 seconds with no warnings
+
+summary(trial.model.13tmb)
+VarCorr(trial.model.13tmb)
+
+trial.model.13tmb$sdr$pdHess
+# TRUE means the Hessian is positive definite which is good
+# returned TRUE
+
+performance::check_collinearity(trial.model.13tmb)
+
+anova(trial.model.12tmb, trial.model.13tmb)
+# okay so trial.model.12tmb is better, will keep mcpd_pretest_acc
+
+
+
+```
+
+
+

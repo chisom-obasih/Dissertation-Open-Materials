@@ -5,12 +5,15 @@ In this research project, I investigated the relationship between gradient categ
 
 The top level folders in the repository are as follows:
 
-A. Stimuli Materials
-B. Task Materials
-C. Study 1 Data and Analysis
-D. Study 2 Data and Analysis
-E. Study 3 Data and Analysis
-F. Research Notes
+<ol type="A">
+        <li>Stimuli Materials</li>
+        <li>Task Materials</li>
+        <li>Study 1 Data and Analysis</li>
+        <li>Study 2 Data and Analysis</li>
+        <li>Study 3 Data and Analysis</li>
+        <li>Research Notes</li>
+    </ol>
+
 
 A more thorough description of the subdirectories and supplementary materials files will be coming soon.
 

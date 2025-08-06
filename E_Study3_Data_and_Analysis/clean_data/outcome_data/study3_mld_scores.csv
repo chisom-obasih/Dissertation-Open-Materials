@@ -1,0 +1,19 @@
+ID,exp_group,age,gender,MLD_A,MLD_P
+2,Control,32,Female,1,0
+3,Control,20,Female,1.49,0.63
+4,High LD,20,Male,0.93,1.24
+6,Low LD,20,Female,1.43,0.83
+7,Control,21,Male,1.55,0.16
+8,Low LD,21,Female,1.42,0.39
+10,High LD,22,Male,1.81,0.32
+11,High LD,19,Female,1.42,0.5
+13,High LD,18,Female,1.36,0.29
+14,Control,19,Male,1.46,1.01
+15,Low LD,20,Female,1.52,0.11
+17,High LD,22,Male,1.93,1.11
+18,Low LD,25,Trans Male,1.27,0.38
+19,Low LD,21,Female,0.77,0.4
+20,Control,19,Male,0.53,0.4
+21,Control,25,Female,2,0.49
+23,High LD,18,Female,1.41,0.46
+24,High LD,25,Male,1.5,0.52

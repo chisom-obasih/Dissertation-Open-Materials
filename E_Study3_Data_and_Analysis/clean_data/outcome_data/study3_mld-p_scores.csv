@@ -1,0 +1,19 @@
+ID,exp_group,age,gender,MLD_P,context_hours_watching,scaled_proportions_watching,langs_per_context_watching,context_entropies_watching,context_hours_listening,scaled_proportions_listening,langs_per_context_listening,context_entropies_listening,context_hours_games,scaled_proportions_games,langs_per_context_games,context_entropies_games,context_hours_internet,scaled_proportions_internet,langs_per_context_internet,context_entropies_internet,context_hours_home,scaled_proportions_home,langs_per_context_home,context_entropies_home,context_hours_family,scaled_proportions_family,langs_per_context_family,context_entropies_family,context_hours_social,scaled_proportions_social,langs_per_context_social,context_entropies_social,context_hours_work_school,scaled_proportions_work_school,langs_per_context_work_school,context_entropies_work_school,context_hours_out_of_home,scaled_proportions_out_of_home,langs_per_context_out_of_home,context_entropies_out_of_home,context_hours_other,scaled_proportions_other,langs_per_context_other,context_entropies_other
+2,Control,32,Female,0,3,0.12,1,0,0,0,0,0,0,0,0,0,1,0.04,1,0,1,0.04,1,0,1,0.04,1,0,1,0.04,1,0,2,0.08,1,0,1,0.04,1,0,,,0,0
+3,Control,20,Female,0.63,2,0.08,2,1,2,0.08,4,1.79,1,0.04,1,0,2,0.08,2,0.81,10,0.42,1,0,10,0.42,1,0,3,0.12,2,0.65,8,0.33,2,0.54,2,0.08,2,0.81,,,0,0
+4,High LD,20,Male,1.24,6,0.25,2,0.65,6,0.25,2,0.65,4,0.17,2,1,4,0.17,2,0.81,10,0.42,1,0,1,0.04,1,0,12,0.5,2,0.41,7,0.29,2,0.86,5,0.21,2,0.72,0,0,0,0
+6,Low LD,20,Female,0.83,2,0.08,1,0,2,0.08,2,0.17,1,0.04,1,0,3,0.12,3,1.25,12,0.5,2,0.65,4,0.17,2,1,,,0,0,3,0.12,2,1,1,0.04,2,1,0,0,0,0
+7,Control,21,Male,0.16,1.5,0.06,2,0.92,1.5,0.06,3,1.25,0,0,0,0,1,0.04,2,0.47,4,0.17,1,0,0,0,0,0,2,0.08,1,0,4,0.17,1,0,,,0,0,,,0,0
+8,Low LD,21,Female,0.39,1,0.04,3,1.36,1,0.04,1,0,0,0,0,0,2,0.08,1,0,5,0.21,1,0,1,0.04,1,0,5,0.21,1,0,5.5,0.23,3,1.44,1,0.04,1,0,,,0,0
+10,High LD,22,Male,0.32,1,0.04,2,1,1,0.04,1,0,2,0.08,1,0,7,0.29,1,0,12,0.5,1,0,3,0.12,2,1,3,0.12,1,0,5,0.21,2,0.72,1,0.04,1,0,,,0,0
+11,High LD,19,Female,0.5,3,0.12,2,0.92,5,0.21,2,0.72,2,0.08,1,0,4,0.17,1,0,7,0.29,1,0,2,0.08,2,0.81,4,0.17,1,0,6,0.25,2,0.65,1,0.04,1,0,,,0,0
+13,High LD,18,Female,0.29,1.5,0.06,2,0.57,5,0.21,3,1.24,1,0.04,1,0,3,0.12,1,0,0,0,0,0,0,0,0,0,4,0.17,1,0,4,0.17,1,0,1,0.04,1,0,15,0.62,0,0
+14,Control,19,Male,1.01,2,0.08,2,1,3,0.12,2,0.92,2,0.08,1,0,3,0.12,3,1.04,10,0.42,3,0.92,10,0.42,1,0,4,0.17,2,0.81,4,0.17,2,1,3,0.12,1,0,,,0,0
+15,Low LD,20,Female,0.11,1,0.04,1,0,2,0.08,1,0,0,0,0,0,3,0.12,2,0.92,12,0.5,0,0,12,0.5,0,0,,,0,0,5,0.21,0,0,0,0,0,0,,,0,0
+17,High LD,22,Male,1.11,12,0.5,2,0.65,10,0.42,2,0.88,2,0.08,2,1,10,0.42,2,0.47,1,0.04,0,0,4,0.17,2,0.81,0,0,1,0,2,0.08,0,0,0,0,1,0,,,0,0
+18,Low LD,25,Trans Male,0.38,4,0.17,2,0.72,1,0.04,1,0,6,0.25,2,0.59,2,0.08,1,0,2,0.08,1,0,1,0.04,1,0,1,0.04,1,0,3,0.12,2,0.92,1,0.04,1,0,,,0,0
+19,Low LD,21,Female,0.4,3,0.12,2,1,1,0.04,1,0,1,0.04,1,0,3,0.12,2,0.92,5,0.21,1,0,0,0,0,0,0,0,0,0,6,0.25,2,0.65,1,0.04,1,0,,,0,0
+20,Control,19,Male,0.4,3,0.12,2,0.92,3,0.12,2,0.92,2,0.08,2,1,2,0.08,1,0,8,0.33,1,0,0,0,0,0,2,0.08,1,0,2,0.08,2,1,1,0.04,1,0,,,0,0
+21,Control,25,Female,0.49,2,0.08,4,1.64,0.5,0.02,3,1.36,0,0,0,0,1,0.04,3,1.16,0,0,0,0,1,0.04,1,0,2,0.08,2,0.93,5,0.21,2,0.97,0.5,0.02,1,0,,,0,0
+23,High LD,18,Female,0.46,3,0.12,2,0.92,3,0.12,4,1.42,1,0.04,1,0,1,0.04,1,0,4,0.17,1,0,1,0.04,1,0,2,0.08,1,0,7,0.29,2,0.59,1,0.04,1,0,5,0.21,1,0
+24,High LD,25,Male,0.52,4,0.17,2,0.81,1,0.04,1,0,1,0.04,1,0,2,0.08,2,1,12,0.5,1,0,0,0,0,0,10,0.42,2,0.72,2,0.08,1,0,0,0,0,0,,,0,0

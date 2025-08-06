@@ -1,0 +1,761 @@
+---
+title: "Study 3 Questionnaire Cleaning"
+author: "Chisom Obasih"
+date: "June 2025"
+subtitle: "Raw data cleaning and wrangling of Linguistic Diversity Questionnaire (LDQ) data from Study 3"
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    includes:
+      in_header: "/Users/chisomobasih/Exp-Research/General/wrap-code.tex"
+editor_options: 
+  chunk_output_type: inline
+---
+
+Helpful code to remember:
+str() to look at the structure of a dataframe
+summary() to summarize (mean, factors, count, etc.) of vector or dataframe
+typeof() to view type of vector
+
+helpful hotkeys to remember:
+cmd+shift+m = %>%
+cmd+opt+i = new chunk
+
+# Libraries
+```{r load-libraries}
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(ggthemes)
+library(ggpubr)
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(knitr)
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+# use lmerTest for the following functions in the case of conflict between packages
+conflict_prefer("lmer", "lmerTest")
+
+# avoid scientific notation
+options(scipen = 999)
+```
+
+------------------------------------------------------------------------
+
+# Read in data
+
+```{r read-data, message = FALSE}
+
+ldq_files <- list.files(path = "raw_data/questionnaires", pattern = "ldq", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+
+
+# import was complaining about something, so switched to read_csv
+# read_csv was complaining about expecting a logical column type for the column `Store: Language-4` so I will specifically coerce that to chr type
+ldq <- ldq_files %>%
+  map_df(~read_csv(.x, col_types = cols(`Store: Language-4` = col_character(), .default = "?"))) %>%
+  filter(`Event Index` != "END OF FILE")
+
+# first make sure there are no duplicates (was a problem in study2)
+ldq %>%
+  summarise(n = n(), .by = everything()) %>%
+  filter(n > 1L)
+# all good
+
+
+```
+```{r attach-Rdata}
+# load saved workspace if session restarts
+load("Rdata/study3_ldq_cleaning.Rdata")
+```
+
+
+```{r save-Rdata}
+save(ldq,
+     ldq_files,
+     clean_IDs,
+     ldq_long,
+     ldq_long_part1,
+     ldq_long_part2,
+     ldq_wide_part1,
+     ldq_wide_part2,
+     check.part1,
+     check.part2,
+     cleaned_part1,
+     cleaned_part2,
+     sanity.check,
+     squeaky_clean_part2,
+     sanity.check2,
+  file = "Rdata/study3_ldq_cleaning.Rdata"
+)
+```
+
+----------------------------------------------
+# Cleaning
+
+Part 1 questions based on LHQ3
+
+Page 3 = "7.Indicate your native language(s) and any other languages you have studied or learned, the age at which you started using each language in terms of listening, speaking, reading, and writing, and the total number of years you have spent using each language."
+Page 4 = "10.If you have lived or traveled in countries other than your country of residence for three months or more, then indicate the name of the country, your length of stay (in Months), the language you used, and the frequency of your use of the language for each country."
+Page 5 = "11.Indicate the way you learned or acquired your non-native language(s). Check one or more boxes that apply."
+Page 6 = "12.Indicate the age at which you started using each of the languages you have studied or learned in the following environments (Including native language)."
+Page 7 = "13.Indicate the language used by your teachers for instruction at each educational level. If the instructional language switched during any educational level, then also indicate the "Switched to" language. If you had a bilingual education at any educational level, then simply check the box under "Both Languages"."
+Page 8 = "15.Rate your current ability in terms of listening, speaking, reading, and writing in each of the languages you have studied or learned (including the native language)."
+Page 9 = "18.Estimate how many hours per day you spend engaged in the following activities in each of the languages you have studied or learned (including the native language)."
+Page 10 = "19.Estimate how many hours per day you spend speaking with the following groups of people in each of the languages you have studied or learned (including the native language)."
+Page 11 = "21.In which language do you communicate best or feel most comfortable in terms of listening, speaking, reading, and writing in each of the following environments? You may be selecting the same language for all or some of the fields below."
+Page 12 = "23.What percentage of your friends speaks each of the languages you have studied or learned? (including the native language)"
+Page 13_11. = "25.Use the comment box below to indicate any additional answers to any of the questions above that you feel better describe your language background or usage."
+Page 13_12. = "27.Do you also speak/use any dialects of the languages you know? Please indicate the name(s) of the dialect and the degree you use them."
+
+Part 2 questions are on pages 15, 16, 17
+------------------------------------------------------------------------
+
+```{r initial-data-wrangling}
+# LDQ data wrangling
+# clean up long format of questionnaire to select relevant columns, and clean up certain column values in preparation for pivoting data to wide format
+
+# at the end of this pipe, clean ID so that they are consistent with the other data cleaning scripts by matching the privateIDs from to their new IDs using the clean_IDs dataframe that was created with the consent forms in the script study3_ID_cleaning.R
+# so need to load in that dataframe
+clean_IDs <- readRDS("Rdata/study3_clean_IDs.rds")
+
+
+ldq_long <- ldq %>%
+  select(
+    # select only the relevant columns
+    `Local Date and Time`,
+    `Participant Private ID`,
+    `Page`,
+    `Question`,
+    `Key`,
+    `Response Type`,
+    `Response`,
+    `Object Name`,
+    `Store: Language-1`,
+    `Store: Language-2`,
+    `Store: Language-3`,
+    `Store: Language-4`
+  ) %>%
+  # filter for only the rows that contain a possible response
+  filter(`Response Type` == "response") %>%
+  # filter OUT any rows were the Response is a quantised version of the response value
+  filter(!str_detect(`Key`, "quantised")) %>%
+  # rename some columns
+  rename(local_date_and_time = `Local Date and Time`,
+    privateID = `Participant Private ID`, 
+    language1 = `Store: Language-1`, 
+    language2 = `Store: Language-2`, 
+    language3 = `Store: Language-3`, 
+    language4 = `Store: Language-4`) %>%
+  # replace the following values with NA across all character columns
+  mutate(across(where(is.character), ~ replace(., . %in% c("", " ", "na", "n/a", "NA", "N/A", "-1", "xxx", "xxx ", "XXX"), NA))) %>%
+  # because of formatting on Gorilla, some objects don't have an actual question in the Question column, so I will adjust those to contain all the necessary information needed for when the df pivots wider, as the current values in the Question column will become the column names
+  # the Question column denotes the sub-question
+  mutate(`Question` = case_when(
+    # Page 2 questions
+    `Question` == "Please enter your age:" ~ "age",
+    `Question` == "Please specify your gender identity:" ~ "gender",
+    # Page 3 questions
+    `Key` == "Language 1-value" | `Key` == "Language 2-value" | `Key` == "Language 3-value" | `Key` == "Language 4-value" ~ "lang",
+    `Question` == "Listening" ~ "L", 
+    `Question` == "Speaking" ~ "S",
+    `Question` == "Reading" ~ "R",
+    `Question` == "Writing" ~ "W",
+    `Question` == "Years of use**" ~ "YoU",
+    # Page 4 questions
+    `Key` == "Country 1-value" | `Key` == "Country 2-value" | `Key` == "Country 3-value" | `Key` == "Country 4-value" ~ "country",
+    `Key` == "Length of stay (in months)-value" ~ "length_of_stay",
+    `Page` == "Page 4" & `Key` == "Language-value" ~ "lang",
+    `Question` == "Frequency of use" ~ "lang_frequency",
+    # Page 5 questions
+    `Page` == "Page 5" & str_detect(`Question`, "Non-native language") ~ "lang",
+    `Page` == "Page 5" & str_detect(`Key`, "Immersion") ~ "immersion",
+    `Page` == "Page 5" & str_detect(`Key`, "Classroom instruction") ~ "classroom_instruction",
+    `Page` == "Page 5" & str_detect(`Key`, "Self-learning") ~ "self_learning",
+    # Page 6 questions
+    `Key` == "At home-value" ~ "at_home", 
+    `Key` == "With friends-value" ~ "with_friends",
+    `Key` == "At school-value" ~ "at_school",
+    `Key` == "At work-value" ~ "at_work",
+    `Key` == "Language software-value" ~ "lang_software", 
+    `Key` == "Online games-value" ~ "online_games",
+    # Page 7 questions
+    `Page` == "Page 7" & `Key` == "Language-value" ~ "lang",
+    `Page` == "Page 7" & `Key` == "(Switched to)-value" ~ "switched_to_lang",
+    `Page` == "Page 7" & `Key` == "Both languages" ~ "both_langs",
+    # Page 8 questions 
+    `Key` == "Listening-value" ~ "L", 
+    `Key` == "Speaking-value" ~ "S",
+    `Key` == "Reading-value" ~ "R",
+    `Key` == "Writing-value" ~ "W",
+    # Page 9 questions - with LSRW aspects
+    `Key` == "Watching television-value" ~ "TV_L",
+    `Key` == "Listening to radio-value" ~ "radio_L",
+    `Key` == "Reading for fun-value" ~ "fun_R",
+    `Key` == "Reading for school/work-value" ~ "school_work_R",
+    `Key` == "Using social media and internet-value" ~ "social_internet_W",
+    `Key` == "Writing for school/work-value" ~ "school_work_W",
+    # Page 10 questions - some have LSRW aspects
+    `Key` == "Family members-value" ~ "family_S",
+    `Key` == "Friends*-value" ~ "friends_S",
+    `Key` == "Classmates-value" ~ "classmates_S",
+    `Key` == "Others (co-workers**, roommates, etc.)-value" ~ "others_S",
+    # Page 11 questions - listing language most comfortable using (object name will have the environment)
+    `Page` == "Page 11" & `Question` == "Listening" ~ "L",
+    `Page` == "Page 11" & `Question` == "Speaking" ~ "S",
+    `Page` == "Page 11" & `Question` == "Reading" ~ "R",
+    `Page` == "Page 11" & `Question` == "Writing" ~ "W",
+    # Page 12 questions
+    `Page` == "Page 12" ~ "percentage",
+    # remove parenthesis from all question prompts (i.e. "12) blah blah blah") on pages 13, 16, and 17 - this replaces only the first instance with "." (i.e. "12. blah blah blah")
+    `Page` == "Page 13" | `Page` == "Page 16" | `Page` == "Page 17" ~ str_replace(`Question`, "\\)", "\\."),
+    .default = `Question`
+    )) %>%
+  # remove asterisk from any questions that have them
+  mutate(`Question` = str_remove_all(`Question`, "\\*")) %>%
+  # for those rows for Page 5, change the Response to be equal to the question name if the value was 1, and blank if the value was 0
+  mutate(`Response` = case_when(
+    `Page` == "Page 5" & `Response` == 1 ~ `Question`,
+    `Page` == "Page 5" & `Response` == 0 ~ NA,
+    .default = `Response`
+  )) %>%
+  # change the object names to reflect language/country counter for sub-questions or to distinguish environment for sub-question, and other clean-up
+  mutate(`Object Name` = case_when(
+    `Question` == "age" ~ "age",
+    `Question` == "gender" ~ "gender",
+    # language counters (applies for Page 3, Page 6, Page 8, Page 9, Page 10, Page 12)
+    str_detect(`Object Name`, "Language 1") ~ "lang1",
+    str_detect(`Object Name`, "Language 2") ~ "lang2",
+    str_detect(`Object Name`, "Language 3") ~ "lang3",
+    str_detect(`Object Name`, "Language 4") ~ "lang4",
+    # Page 4 - country counter
+    `Page` == "Page 4" & str_detect(`Object Name`, "Country 1") ~ "country1",
+    `Page` == "Page 4" & str_detect(`Object Name`, "Country 2") ~ "country2",
+    `Page` == "Page 4" & str_detect(`Object Name`, "Country 3") ~ "country3",
+    `Page` == "Page 4" & str_detect(`Object Name`, "Country 4") ~ "country4",
+    # Page 5 - non-native language counter
+    `Page` == "Page 5" & `Object Name` == "Non-native language 1" ~ "non_native_lang1",
+    `Page` == "Page 5" & `Object Name` == "Non-native language 2" ~ "non_native_lang2",
+    `Page` == "Page 5" & `Object Name` == "Non-native language 3" ~ "non_native_lang3",
+    `Page` == "Page 5" & `Object Name` == "Non-native language 4" ~ "non_native_lang4",
+    `Page` == "Page 5" & str_detect(`Key`, "language 1") ~ "non_native_lang1",
+    `Page` == "Page 5" & str_detect(`Key`, "language 2") ~ "non_native_lang2",
+    `Page` == "Page 5" & str_detect(`Key`, "language 3") ~ "non_native_lang3",
+    `Page` == "Page 5" & str_detect(`Key`, "language 4") ~ "non_native_lang4",
+    # Page 7 - school environment - some are capitalized (for when the key is language-value or switched-to-value), some not (for when the key is both languages), so just using rest of the word with str_detect
+    str_detect(`Object Name`, "lementary school") ~ "elem",
+    str_detect(`Object Name`, "iddle school") ~ "middle",
+    str_detect(`Object Name`, "igh school") ~ "high",
+    str_detect(`Object Name`, "ollege") ~ "college",
+    str_detect(`Object Name`, "aster") ~ "master",
+    str_detect(`Object Name`, "octor") ~ "doctor",
+    # Page 11 - distinguish environment
+    str_detect(`Object Name`, "At home") ~ "at_home",
+    str_detect(`Object Name`, "At school") ~ "at_school",
+    str_detect(`Object Name`, "At work") ~ "at_work",
+    str_detect(`Object Name`, "With friends") ~ "with_friends",
+    # clean up object names Page 13, 15, and 17 by converting to snake case (change to lower case and replace non-letter and non-digit characters (spaces, slashes, etc.) with underscore)
+    `Page` == "Page 13" | `Page` == "Page 15" | `Page` == "Page 17" ~ snakecase::to_any_case(`Object Name`, "snake"),
+    # clean up page 16 questions/object names so that they do not result in list values for response column when widening the dataframe
+    `Page` == "Page 16" & str_detect(`Key`, "Language 1") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang1", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Hours:-2") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang1_hours", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Language 2") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang2", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Hours:-4") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang2_hours", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Language 3") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang3", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Hours:-6") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang3_hours", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Language 4") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang4", sep = "_"),
+    `Page` == "Page 16" & str_detect(`Key`, "Hours:-8") ~ paste(snakecase::to_any_case(`Object Name`, "snake"), "lang4_hours", sep = "_"),
+    .default = `Object Name`
+  )) %>%
+    # create a new column, based on the Page column, which denotes the question category label
+    # page 3 = question 7, page 8 = question 15, page 9 = question 18, page 10 = question 19 - questions that are used in aggregate scoring for part 1
+  mutate(.before = `Question`, `Question Label` = case_when(
+    `Page` == "Page 3" ~ "aoa",
+    `Page` == "Page 4" ~ "foreign_countries",
+    `Page` == "Page 5" ~ "non_native_acquired",
+    `Page` == "Page 6" ~ "aoa_environments",
+    `Page` == "Page 7" ~ "education",
+    `Page` == "Page 8" ~ "proficiency",
+    `Page` == "Page 9" ~ "hours_activities",
+    `Page` == "Page 10" ~ "hours_people",
+    `Page` == "Page 11" ~ "preferred_lang",
+    `Page` == "Page 12" ~ "friends",
+    `Page` == "Page 13" & `Object Name` == "question_11" ~ "additional_info",
+    `Page` == "Page 13" & `Object Name` == "question_12" ~ "dialects",
+    `Page` == "Page 15" ~ "context_hours",
+    `Page` == "Page 16" ~ "passive",
+    `Page` == "Page 17" & `Object Name` == "question_15" ~ "hours_awake",
+    `Page` == "Page 17" & `Object Name` == "question_16" ~ "other_info_part_2",
+    .default = NA
+  )) %>%
+  # replace the question 11 and 12 from page 13 since they're too long to be used in the new column names once the df pivots wider
+  mutate(`Question` = ifelse(`Page` == "Page 13", "comment", `Question`)) %>%
+  # convert privateIDs to factor
+  mutate(privateID = as.factor(privateID)) %>%
+  # clean IDs by matching the privateIDs from clean_IDs 
+  # using inner join (only keeps only matching rows in x instead of trying to make all combinations of x and y) by privateID, drop unmatched rows in y (contains the people who only did day 1, so don't need to add them to the ldq_long)
+  inner_join(select(clean_IDs, -course), by = c("privateID"), unmatched = c(x = "error", y = "drop"), relationship = "many-to-one") %>%
+  # remove privateID and move ID and exp_group to be after date
+  select(-c(privateID), local_date_and_time, ID, Page:language4) %>%
+  relocate(c(ID:exp_group), .after = local_date_and_time) %>%
+  arrange(ID) %>%
+  # one participant had two rows of responses to gender because he selected "other" and specified "trans male", so get rid of the row that says "other" (question == "gender", response == "__other") and use the specified row (question == "gender", key == "other") as the response row (change key to equal "value")
+  # this would work for any number of people who selected "other"/"prefer to self identify"
+  # this should just get rid of one row in my case
+  filter(!(Question == "gender" & Response == "__other")) %>%
+  mutate(Key = ifelse(Question == "gender" & Key == "other", "value", Key))
+# nrow goes from 4480 to 4479, so this worked
+
+
+# there are the 6 participants (out of 24) who did finish the study, so they shouldn't be present in the ldq data
+unique(ldq_long$ID)
+# participants who did not finish: 1, 5, 9, 12, 16, 22
+
+# double check for duplicates
+ldq_long %>% 
+  summarise(n = n(), .by = c(ID, `Question Label`, `Question`, `Object Name`)) %>%
+  filter(n > 1L)
+# now all good
+
+
+# separate into parts 1 and 2
+# part 2 questions are on pages 15, 16, and 17
+ldq_long_part1 <- ldq_long %>%
+  filter(!(`Page` %in% c("Page 15", "Page 16", "Page 17")))  %>%
+  # some people input responses to some of the sub-questions for languages 2, 3, 4 despite not reporting more than 1 language (or putting 0 for the language name and not reporting more information) so I will replace those values with NA
+  # also for people who reported English for all four languages and just repeated their answers, I will just replace the answers for lang2, 3, 4 with NA
+  mutate(`Response` = case_when(
+    `Object Name` == "lang2" & is.na(language2) ~ NA,
+    `Object Name` == "lang2" & language2 == "0" ~ NA,
+    `Object Name` == "lang3" & is.na(language3) ~ NA,
+    `Object Name` == "lang3" & language3 == "0" ~ NA,
+    `Object Name` == "lang4" & is.na(language4) ~ NA,
+    `Object Name` == "lang4" & language4 == "0" ~ NA,
+    .default = `Response`))
+
+ldq_long_part2 <- ldq_long %>%
+  filter(`Page` %in% c("Page 2", "Page 15", "Page 16", "Page 17"))
+```
+
+
+```{r pivot-wider-part-1}
+# part 1
+# pivot to wide
+# add language label columns as necessary, using mutate to copy columns to new positions
+
+ldq_wide_part1 <- ldq_long_part1 %>%
+  pivot_wider(id_cols = c(`ID`, exp_group), names_from = c(`Question Label`, `Question`, `Object Name`), values_from = `Response`) %>%
+  # rename age and gender columns
+  rename(age = "NA_age_age", gender = "NA_gender_gender") %>%
+  # sub ID 181, did not supply actual language names (just put 1), but only reported english so will replace "aoa_lang_lang1" with "English" for this subject
+  mutate(aoa_lang_lang1 = ifelse(ID == "181" & aoa_lang_lang1 == "1", "English", aoa_lang_lang1)) %>%
+  # add columns for languages 1, 2, 3, 4
+  mutate(language1 = aoa_lang_lang1, .after = gender) %>%
+  mutate(language2 = aoa_lang_lang2, .after = language1) %>%
+  mutate(language3 = aoa_lang_lang3, .after = language2) %>%
+  mutate(language4 = aoa_lang_lang4, .after = language3) %>%
+  # create new columns to re-list Languages 1, 2, 3, 4 before sub-questions on Page 6 (aoa_environments), Page 8 (proficiency), Page 9 (hours_activities), Page 10 (hours_people), and Page 12 (friends)
+  # page 6 (aoa_environments)
+  mutate(aoa_environments_lang_lang1 = aoa_lang_lang1, .before = aoa_environments_at_home_lang1) %>%
+  mutate(aoa_environments_lang_lang2 = aoa_lang_lang2, .before = aoa_environments_at_home_lang2) %>%
+  mutate(aoa_environments_lang_lang3 = aoa_lang_lang3, .before = aoa_environments_at_home_lang3) %>%
+  mutate(aoa_environments_lang_lang4 = aoa_lang_lang4, .before = aoa_environments_at_home_lang4) %>%
+  # page 8 (proficiency)
+  mutate(proficiency_lang_lang1 = aoa_lang_lang1, .before = proficiency_L_lang1) %>%
+  mutate(proficiency_lang_lang2 = aoa_lang_lang2, .before = proficiency_L_lang2) %>%
+  mutate(proficiency_lang_lang3 = aoa_lang_lang3, .before = proficiency_L_lang3) %>%
+  mutate(proficiency_lang_lang4 = aoa_lang_lang4, .before = proficiency_L_lang4) %>%
+  # page 9 (hours_activities)
+  mutate(hours_activities_lang_lang1 = aoa_lang_lang1, .before = hours_activities_TV_L_lang1) %>%
+  mutate(hours_activities_lang_lang2 = aoa_lang_lang2, .before = hours_activities_TV_L_lang2) %>%
+  mutate(hours_activities_lang_lang3 = aoa_lang_lang3, .before = hours_activities_TV_L_lang3) %>%
+  mutate(hours_activities_lang_lang4 = aoa_lang_lang4, .before = hours_activities_TV_L_lang4) %>%
+  # page 10 (hours_people)'
+  mutate(hours_people_lang_lang1 = aoa_lang_lang1, .before = hours_people_family_S_lang1) %>%
+  mutate(hours_people_lang_lang2 = aoa_lang_lang2, .before = hours_people_family_S_lang2) %>%
+  mutate(hours_people_lang_lang3 = aoa_lang_lang3, .before = hours_people_family_S_lang3) %>%
+  mutate(hours_people_lang_lang4 = aoa_lang_lang4, .before = hours_people_family_S_lang4) %>%
+  # page 12 (friends)
+  mutate(friends_lang_lang1 = aoa_lang_lang1, .before = friends_percentage_lang1) %>%
+  mutate(friends_lang_lang2 = aoa_lang_lang2, .before = friends_percentage_lang2) %>%
+  mutate(friends_lang_lang3 = aoa_lang_lang3, .before = friends_percentage_lang3) %>%
+  mutate(friends_lang_lang4 = aoa_lang_lang4, .before = friends_percentage_lang4) %>%
+  # some of the language 2, 3, 4 sub questions for pages 6 (aoa_environments), 8 (proficiency), 9 (hours_activities), 10 (hours_people), and 12 (friends) are out of order, so need to relocate them in the proper order
+  relocate(c(aoa_environments_lang_lang2:aoa_environments_online_games_lang2,
+             aoa_environments_lang_lang3:aoa_environments_online_games_lang3,
+             aoa_environments_lang_lang4:aoa_environments_online_games_lang4), 
+           .after = aoa_environments_online_games_lang1) %>%
+  relocate(c(proficiency_lang_lang2:proficiency_W_lang2,
+             proficiency_lang_lang3:proficiency_W_lang3,
+             proficiency_lang_lang4:proficiency_W_lang4), 
+           .after = proficiency_W_lang1) %>%
+  relocate(c(hours_activities_lang_lang2:hours_activities_school_work_W_lang2,
+             hours_activities_lang_lang3:hours_activities_school_work_W_lang3,
+             hours_activities_lang_lang4:hours_activities_school_work_W_lang4), 
+           .after = hours_activities_school_work_W_lang1) %>%
+  relocate(c(hours_people_lang_lang2:hours_people_others_S_lang2,
+             hours_people_lang_lang3:hours_people_others_S_lang3,
+             hours_people_lang_lang4:hours_people_others_S_lang4), 
+           .after = hours_people_others_S_lang1) %>%
+  relocate(c(friends_lang_lang2:friends_percentage_lang2,
+             friends_lang_lang3:friends_percentage_lang3,
+             friends_lang_lang4:friends_percentage_lang4), 
+           .after = friends_percentage_lang1) %>%
+  # move questions 11 and 12 to the end
+  relocate(c(additional_info_comment_question_11:dialects_comment_question_12), .after = last_col())
+```
+
+```{r save-unfiltered-wide-part1-data}
+# save unfiltered 
+write_excel_csv(ldq_wide_part1, file = "clean_data/study3_ldq_wide_part1_all.csv")
+  
+```
+
+```{r pivot-wider-part-2}
+# part 2
+# pivot to wide
+
+
+ldq_wide_part2 <- ldq_long_part2 %>%
+  pivot_wider(id_cols = c(`ID`, exp_group), names_from = c(`Question Label`, `Object Name`), values_from = `Response`) %>%
+  # rename age and gender columns
+  rename(age = "NA_age", gender = "NA_gender") %>%
+  # rearrange columns
+  relocate(context_hours_listening, .before = passive_listening_lang1) %>%
+  relocate(context_hours_games, .before = passive_games_lang1) %>%
+  relocate(context_hours_internet, .before = passive_internet_lang1) %>%
+  relocate(context_hours_home, .before = passive_home_lang1) %>%
+  relocate(context_hours_family, .before = passive_family_lang1) %>%
+  relocate(context_hours_social, .before = passive_social_lang1) %>%
+  relocate(context_hours_work_school, .before = passive_work_school_lang1) %>%
+  relocate(context_hours_out_of_home, .before = passive_out_of_home_lang1) %>%
+  relocate(context_hours_other:context_hours_other_please_specify, .before = passive_other_lang1)
+
+```
+
+
+```{r save-unfiltered-wide-part2-data}
+# save unfiltered 
+write_excel_csv(ldq_wide_part2, file = "clean_data/study3_ldq_wide_part2_all.csv")
+  
+```
+
+
+
+```{r wide-data-cleaning}
+# check structure of dataframe
+# coerce applicable columns to numeric/interger
+ldq_wide_part1 %>%
+  type.convert(as.is = T) %>%
+  str(list.len=ncol(ldq_wide_part1))
+# some problems with hours_activities columns being chr when they should be numeric (int or num)
+# hours_activities_school_work_R_lang2
+# hours_activities_school_work_W_lang2
+# hours_activities_school_work_R_lang3  
+# hours_activities_social_internet_W_lang3
+# hours_activities_school_work_W_lang3  
+
+
+# check structure of dataframe
+# coerce applicable columns to numeric/interger
+ldq_wide_part2 %>%
+  type.convert(as.is = T) %>%
+  str(list.len=ncol(ldq_wide_part2))
+# problems with some columns being chr when they should be numeric (int or num)
+# passive_listening_lang2_hours
+# passive_listening_lang3_hours 
+# passive_listening_lang4_hours 
+# passive_internet_lang1_hours
+# passive_internet_lang2_hours
+# passive_social_lang1_hours 
+# passive_social_lang2_hours
+# passive_out_of_home_lang1_hours
+# passive_out_of_home_lang3_hours
+
+
+# so need to go through these dataframes in depth to see where the problem is
+
+check.part1 <- ldq_wide_part1 %>%
+  select(ID,
+         hours_activities_school_work_R_lang2,
+         hours_activities_school_work_W_lang2,
+         hours_activities_school_work_R_lang3,
+         hours_activities_social_internet_W_lang3,
+         hours_activities_school_work_W_lang3)
+
+check.part2 <- ldq_wide_part2 %>%
+  select(ID,
+         passive_listening_lang2_hours,
+         passive_listening_lang3_hours,
+         passive_listening_lang4_hours,
+         passive_internet_lang1_hours,
+         passive_internet_lang2_hours,
+         passive_social_lang1_hours,
+         passive_social_lang2_hours,
+         passive_out_of_home_lang1_hours,
+         passive_out_of_home_lang3_hours)
+
+# hooray! the problems are very fixable
+# for part 1, some people  put 1-2, 2-3, etc. (participants 6 and 21)
+# since I want to keep in as much data as possible, I will just use the in-between value (1.5, 2.5, etc)
+# for part 2, one person added "mins" or used fractions when listing hours (participant 11), so just need to change those to remove the words/change into numerals, specifically
+# for listening, context hours is 2, lang1 is korean with 1 hour, but the langs2, 3, 4 are english, japanese, and spanish, and they put "20 mins" or "20 min" for all of those, so these are supposed to be 0.33, 0.33, 0.33
+# same with internet, lang2 is english with "30 min", so this should be 0.5
+# same with social, lang2 is japanese with "30 min", so this should be 0.5
+# same with out of home, lang3 is spanish with "30 min", so this should be 0.5
+# 
+# but I don't have to remove any participants
+
+cleaned_part1 <- ldq_wide_part1 %>%
+  mutate(hours_activities_school_work_R_lang2 = ifelse(ID == "6" & hours_activities_school_work_R_lang2 == "2-3", 2.5, hours_activities_school_work_R_lang2),
+         hours_activities_school_work_W_lang2 = ifelse(ID == "6" & hours_activities_school_work_W_lang2 == "3-4", 3.5, hours_activities_school_work_W_lang2),
+         hours_activities_school_work_R_lang3 = ifelse(ID == "6" & hours_activities_school_work_R_lang3 == "1-2", 1.5, hours_activities_school_work_R_lang3),
+         hours_activities_social_internet_W_lang3 = ifelse(ID == "21" & hours_activities_social_internet_W_lang3 == "1-2", 1.5, hours_activities_social_internet_W_lang3),
+         hours_activities_school_work_W_lang3 = ifelse(ID == "6" & hours_activities_school_work_W_lang3 == "1-2", 1.5, hours_activities_school_work_W_lang3)) %>%
+  type.convert(as.is = T) %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender), exp_group = as.factor(exp_group))
+
+str(cleaned_part1, list.len=ncol(cleaned_part1))
+cleaned_part1 %>%
+  select(ID,
+         hours_activities_school_work_R_lang2,
+         hours_activities_school_work_W_lang2,
+         hours_activities_school_work_R_lang3,
+         hours_activities_social_internet_W_lang3,
+         hours_activities_school_work_W_lang3)
+# all good
+
+cleaned_part2 <- ldq_wide_part2 %>%
+  mutate(across(where(is.character), ~str_replace_all(., " 1/2", ".5"))) %>%
+  mutate(across(where(is.character), ~str_replace_all(., "20 mins|20 min", "0.333"))) %>%
+  mutate(across(where(is.character), ~str_replace_all(., "30 mins|30 min", "0.5"))) %>%
+  type.convert(as.is = T) %>%
+  mutate(ID = as.factor(ID), gender = as.factor(gender), exp_group = as.factor(exp_group))
+  
+str(cleaned_part2, list.len=ncol(cleaned_part2))
+cleaned_part2 %>%
+  select(ID,
+         passive_listening_lang2_hours,
+         passive_listening_lang3_hours,
+         passive_listening_lang4_hours,
+         passive_internet_lang1_hours,
+         passive_internet_lang2_hours,
+         passive_social_lang1_hours,
+         passive_social_lang2_hours,
+         passive_out_of_home_lang1_hours,
+         passive_out_of_home_lang3_hours)
+# all good!
+```
+
+
+```{r part2-sanity-check}
+# check to see if any of the context hours listed is less than any of the hours listed per language in that context
+sanity.check <- cleaned_part2 %>%
+  group_by(ID) %>%
+  summarize(
+    watching_discrepency = case_when(
+      context_hours_watching < passive_watching_lang1_hours ~ 1,
+      context_hours_watching < passive_watching_lang2_hours ~ 1,
+      context_hours_watching < passive_watching_lang3_hours ~ 1,
+      context_hours_watching < passive_watching_lang4_hours ~ 1,
+      .default = 0),
+    listening_discrepency = case_when(
+      context_hours_listening < passive_listening_lang1_hours ~ 1,
+      context_hours_listening < passive_listening_lang2_hours ~ 1,
+      context_hours_listening < passive_listening_lang3_hours ~ 1,
+      context_hours_listening < passive_listening_lang4_hours ~ 1,
+      .default = 0),
+    games_discrepency = case_when(
+      context_hours_games < passive_games_lang1_hours ~ 1, 
+      context_hours_games < passive_games_lang2_hours ~ 1, 
+      context_hours_games < passive_games_lang3_hours ~ 1, 
+      context_hours_games < passive_games_lang4_hours ~ 1, 
+      .default = 0),
+    internet_discrepency = case_when(
+      context_hours_internet < passive_internet_lang1_hours ~ 1, 
+      context_hours_internet < passive_internet_lang2_hours ~ 1, 
+      context_hours_internet < passive_internet_lang3_hours ~ 1, 
+      context_hours_internet < passive_internet_lang4_hours ~ 1, 
+      .default = 0),
+    home_discrepency = case_when(
+      context_hours_home < passive_home_lang1_hours ~ 1, 
+      context_hours_home < passive_home_lang2_hours ~ 1, 
+      context_hours_home < passive_home_lang3_hours ~ 1, 
+      context_hours_home < passive_home_lang4_hours ~ 1, 
+      .default = 0),
+    family_discrepency = case_when(
+      context_hours_family < passive_family_lang1_hours ~ 1, 
+      context_hours_family < passive_family_lang2_hours ~ 1, 
+      context_hours_family < passive_family_lang3_hours ~ 1, 
+      context_hours_family < passive_family_lang4_hours ~ 1, 
+      .default = 0),
+    social_discrepency = case_when(
+      context_hours_social < passive_social_lang1_hours ~ 1,
+      context_hours_social < passive_social_lang2_hours ~ 1,
+      context_hours_social < passive_social_lang3_hours ~ 1,
+      context_hours_social < passive_social_lang4_hours ~ 1,
+      .default = 0),
+    work_school_discrepency = case_when(
+      context_hours_work_school < passive_work_school_lang1_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang2_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang3_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang4_hours ~ 1, 
+      .default = 0),
+    out_of_home_discrepency = case_when(
+      context_hours_out_of_home < passive_out_of_home_lang1_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang2_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang3_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang4_hours ~ 1, 
+      .default = 0),
+    other_discrepency = case_when(
+      context_hours_other < passive_other_lang1_hours ~ 1, 
+      context_hours_other < passive_other_lang2_hours ~ 1, 
+      context_hours_other < passive_other_lang3_hours ~ 1, 
+      context_hours_other < passive_other_lang4_hours ~ 1, 
+      .default = 0))
+
+# discrepancies
+# participant 17 - watching, listening, internet, family, social, out-of-home
+# participant 7 - social
+
+# check these participants to see where the problem is
+cleaned_part2 %>% filter(ID %in% c("17", "7")) %>% View()
+# participant 7:
+# for social - clearly a typo (wrote 2 for context hours but listed 4 for English as lang1) as the responses for every other context is consistent, so although I don't know which number is the real one, this won't be a problem since English was the only language listed in this context, which will make the MLD for this context 0 anyways, so I won't change it
+# also participant 5 put -11 for context out of home hours and didn't list any languages, so problem meant to put -1, I'll change that value to be NA
+
+# participant 17:
+# for watching - context hours is 2 but lang2 is japanese with 2 and lang4 is english with 10 - I wonder if context hours was supposed to be 12? that is what I will assume since it adds up like this
+# for listening - context hours is 0 but lang 2 is japanese with 7 and lang4 is 3 - I wonder if context hours is supposed to be 10? this is what I will assume since it adds up like this
+# for internet - context hours is 0, but lang1 is english with 9 and lang2 is japanese with 1 - I wonder if context hours was supposed to be 10? this is what I will assume since it adds up like this
+# for family - context hours family is 1 but lang1 is cantonese with 3 and lang3 is english with 1 - really not sure about this one - maybe I'll just make it 4? this is what I will assume given the previous patterns
+
+# for social - context hours social is 0 but lang1 is english with 1 - all other languages were 0, so I'll just leave this alone since the context MLD would be 0
+# for out of home - same thing as above, context hours is 0 but lang1 is english with 1, but all other languages were 0, so I'll leave this alone since the MLD for this context will be 0
+
+
+# I'll actually just manually look through all the rows and columns from everyone else in cleaned_part 2 to find if there are any more typos or anything
+cleaned_part2 %>% filter(!(ID %in% c("17", "7"))) %>% View()
+
+# Participant 21 put English twice for social (as lang 1 with 1 hour, japanese as lang 2 with 0.7 hours, and english as lang 3 with 0.3 hours), so I'll just combine the lang 1 and lang 3 hours to be 1.3 and remove the lang 3 listing
+
+# participant 20 accidentally put "English 1" for work_school_lang1 and NA for lang1_hours, so I'll fix lang1_hours to be 1
+
+# some participants put one value for context hours but a different value for lang1 hours, but only listed 1 language, and the difference was usually 1-2 hours, so I just let them be since the MLD for that context would be 0 anyways (since they only listed one language)
+
+
+
+
+squeaky_clean_part2 <- cleaned_part2 %>%
+  # participant 7, context_hours_out_of_home = NA
+  mutate(context_hours_out_of_home = ifelse(ID == "7" & context_hours_out_of_home == -11, NA, context_hours_out_of_home),
+         # participant 17, context_hours_watching = 12
+         context_hours_watching = ifelse(ID == "17" & context_hours_watching == 2, 12, context_hours_watching),
+         # participant 17, context_hours_listening = 10
+         context_hours_listening = ifelse(ID == "17" & context_hours_listening == 0, 10, context_hours_listening),
+         # participant 17, context_hours_internet = 10
+         context_hours_internet = ifelse(ID == "17" & context_hours_internet == 0, 10, context_hours_internet),
+         # participant 17, context_hours_family = 4
+         context_hours_family = ifelse(ID == "17" & context_hours_family == 1, 4, context_hours_family),
+         # participant 21, passive_social_lang1_hours = 1.3
+         passive_social_lang1_hours = ifelse(ID == "21" & passive_social_lang1 == passive_social_lang3, 1.3, passive_social_lang1_hours),
+         # participant 21, passive_social_lang3 and passive_social_lang3_hours = NA
+         passive_social_lang3 = ifelse(ID == "21" & passive_social_lang1 == passive_social_lang3, NA, passive_social_lang3),
+         passive_social_lang3_hours = ifelse(ID == "21" & is.na(passive_social_lang3), NA, passive_social_lang3_hours),
+         # participant 20, passive_work_school_lang1 = English and passive_work_school_lang1_hours = 1
+         passive_work_school_lang1 = ifelse(ID == "20" & passive_work_school_lang1 == "English 1", "English", passive_work_school_lang1),
+         passive_work_school_lang1_hours = ifelse(ID == "20" & is.na(passive_work_school_lang1_hours), 1, passive_work_school_lang1_hours))
+
+# check again
+sanity.check2 <- squeaky_clean_part2 %>%
+  group_by(ID) %>%
+  summarize(
+    watching_discrepency = case_when(
+      context_hours_watching < passive_watching_lang1_hours ~ 1,
+      context_hours_watching < passive_watching_lang2_hours ~ 1,
+      context_hours_watching < passive_watching_lang3_hours ~ 1,
+      context_hours_watching < passive_watching_lang4_hours ~ 1,
+      .default = 0),
+    listening_discrepency = case_when(
+      context_hours_listening < passive_listening_lang1_hours ~ 1,
+      context_hours_listening < passive_listening_lang2_hours ~ 1,
+      context_hours_listening < passive_listening_lang3_hours ~ 1,
+      context_hours_listening < passive_listening_lang4_hours ~ 1,
+      .default = 0),
+    games_discrepency = case_when(
+      context_hours_games < passive_games_lang1_hours ~ 1, 
+      context_hours_games < passive_games_lang2_hours ~ 1, 
+      context_hours_games < passive_games_lang3_hours ~ 1, 
+      context_hours_games < passive_games_lang4_hours ~ 1, 
+      .default = 0),
+    internet_discrepency = case_when(
+      context_hours_internet < passive_internet_lang1_hours ~ 1, 
+      context_hours_internet < passive_internet_lang2_hours ~ 1, 
+      context_hours_internet < passive_internet_lang3_hours ~ 1, 
+      context_hours_internet < passive_internet_lang4_hours ~ 1, 
+      .default = 0),
+    home_discrepency = case_when(
+      context_hours_home < passive_home_lang1_hours ~ 1, 
+      context_hours_home < passive_home_lang2_hours ~ 1, 
+      context_hours_home < passive_home_lang3_hours ~ 1, 
+      context_hours_home < passive_home_lang4_hours ~ 1, 
+      .default = 0),
+    family_discrepency = case_when(
+      context_hours_family < passive_family_lang1_hours ~ 1, 
+      context_hours_family < passive_family_lang2_hours ~ 1, 
+      context_hours_family < passive_family_lang3_hours ~ 1, 
+      context_hours_family < passive_family_lang4_hours ~ 1, 
+      .default = 0),
+    social_discrepency = case_when(
+      context_hours_social < passive_social_lang1_hours ~ 1,
+      context_hours_social < passive_social_lang2_hours ~ 1,
+      context_hours_social < passive_social_lang3_hours ~ 1,
+      context_hours_social < passive_social_lang4_hours ~ 1,
+      .default = 0),
+    work_school_discrepency = case_when(
+      context_hours_work_school < passive_work_school_lang1_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang2_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang3_hours ~ 1, 
+      context_hours_work_school < passive_work_school_lang4_hours ~ 1, 
+      .default = 0),
+    out_of_home_discrepency = case_when(
+      context_hours_out_of_home < passive_out_of_home_lang1_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang2_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang3_hours ~ 1, 
+      context_hours_out_of_home < passive_out_of_home_lang4_hours ~ 1, 
+      .default = 0),
+    other_discrepency = case_when(
+      context_hours_other < passive_other_lang1_hours ~ 1, 
+      context_hours_other < passive_other_lang2_hours ~ 1, 
+      context_hours_other < passive_other_lang3_hours ~ 1, 
+      context_hours_other < passive_other_lang4_hours ~ 1, 
+      .default = 0))
+# all good, (some of the discrepancies that are still present I am aware of, but just didn't change the data because the MLD scores for those contexts would be 0 anyway (only one language listed with non-zero hours)), which is social for participants 7 and 17, and out of home for participant 17
+```
+
+
+
+
+```{r save-cleaned-data}
+write_excel_csv(cleaned_part1, file = "clean_data/study3_ldq_wide_part1_cleaned.csv")
+  
+# save updated filtered data
+write_excel_csv(squeaky_clean_part2, file = "clean_data/study3_ldq_wide_part2_cleaned.csv")
+```
+
+
+
+
+
+
+------------------------------------------------------------------------
+
+## Session Info
+
+```{r sessionInfo, results='hide'}
+sessionInfo()
+```
