@@ -88,6 +88,7 @@ save.data.file <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisd
 # run this every time I make a new table/plot that will be used directly in the Rmd file of the chapter
 save(ft.rq.summary,
      ft.st3.proc,
+     ft.participant.levels,
      ft.estimates.grouped,
      ft.vas.fixed,
      ft.vas.random,
@@ -377,15 +378,31 @@ courses <- clean_IDs %>%
   filter(ID %in% MLD_scores$ID) %>%
   select(-privateID) %>%
   mutate(level = case_when(
-    str_detect(course, "171|172|173|174|1010|102") ~ "first year",
-    str_detect(course, "211|203|0004") ~ "second year",
-    str_detect(course, "303|452|3010|372") ~ "third or fourth year"
+    str_detect(course, "171|172|173|174|1010|102") ~ "First year",
+    str_detect(course, "211|203|0004") ~ "Second year",
+    str_detect(course, "303|452|3010|372") ~ "Third or fourth year"
   ),
   level = as.factor(level)) %>%
   select(-course) %>%
-  arrange(exp_group)
+  arrange(exp_group) %>%
+  group_by(exp_group, level) %>%
+  summarize(n = n()) %>%
+  pivot_wider(names_from = exp_group, values_from = n) %>%
+  rename(`Course Level` = "level") %>%
+  group_by(`Course Level`) %>%
+  mutate(Total = sum(Control, `Low LD`, `High LD`)) %>%
+  ungroup() %>%
+  adorn_totals()
 
-tbl_summary(courses, by = "exp_group", include = c(exp_group, level), statistic = list(all_categorical() ~ "{n}"))
+#tbl_summary(courses, by = "exp_group", include = c(exp_group, level), statistic = list(all_categorical() ~ "{n}"))
+
+ft.participant.levels <- courses %>%
+  flextable() %>%
+  bold(j = 5) %>%
+  bold(i = 4) %>%
+  add_footer_lines(values = c(""))
+
+ft.participant.levels
 ```
 
 
