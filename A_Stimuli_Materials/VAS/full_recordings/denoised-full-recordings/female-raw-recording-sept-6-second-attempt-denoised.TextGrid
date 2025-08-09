@@ -1,0 +1,66 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 25.297142857142855 
+tiers? <exists> 
+size = 3 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 25.297142857142855 
+        intervals: size = 9 
+        intervals [1]:
+            xmin = 0 
+            xmax = 6.91567339094441 
+            text = "" 
+        intervals [2]:
+            xmin = 6.91567339094441 
+            xmax = 7.260061623708403 
+            text = "kata-1" 
+        intervals [3]:
+            xmin = 7.260061623708403 
+            xmax = 9.994622227607751 
+            text = "" 
+        intervals [4]:
+            xmin = 9.994622227607751 
+            xmax = 10.337452142576431 
+            text = "kata-2" 
+        intervals [5]:
+            xmin = 10.337452142576431 
+            xmax = 14.256118597116577 
+            text = "" 
+        intervals [6]:
+            xmin = 14.256118597116577 
+            xmax = 14.67608524295321 
+            text = "katta-1" 
+        intervals [7]:
+            xmin = 14.67608524295321 
+            xmax = 17.66666414781312 
+            text = "" 
+        intervals [8]:
+            xmin = 17.66666414781312 
+            xmax = 18.07728088687788 
+            text = "katta-2" 
+        intervals [9]:
+            xmin = 18.07728088687788 
+            xmax = 25.297142857142855 
+            text = "" 
+    item [2]:
+        class = "IntervalTier" 
+        name = "segments" 
+        xmin = 0 
+        xmax = 25.297142857142855 
+        intervals: size = 1 
+        intervals [1]:
+            xmin = 0 
+            xmax = 25.297142857142855 
+            text = "" 
+    item [3]:
+        class = "TextTier" 
+        name = "points" 
+        xmin = 0 
+        xmax = 25.297142857142855 
+        points: size = 0 

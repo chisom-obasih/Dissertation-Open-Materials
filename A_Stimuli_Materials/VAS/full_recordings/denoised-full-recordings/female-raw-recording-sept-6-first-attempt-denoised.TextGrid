@@ -1,0 +1,130 @@
+File type = "ooTextFile"
+Object class = "TextGrid"
+
+xmin = 0 
+xmax = 51.61968253968254 
+tiers? <exists> 
+size = 3 
+item []: 
+    item [1]:
+        class = "IntervalTier" 
+        name = "word" 
+        xmin = 0 
+        xmax = 51.61968253968254 
+        intervals: size = 25 
+        intervals [1]:
+            xmin = 0 
+            xmax = 5.435450203113134 
+            text = " " 
+        intervals [2]:
+            xmin = 5.435450203113134 
+            xmax = 5.911885026315969 
+            text = "kata-1b" 
+        intervals [3]:
+            xmin = 5.911885026315969 
+            xmax = 8.689679384797891 
+            text = "" 
+        intervals [4]:
+            xmin = 8.689679384797891 
+            xmax = 9.09540656639465 
+            text = "kata-2b" 
+        intervals [5]:
+            xmin = 9.09540656639465 
+            xmax = 14.170820620008506 
+            text = "" 
+        intervals [6]:
+            xmin = 14.170820620008506 
+            xmax = 14.793721272252494 
+            text = "katta-1b" 
+        intervals [7]:
+            xmin = 14.793721272252494 
+            xmax = 17.27173340546972 
+            text = "" 
+        intervals [8]:
+            xmin = 17.27173340546972 
+            xmax = 17.872748359121356 
+            text = "katta-2b" 
+        intervals [9]:
+            xmin = 17.872748359121356 
+            xmax = 22.490732930420894 
+            text = "" 
+        intervals [10]:
+            xmin = 22.490732930420894 
+            xmax = 23.197426926256842 
+            text = "indent-1" 
+        intervals [11]:
+            xmin = 23.197426926256842 
+            xmax = 25.443142428547173 
+            text = "" 
+        intervals [12]:
+            xmin = 25.443142428547173 
+            xmax = 26.19561417310124 
+            text = "indent-2" 
+        intervals [13]:
+            xmin = 26.19561417310124 
+            xmax = 28.915441735418607 
+            text = "" 
+        intervals [14]:
+            xmin = 28.915441735418607 
+            xmax = 29.663144964481205 
+            text = "intent-1" 
+        intervals [15]:
+            xmin = 29.663144964481205 
+            xmax = 31.91238788396448 
+            text = "" 
+        intervals [16]:
+            xmin = 31.91238788396448 
+            xmax = 32.72303551751449 
+            text = "intent-2" 
+        intervals [17]:
+            xmin = 32.72303551751449 
+            xmax = 35.49220584530108 
+            text = "" 
+        intervals [18]:
+            xmin = 35.49220584530108 
+            xmax = 36.066982567284754 
+            text = "risen-1" 
+        intervals [19]:
+            xmin = 36.066982567284754 
+            xmax = 38.69577764439109 
+            text = "" 
+        intervals [20]:
+            xmin = 38.69577764439109 
+            xmax = 39.201977075865294 
+            text = "risen-2" 
+        intervals [21]:
+            xmin = 39.201977075865294 
+            xmax = 42.28007318078747 
+            text = "" 
+        intervals [22]:
+            xmin = 42.28007318078747 
+            xmax = 42.94877337804547 
+            text = "reason-1" 
+        intervals [23]:
+            xmin = 42.94877337804547 
+            xmax = 45.10634920634921 
+            text = "" 
+        intervals [24]:
+            xmin = 45.10634920634921 
+            xmax = 45.73971013156551 
+            text = "reason-2" 
+        intervals [25]:
+            xmin = 45.73971013156551 
+            xmax = 51.61968253968254 
+            text = "" 
+    item [2]:
+        class = "IntervalTier" 
+        name = "segments" 
+        xmin = 0 
+        xmax = 51.61968253968254 
+        intervals: size = 1 
+        intervals [1]:
+            xmin = 0 
+            xmax = 51.61968253968254 
+            text = "" 
+    item [3]:
+        class = "TextTier" 
+        name = "points" 
+        xmin = 0 
+        xmax = 51.61968253968254 
+        points: size = 0 
