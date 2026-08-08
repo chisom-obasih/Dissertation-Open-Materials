@@ -1,8 +1,8 @@
 ---
-title: "Study 1 Data Cleaning and Visualization"
+title: "Study 1 Data Cleaning and Exploratory Visualization"
 author: "Chisom Obasih"
 date: "March 2025"
-subtitle: "Cleaning and wrangling raw data of Visual Analog Scale (VAS) task from Study 1 of dissertation, some visualizations"
+subtitle: "Cleaning and wrangling raw data of Visual Analog Scale (VAS) task from Study 1 of dissertation, some exploratory visualizations of processed, but un-analyzed data"
 
 output: 
   pdf_document:
@@ -56,7 +56,7 @@ options(scipen = 999)
 # data.path <- "raw_data"
 
 # Make list of the four spreadsheet conditions of the VAS task
-VAS_files <- list.files(path = "raw_data", pattern = "VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+VAS_files <- list.files(path = "data/raw/VAS", pattern = "VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
 
 # From the single list of data file names, iteratively read each csv files into a single data frame
 vas <- VAS_files %>%
@@ -171,7 +171,7 @@ unfiltered_vas_df <- unfiltered_vas_df %>%
 ```{r save-clean-unfiltered-data-vas}
 
 # save as csv file, saves in same folder as this .Rmd file
-write_excel_csv(unfiltered_vas_df, file = "clean_data/unfiltered_study1_vas_all.csv")
+write_excel_csv(unfiltered_vas_df, file = "data/processed/unfiltered_study1_vas_all.csv")
 ```
 
 ----------------
@@ -192,7 +192,7 @@ ggplot(data = indent_intent_df, aes(x = factor(first_dim_step), y = factor(secon
   labs(title = "2-dimensional VAS responses for indent vs. intent", x = "VOT Step (1 = Indent, 7 = Intent)", y = "F0 Step (1 = Indent, 5 = Intent)", fill = "Average VAS rating") +
   theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
   facet_wrap(vars(ID))
-ggsave(filename = "heatmaps/indent-intent.png", width = 100, height = 80, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/indent-intent.png", width = 100, height = 80, unit = "cm")
 ```
 
 ```{r vas-heatmap-reason-risen}
@@ -209,7 +209,7 @@ ggplot(data = reason_risen_df, aes(x = factor(first_dim_step), y = factor(second
   labs(title = "2-dimensional VAS responses for reason vs. risen", x = "Spectral Step (1 = Reason, 7 = Risen)", y = "Duration Step (1 = Reason, 5 = Risen)", fill = "Average VAS Response") +
   theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
   facet_wrap(vars(ID))
-ggsave(filename = "heatmaps/reason-risen.png", width = 100, height = 80, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/reason-risen.png", width = 100, height = 80, unit = "cm")
 ```
 
 ```{r vas-heatmap-kata-katta}
@@ -226,7 +226,7 @@ ggplot(data = kata_katta_df, aes(x = factor(first_dim_step), y = factor(second_d
   labs(title = "2-dimensional VAS responses for kata vs. katta", x = "Duration Step (1 = kata, 7 = katta)", y = "F0 Contour Step (1 = kata, 5 = katta)", fill = "Average VAS Response") +
   theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
   facet_wrap(vars(ID))
-ggsave(filename = "heatmaps/kata-katta.png", width = 100, height = 80, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/kata-katta.png", width = 100, height = 80, unit = "cm")
 ```
 
 ```{r vas-heatmap-toru-tooru}
@@ -243,7 +243,7 @@ ggplot(data = toru_tooru_df, aes(x = factor(first_dim_step), y = factor(second_d
   labs(title = "2-dimensional VAS responses for toru vs. tooru", x = "Duration Step (1 = toru, 7 = tooru)", y = "F0 Contour Step (1 = toru, 5 = tooru)", fill = "Average VAS Response") +
   theme(legend.direction = "horizontal", legend.position = "bottom", text = element_text(size = 50), legend.key.size = unit(4, "cm")) +
   facet_wrap(vars(ID))
-ggsave(filename = "heatmaps/toru-tooru.png", width = 100, height = 80, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/toru-tooru.png", width = 100, height = 80, unit = "cm")
 ```
 
 
@@ -360,13 +360,13 @@ filtered_matlab_avg <- filtered_matlab %>%
 ```{r save-filtered-data}
 
 # save filtered (with all the columns) as csv file
-export(filtered_vas, "clean_data/filtered_study1_vas.csv", row.names = F, quote = F)
+export(filtered_vas, "data/processed/filtered_study1_vas.csv", row.names = F, quote = F)
 
 # save matlab (with 4 columns) as txt file
-export(filtered_matlab, "clean_data/filtered_study1_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+export(filtered_matlab, "data/processed/filtered_study1_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
 
 # save the averaged version (didn't end up using this version)
-export(filtered_matlab_avg, "clean_data/filtered_study1_vas_avg_matlab.txt", sep = "\t", row.names = F, quote = F)
+export(filtered_matlab_avg, "data/processed/filtered_study1_vas_avg_matlab.txt", sep = "\t", row.names = F, quote = F)
 ```
 ------------------------------------------------------------------------
 ## more visualizations
@@ -386,7 +386,7 @@ ggplot(data = group_heatmap, aes(x = factor(first_dim_step), y = factor(second_d
   theme(legend.direction = "vertical", legend.position = "right", legend.key.size = unit(4, "cm"), text = element_text(size = 40), legend.text = element_text(size = 30))
 
 
-ggsave(filename = "heatmaps/averaged_across_ID_per_lang.png", width = 80, height = 100, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/averaged_across_ID_per_lang.png", width = 80, height = 100, unit = "cm")
 
 
 group_heatmap_pair <- filtered_matlab %>%
@@ -401,7 +401,7 @@ ggplot(data = group_heatmap_pair, aes(x = factor(first_dim_step), y = factor(sec
   theme(legend.direction = "vertical", legend.position = "right", legend.key.size = unit(4, "cm"), text = element_text(size = 40), legend.title.position = "top", legend.text = element_text(size = 30))
 
 
-ggsave(filename = "heatmaps/averaged_across_ID_per_pair.png", width = 120, height = 80, unit = "cm")
+ggsave(filename = "exploratory_visualization/heatmaps/averaged_across_ID_per_pair.png", width = 120, height = 80, unit = "cm")
 ```
 
 
@@ -420,7 +420,7 @@ for (i in 1:20){
     # ID is rows, pair is cols
     ggforce::facet_grid_paginate(ID~pair, ncol = 4, nrow = 5, page = i) +
     geom_histogram()
-    ggsave(filename = paste0("response_histograms/response_histograms_", i, ".png"))
+    ggsave(filename = paste0("exploratory_visualization/response_histograms/response_histograms_", i, ".png"))
   }
 ```
 
@@ -442,7 +442,7 @@ for (i in 1:20){
 #     theme(legend.position = "top") +
 #     guides(color = "none") +
 #     ggforce::facet_grid_paginate(pair~ID:as.factor(second_dim_step), ncol = 5, nrow = 4, page = i)
-#   ggsave(filename = paste0("scatterplots/scatterplot_", unique(visualization$ID)[i], ".png"), width = 10, height = 8, units = "in")
+#   ggsave(filename = paste0("exploratory_visualization/scatterplots/scatterplot_", unique(visualization$ID)[i], ".png"), width = 10, height = 8, units = "in")
 # }
 ```
 
