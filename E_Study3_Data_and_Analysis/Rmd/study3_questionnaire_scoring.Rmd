@@ -54,8 +54,8 @@ options(scipen = 999)
 ```{r read-data message = FALSE}
 
 # read-in clean questionnaire data
-part1 <- import("clean_data/study3_ldq_wide_part1_cleaned.csv")
-part2 <- import("clean_data/study3_ldq_wide_part2_cleaned.csv")
+part1 <- import("data/processed/study3_ldq_wide_part1_cleaned.csv")
+part2 <- import("data/processed/study3_ldq_wide_part2_cleaned.csv")
 
 ```
 
@@ -70,7 +70,7 @@ part2 <- import("clean_data/study3_ldq_wide_part2_cleaned.csv")
 # first .. goes to the parent folder data_cleaning_visualization_analysis
 # second .. goes to the parent folder Study 2
 # third ... goes to the parent folder Dissertation
-source("../../LDQ/LDQscoring.R")
+source("../B_Task_Materials/LDQ/LDQscoring.R")
 ```
 
 

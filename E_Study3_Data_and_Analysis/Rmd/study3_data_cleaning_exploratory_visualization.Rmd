@@ -265,7 +265,7 @@ clean_mcpd_df <- unfiltered_mcpd %>%
 
 ```{r save-unfiltered-clean-data-mcpd}
 # save as csv file, saves in subfolder
-write_excel_csv(clean_mcpd_df, file = "clean_data/unfiltered_study3_mcpd_all.csv")
+write_excel_csv(clean_mcpd_df, file = "data/processed/unfiltered_study3_mcpd_all.csv")
 ```
 
 
@@ -312,7 +312,7 @@ filtered_mcpd <- individual_mad_mcpd %>%
 
 ```{r save-filtered-mcpd}
 # this is only filtered for those with prepost data, but no other trials are filtered out
-write_excel_csv(filtered_mcpd, file = "clean_data/filtered_study3_mcpd.csv")
+write_excel_csv(filtered_mcpd, file = "data/processed/filtered_study3_mcpd.csv")
 ```
 
 
@@ -424,7 +424,7 @@ nrow(clean_vas_df) # 4707
 
 ```{r save-unfiltered-clean-data-vas}
 # save as csv file, saves in subfolder
-write_excel_csv(clean_vas_df, file = "clean_data/unfiltered_study3_vas_all.csv")
+write_excel_csv(clean_vas_df, file = "data/processed/unfiltered_study3_vas_all.csv")
 ```
 
 ## filtering and data cleaning for matlab logistic curve fitting script
@@ -478,10 +478,10 @@ filtered_matlab <- filtered_vas_mad %>%
 ```{r save-filtered-VAS-data}
 
 # save filtered (with all the columns) as csv file
-export(filtered_vas_mad, "clean_data/filtered_study3_vas.csv", row.names = F, quote = F)
+export(filtered_vas_mad, "data/processed/filtered_study3_vas.csv", row.names = F, quote = F)
 
 # save matlab (with less columns) as txt file
-export(filtered_matlab, "clean_data/filtered_study3_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+export(filtered_matlab, "data/processed/filtered_study3_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
 # note: the curvefitting was run on a version of this dataframe where the levels for prepost were "pretraining" and "posttraining" not "Pre" and "Post"
 
 ```
@@ -626,7 +626,7 @@ clean_ax_test_df <- unfiltered_ax_test %>%
 ```{r save-clean-unfiltered-data-ax-test}
 
 # save as csv file, saves in subfolder
-write_excel_csv(clean_ax_test_df, file = "clean_data/unfiltered_study3_AX_testing_all.csv")
+write_excel_csv(clean_ax_test_df, file = "data/processed/unfiltered_study3_AX_testing_all.csv")
 ```
 
 ## filtering AX testing data by reaction time MAD
@@ -675,10 +675,10 @@ filtered_ax_test <- filtered_ax_test_mad %>%
 
 ```{r save-filtered-axtest-data}
 # save filtered (with all the columns) as csv file
-write_excel_csv(filtered_ax_test_mad, "clean_data/filtered_study3_ax_test_full_metadata.csv")
+write_excel_csv(filtered_ax_test_mad, "data/processed/filtered_study3_ax_test_full_metadata.csv")
 
 # save filtered (with less columns) as csv file
-write_excel_csv(filtered_ax_test, "clean_data/filtered_study3_ax_test.csv")
+write_excel_csv(filtered_ax_test, "data/processed/filtered_study3_ax_test.csv")
 
 ```
 
@@ -837,7 +837,7 @@ length(unique(clean_training_df$ID)) # n = 17 participants in training
 ```{r save-clean-unfiltered-data-ax-train}
 
 # save as csv file, saves in subfolder
-write_excel_csv(clean_training_df, file = "clean_data/unfiltered_study3_AX_training_all.csv")
+write_excel_csv(clean_training_df, file = "data/processed/unfiltered_study3_AX_training_all.csv")
 ```
 
 
@@ -896,10 +896,10 @@ length(unique(filtered_training$ID)) # n = 12 participants left in training
 
 ```{r save-filtered-axtrain-data}
 # save filtered (with all the columns) as csv file
-write_excel_csv(filtered_training_mad, "clean_data/filtered_study3_AX_training_full_metadata.csv")
+write_excel_csv(filtered_training_mad, "data/processed/filtered_study3_AX_training_full_metadata.csv")
 
 # save filtered (with less columns) as csv file
-write_excel_csv(filtered_training, "clean_data/filtered_study3_AX_training.csv")
+write_excel_csv(filtered_training, "data/processed/filtered_study3_AX_training.csv")
 
 ```
 

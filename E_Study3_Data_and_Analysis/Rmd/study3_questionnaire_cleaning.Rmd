@@ -411,7 +411,7 @@ ldq_wide_part1 <- ldq_long_part1 %>%
 
 ```{r save-unfiltered-wide-part1-data}
 # save unfiltered 
-write_excel_csv(ldq_wide_part1, file = "clean_data/study3_ldq_wide_part1_all.csv")
+write_excel_csv(ldq_wide_part1, file = "data/processed/study3_ldq_wide_part1_all.csv")
   
 ```
 
@@ -440,7 +440,7 @@ ldq_wide_part2 <- ldq_long_part2 %>%
 
 ```{r save-unfiltered-wide-part2-data}
 # save unfiltered 
-write_excel_csv(ldq_wide_part2, file = "clean_data/study3_ldq_wide_part2_all.csv")
+write_excel_csv(ldq_wide_part2, file = "data/processed/study3_ldq_wide_part2_all.csv")
   
 ```
 
@@ -741,10 +741,10 @@ sanity.check2 <- squeaky_clean_part2 %>%
 
 
 ```{r save-cleaned-data}
-write_excel_csv(cleaned_part1, file = "clean_data/study3_ldq_wide_part1_cleaned.csv")
+write_excel_csv(cleaned_part1, file = "data/processed/study3_ldq_wide_part1_cleaned.csv")
   
 # save updated filtered data
-write_excel_csv(squeaky_clean_part2, file = "clean_data/study3_ldq_wide_part2_cleaned.csv")
+write_excel_csv(squeaky_clean_part2, file = "data/processed/study3_ldq_wide_part2_cleaned.csv")
 ```
 
 
