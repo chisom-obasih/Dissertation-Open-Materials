@@ -155,7 +155,7 @@ save(clean_IDs,
      dprime_prepost_test,
      training_dprime_interim,
      dprime_training,
-     file = "Rdata/study2_filtered_data.Rdata")
+     file = "Rdata/study2_processed_dataframes_filtered_only.Rdata")
 ```
 
 ------------------------------------------------------------------------

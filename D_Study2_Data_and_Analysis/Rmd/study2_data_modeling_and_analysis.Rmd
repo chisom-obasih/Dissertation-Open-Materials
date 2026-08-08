@@ -131,7 +131,7 @@ conflicts_prefer(
 ```{r read-data, message = FALSE}
 
 # set path to the data
-path.to.data <- "clean_data/outcome_data"
+path.to.data <- "data/VAS_curvefit_output"
 
 # logistic estimates, convert ID and day to factor and set factors for language, pair, prepost, and ax_condition
 l_estimates<-import(paste(path.to.data, "study2_vas_mld_l_curvefit.txt", sep = "/")) %>%
@@ -145,15 +145,15 @@ l_estimates<-import(paste(path.to.data, "study2_vas_mld_l_curvefit.txt", sep = "
 
 ```{r load-Rdata}
 # load in cleaned and filtered data
-load("Rdata/study2_filtered_data.Rdata")
+load("Rdata/study2_processed_dataframes_filtered_only.Rdata")
 # this comes with MLD scores
 
 # if session restarts, load the workspace - be careful with this
-# load("Rdata/study2_analysis_workspace.Rdata")
+# load("Rdata/study2_modeling_and_analysis_workspace.Rdata")
 # alternatively use
-# attach("Rdata/study2_analysis_workspace.Rdata")
+# attach("Rdata/study2_modeling_and_analysis_workspace.Rdata")
 # or use a new environment
-# e = local({load("Rdata/study2_analysis_workspace.Rdata"); environment()})
+# e = local({load("Rdata/study2_modeling_and_analysis_workspace.Rdata"); environment()})
 ```
 
 
@@ -177,7 +177,7 @@ save(l_estimates,
      ax.rt,
      trial.rt.model.1, # chosen model, was renamed to lm.ax.rt.model
      trial.rt.model.2,
-     file = "Rdata/study2_analysis_workspace.Rdata")
+     file = "Rdata/study2_modeling_and_analysis_workspace.Rdata")
 
 
 ```
@@ -203,7 +203,7 @@ save(# loaded in
      tmb.ax.dprime.model, # updated name of tmb.trial.model.2,
      ax.rt,
      lm.ax.rt.model, # updated name of trial.rt.model.1
-     file = "Rdata/study2_post_analysis_visualization_workspace.Rdata")
+     file = "Rdata/study2_dataframes_modeling_analysis_results.Rdata")
 ```
 
 

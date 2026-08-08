@@ -84,7 +84,7 @@ save(ldq,
      part2_interim,
      filtered_part2,
      filtered_part1,
-  file = "Rdata/study2_ldq_cleaning.Rdata"
+  file = "Rdata/study2_ldq_cleaning_workspace.Rdata"
 )
 ```
 

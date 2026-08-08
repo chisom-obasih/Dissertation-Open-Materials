@@ -1,8 +1,8 @@
 ---
-title: "Study 2 Post-Analysis Visualizations"
+title: "Study 2 Quantitative Results and Visualization"
 author: "Chisom Obasih"
 date: "June 2025"
-subtitle: "Visualizations and tables after runnning logistic curvefitter and Bayesian and generalized linear mixed-effects models"
+subtitle: "Tables, figures, and graphs after running logistic curvefitter and Bayesian and generalized linear mixed-effects models"
 output: 
   pdf_document:
     latex_engine: xelatex
@@ -70,7 +70,7 @@ library(cowplot)
 ```{r read-data, message = FALSE}
 
 # load in Rdata that contains most if not all the dataframes for post-analysis data, should be in the current wd
-load(file = "Rdata/study2_post_analysis_visualization_workspace.Rdata")
+load(file = "Rdata/study2_dataframes_modeling_analysis_results.Rdata")
 
 # load in models
 brm.vas.fit <- readRDS("Rdata/brm-vas-fit-1.Rds")
@@ -186,14 +186,14 @@ save(bright_seven,
      rt.slope,
      rt.var,
      rt.plot,
-     file = "Rdata/st2-post-analysis-active-working-space.Rdata")
+     file = "Rdata/study2_quantitative_results_visualization_workspace.Rdata")
 ```
 
 ```{r reload-rdata}
 
 # if session restarts, load in the data made here - be careful with this
 load(file = save.data.file)
-load(file = "Rdata/st2-post-analysis-active-working-space.Rdata")
+load(file = "Rdata/study2_quantitative_results_visualization_workspace.Rdata")
 ```
 
 
