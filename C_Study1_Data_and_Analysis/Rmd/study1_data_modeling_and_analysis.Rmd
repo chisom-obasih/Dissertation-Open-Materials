@@ -67,10 +67,11 @@ library(flextable)
 
 ```{r read-data, message = FALSE}
 # set path to the data
-path.to.data <- "data/analyzed_results"
+path.to.curvefit.data <-"data/VAS_curvefit_output"
+path.to.mld.data <- "data/analyzed_results"
 
 # rotated logistic estimates, convert ID to factor, and add language column, and set factors for language and pair
-rl_estimates<-import(paste(path.to.data, "study1_vas_rl_curvefit.txt", sep = "/")) %>%
+rl_estimates<-import(paste(path.to.curvefit.data, "study1_vas_rl_curvefit.txt", sep = "/")) %>%
   mutate(ID = as.factor(ID)) %>%
   mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", ifelse(pair == "toru-tooru" | pair == "kata-katta", "Japanese", "")), .after = "pair") %>%
   mutate(language = factor(language, levels = c("English", "Japanese"))) %>%
@@ -78,11 +79,11 @@ rl_estimates<-import(paste(path.to.data, "study1_vas_rl_curvefit.txt", sep = "/"
 
 # read in MLD scores from questionnaire scoring output
 # convert ID and gender to factors
-MLD_A <- import(paste(path.to.data, "study1_mld-a_scores.csv", sep = "/")) %>%
+MLD_A <- import(paste(path.to.mld.data, "study1_mld-a_scores.csv", sep = "/")) %>%
   mutate(ID = as.factor(ID), gender = as.factor(gender))
-MLD_P <- import(paste(path.to.data, "study1_mld-p_scores.csv", sep = "/")) %>%
+MLD_P <- import(paste(path.to.mld.data, "study1_mld-p_scores.csv", sep = "/")) %>%
   mutate(ID = as.factor(ID), gender = as.factor(gender))
-MLD_scores <- import(paste(path.to.data, "study1_mld_scores.csv", sep = "/")) %>%
+MLD_scores <- import(paste(path.to.mld.data, "study1_mld_scores.csv", sep = "/")) %>%
   mutate(ID = as.factor(ID), gender = as.factor(gender))
 
 
