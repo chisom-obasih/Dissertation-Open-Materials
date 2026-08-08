@@ -92,7 +92,7 @@ AX_training_df <- AX_training_files %>%
 load("Rdata/clean_IDs.Rdata")
 
 # this is for filtering cleaned dataframes for subsequent analysis for only those with a calculated MLD scores (excluded are those who did not return for Day 2, and those who did not give usable data in the LDQ)
-MLD_scores <- import(file = "clean_data/outcome_data/study2_mld_scores.csv") %>%
+MLD_scores <- import(file = "data/analyzed_results/study2_mld_scores.csv") %>%
   mutate(ID = as.factor(ID))
 
 # for when I'm coming back to the session, load the data frames that have been collected here so I don't have to keep re-running everything

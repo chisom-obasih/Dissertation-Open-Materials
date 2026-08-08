@@ -96,7 +96,7 @@ ggplot(scores, aes(x = MLD_A, y = MLD_P)) +
 
 ```{r save-data}
 # set path save the data
-path.to.data <- "clean_data/outcome_data"
+path.to.data <- "data/analyzed_results"
 
 export(mld.a, file = paste(path.to.data, "study2_mld-a_scores.csv", sep = "/"))
 export(mld.p, file = paste(path.to.data, "study2_mld-p_scores.csv", sep = "/"))
