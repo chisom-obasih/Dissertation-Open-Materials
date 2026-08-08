@@ -53,11 +53,11 @@ options(scipen = 999)
 
 ```{r read-data message = FALSE}
 # set path to the data
-# path.to.data <- "clean_data"
+# path.to.data <- "data/processed"
 
 # read-in clean questionnaire data
-part1 <- import("clean_data/study1_ldq_wide_part1_filtered.csv")
-part2 <- import("clean_data/study1_ldq_wide_part2_filtered.csv")
+part1 <- import("data/processed/study1_ldq_wide_part1_filtered.csv")
+part2 <- import("data/processed/study1_ldq_wide_part2_filtered.csv")
 
 getwd()
 ```
@@ -577,9 +577,9 @@ ggplot(scores, aes(x = MLD_A, y = MLD_P)) +
 
 ```{r save-data}
 
-export(mld.a, file = "clean_data/outcome_data/study1_mld-a_scores.csv")
-export(mld.p, file = "clean_data/outcome_data/study1_mld-p_scores.csv")
-export(scores, file = "clean_data/outcome_data/study1_mld_scores.csv")
+export(mld.a, file = "data/analyzed_results/study1_mld-a_scores.csv")
+export(mld.p, file = "data/analyzed_results/study1_mld-p_scores.csv")
+export(scores, file = "data/analyzed_results/study1_mld_scores.csv")
 ```
 
 ------------------------------------------------------------------------
