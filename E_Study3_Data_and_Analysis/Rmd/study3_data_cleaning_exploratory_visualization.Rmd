@@ -923,7 +923,7 @@ ggplot(filter(visualization_vas, exp_group == "Control"), aes(x = as.factor(firs
   coord_cartesian(y = c(0, 1)) +
     theme(legend.position = "top") +
   ggforce::facet_grid_paginate(pair ~ exp_group:ID, nrow = 4, ncol = 6, page = 1) -> vas.control
-cowplot::save_plot(vas.control, filename = "prepost-vas/prepost-vas-control.png", nrow = 2, ncol = 3, base_asp = 1.2)
+cowplot::save_plot(vas.control, filename = "exploratory_visualization/prepost-vas/prepost-vas-control.png", nrow = 2, ncol = 3, base_asp = 1.2)
 
 # Low LD group
 ggplot(filter(visualization_vas, exp_group == "Low LD"), aes(x = as.factor(first_dim_step), y = (norm_response/100))) +
@@ -933,7 +933,7 @@ ggplot(filter(visualization_vas, exp_group == "Low LD"), aes(x = as.factor(first
   coord_cartesian(y = c(0, 1)) +
     theme(legend.position = "top") +
   ggforce::facet_grid_paginate(pair ~ exp_group:ID, nrow = 4, ncol = 5, page = 1) -> vas.lowld
-cowplot::save_plot(vas.lowld, filename = "prepost-vas/prepost-vas-lowld.png", nrow = 2, ncol = 2.5, base_asp = 1.2)
+cowplot::save_plot(vas.lowld, filename = "exploratory_visualization/prepost-vas/prepost-vas-lowld.png", nrow = 2, ncol = 2.5, base_asp = 1.2)
 
 # High LD group
 ggplot(filter(visualization_vas, exp_group == "High LD"), aes(x = as.factor(first_dim_step), y = (norm_response/100))) +
@@ -944,7 +944,7 @@ ggplot(filter(visualization_vas, exp_group == "High LD"), aes(x = as.factor(firs
     theme(legend.position = "top") +
   ggforce::facet_grid_paginate(pair ~ exp_group:ID, nrow = 4, ncol = 7, page = 1) -> vas.highld
 
-cowplot::save_plot(vas.highld, filename = "prepost-vas/prepost-vas-highld.png", nrow = 2, ncol = 3.5, base_asp = 1.2)
+cowplot::save_plot(vas.highld, filename = "exploratory_visualization/prepost-vas/prepost-vas-highld.png", nrow = 2, ncol = 3.5, base_asp = 1.2)
 
 ```
 
