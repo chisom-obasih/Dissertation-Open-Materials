@@ -54,19 +54,17 @@ options(scipen = 999)
 ```{r read-data message = FALSE}
 
 # read-in clean questionnaire data
-part1 <- import("clean_data/study2_ldq_wide_part1_filtered.csv")
-part2 <- import("clean_data/study2_ldq_wide_part2_filtered.csv")
+part1 <- import("data/processed/study2_ldq_wide_part1_filtered.csv")
+part2 <- import("data/processed/study2_ldq_wide_part2_filtered.csv")
 
 ```
 
 
 ```{r source-scoring-functions}
-# source the scoring functions from the LDQscoring.R file
-# this goes up three parent folders from the location of this Rmd file (in the subfolder named Rmd)
-# first .. goes to the parent folder data_cleaning_visualization_analysis
-# second .. goes to the parent folder Study 2
-# third ... goes to the parent folder Dissertation
-source("../../LDQ/LDQscoring.R")
+# source the scoring functions from the LDQscoring.R file, which is in the LDQ subfolder of the B_Task_Materials subdirectory
+# this goes up one parent folder from the location of the R project (Study2_Data_and_Analysis)
+#  .. goes to the highest level of the Dissertation-Open-Materials repository
+source("../B_Task_Materials/LDQ/LDQscoring.R")
 ```
 
 

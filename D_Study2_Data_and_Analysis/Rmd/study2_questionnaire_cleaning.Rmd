@@ -51,7 +51,7 @@ options(scipen = 999)
 
 ```{r read-data, message = FALSE}
 
-ldq_files <- list.files(path = "raw_data/questionnaires", pattern = "LDQ", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+ldq_files <- list.files(path = "data/raw/questionnaires", pattern = "LDQ", all.files = FALSE, full.names = TRUE, recursive = FALSE)
 
 # the column `Store: Other-specification` was causing problems in LDQ_long_group2, because some people put 0 but one person actually wrote something, so it was getting confused when trying to parse it as a double, so force that column to be parsed as a string, and use read_csv instead of rio
 # also this gives a warning of parsing problems but it's just complaining about the END OF FILE row at the end of the two files
@@ -73,19 +73,19 @@ ldq %>%
 
 
 ```{r save-Rdata}
-# if I run this again, I should definitely save all these objects that I made, but I haven't yet as of May 31
-# save(ldq,
-#      ldq_long,
-#      ldq_long_part1,
-#      ldq_long_part2,
-#      ldq_wide_part1,
-#      ldq_wide_part2,
-#      context,
-#      interim_part2,
-#      filtered_part2,
-#      filtered_part1,
-#   file = "Rdata/study2_ldq_cleaning.Rdata"
-# )
+# save objects made during this file to reload if session closes
+save(ldq,
+     ldq_long,
+     ldq_long_part1,
+     ldq_long_part2,
+     ldq_wide_part1,
+     ldq_wide_part2,
+     context,
+     part2_interim,
+     filtered_part2,
+     filtered_part1,
+  file = "Rdata/study2_ldq_cleaning.Rdata"
+)
 ```
 
 ----------------------------------------------
@@ -402,7 +402,7 @@ ldq_wide_part1 <- ldq_long_part1 %>%
 
 ```{r save-unfiltered-wide-part1-data}
 # save unfiltered 
-write_excel_csv(ldq_wide_part1, file = "clean_data/study2_ldq_wide_part1_all.csv")
+write_excel_csv(ldq_wide_part1, file = "data/processed/study2_ldq_wide_part1_all.csv")
   
 ```
 
@@ -431,7 +431,7 @@ ldq_wide_part2 <- ldq_long_part2 %>%
 
 ```{r save-unfiltered-wide-part2-data}
 # save unfiltered 
-write_excel_csv(ldq_wide_part2, file = "clean_data/study2_ldq_wide_part2_all.csv")
+write_excel_csv(ldq_wide_part2, file = "data/processed/study2_ldq_wide_part2_all.csv")
   
 ```
 
@@ -624,10 +624,10 @@ str(filtered_part1)
 
 
 ```{r save-filtered-data}
-write_excel_csv(filtered_part1, file = "clean_data/study2_ldq_wide_part1_filtered.csv")
+write_excel_csv(filtered_part1, file = "data/processed/study2_ldq_wide_part1_filtered.csv")
   
 # save updated filtered data
-write_excel_csv(filtered_part2, file = "clean_data/study2_ldq_wide_part2_filtered.csv")
+write_excel_csv(filtered_part2, file = "data/processed/study2_ldq_wide_part2_filtered.csv")
 ```
 
 

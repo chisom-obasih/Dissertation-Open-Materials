@@ -299,7 +299,7 @@ df_vas_clean <- df %>%
 
 ```{r save-unfiltered-clean-data-vas}
 # save as csv file, saves in subfolder
-write_excel_csv(df_vas_clean, file = "clean_data/unfiltered_study2_vas_all.csv")
+write_excel_csv(df_vas_clean, file = "data/processed/unfiltered_study2_vas_all.csv")
 ```
 
 ## filtering and data cleaning for matlab logistic curve fitting script
@@ -396,17 +396,17 @@ length(unique(mld_filtered_matlab$ID)) # 80
 ```{r save-filtered-VAS-data}
 
 # save filtered (with all the columns) as csv file
-export(filtered_vas, "clean_data/filtered_study2_vas.csv", row.names = F, quote = F)
+export(filtered_vas, "data/processed/filtered_study2_vas.csv", row.names = F, quote = F)
 
 # save MLD-filtered (with all the columns) as csv file
-export(mld_filtered_vas, "clean_data/filtered_mld_study2_vas.csv", row.names = F, quote = F)
+export(mld_filtered_vas, "data/processed/filtered_mld_study2_vas.csv", row.names = F, quote = F)
 
 
 # save matlab (with less columns) as txt file
-export(filtered_matlab, "clean_data/filtered_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+export(filtered_matlab, "data/processed/filtered_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
 
 # save the MLD-filtered matlab as txt file
-export(mld_filtered_matlab, "clean_data/filtered_mld_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
+export(mld_filtered_matlab, "data/processed/filtered_mld_study2_vas_matlab.txt", sep = "\t", row.names = F, quote = F)
 
 ```
 
@@ -584,7 +584,7 @@ sum(as.numeric(is.na(testing$speaker_signal))) # sum is 0, so everything is good
 ```{r save-clean-unfiltered-data-ax-test}
 
 # save as csv file, saves in subfolder
-write_excel_csv(testing, file = "clean_data/unfiltered_study2_AX_testing_all.csv")
+write_excel_csv(testing, file = "data/processed/unfiltered_study2_AX_testing_all.csv")
 ```
 
 ## filtering AX testing data by reaction time MAD
@@ -638,10 +638,10 @@ filtered_test <- filtered_test_mad %>%
 # both are filtered only for those who came back for day 2
 
 # save filtered (with all the columns) as csv file
-write_excel_csv(filtered_test_mad, "clean_data/filtered_mld_study2_ax_test_all_metadata.csv")
+write_excel_csv(filtered_test_mad, "data/processed/filtered_mld_study2_ax_test_all_metadata.csv")
 
 # save filtered (with less columns) as csv file
-write_excel_csv(filtered_test, "clean_data/filtered_mld_study2_ax_test.csv")
+write_excel_csv(filtered_test, "data/processed/filtered_mld_study2_ax_test.csv")
 ```
 
 
@@ -780,7 +780,7 @@ nrow(training) # 29706 - 3 less from the exact duplicate trials in 143, 176, and
 ```{r save-clean-unfiltered-data-ax-train}
 
 # save as csv file, saves in subfolder
-write_excel_csv(training, file = "clean_data/unfiltered_study2_AX_training_all.csv")
+write_excel_csv(training, file = "data/processed/unfiltered_study2_AX_training_all.csv")
 ```
 
 
@@ -841,10 +841,10 @@ filtered_train <- filtered_train_mad %>%
 
 ```{r save-filtered-axtrain-data}
 # save filtered (with all the columns) as csv file
-write_excel_csv(filtered_train_mad, "clean_data/filtered_mld_study2_ax_train_all_metadata.csv")
+write_excel_csv(filtered_train_mad, "data/processed/filtered_mld_study2_ax_train_all_metadata.csv")
 
 # save filtered (with less columns) as csv file
-write_excel_csv(filtered_train, "clean_data/filtered_mld_study2_ax_train.csv")
+write_excel_csv(filtered_train, "data/processed/filtered_mld_study2_ax_train.csv")
 
 ```
 
@@ -925,10 +925,10 @@ hist(dprime_prepost_test$criterion) # kinda fat tailed
 ```
 
 ```{r save-prepost-dprime-data}
-write_excel_csv(test_dprime_interim, file = "clean_data/AX_prepost_test_bytrial_dprime_labels.csv")
+write_excel_csv(test_dprime_interim, file = "data/processed/AX_prepost_test_bytrial_dprime_labels.csv")
 
 
-write_excel_csv(dprime_prepost_test, file = "clean_data/AX_prepost_test_dprime_scores.csv")
+write_excel_csv(dprime_prepost_test, file = "data/processed/AX_prepost_test_dprime_scores.csv")
 
 ```
 
