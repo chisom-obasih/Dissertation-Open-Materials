@@ -1,8 +1,8 @@
 ---
-title: "Study 1 Post-Analysis Visualizations"
+title: "Study 1 Quantitative Results and Visualization"
 author: "Chisom Obasih"
 date: "May 2025"
-subtitle: "Visualizations and tables after runnning rotated logistic curvefitter and Bayesian mixed-effects models"
+subtitle: "Tables, figures, and graphs after running rotated logistic curvefitter and Bayesian mixed-effects models "
 
 output: 
   pdf_document:
@@ -83,7 +83,7 @@ save.tables.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesi
 save.data.file <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/data/study1_data.Rdata"
 
 # load in Rdata that contains most if not all the dataframes for post-analysis data, should be in the current wd
-load(file = "Rdata/study1_post_analysis_visualization_workspace.Rdata")
+load(file = "Rdata/study1_dataframes_analyzed_results.Rdata")
 ```
 
 ```{r save-data-to-use-in-manuscript}
@@ -220,13 +220,13 @@ save(lang_colors,
      df4,
      int.neg.plot,
      slopevartheta.patch,
-      file = "Rdata/st1-post-analysis-active-working-space.Rdata")
+      file = "Rdata/study1_quantitative_results_visualization_workspace.Rdata")
 ```
 
 ```{r reload-rdata}
 # if session restarts, load in the data made here - be careful with this
 load(file = save.data.file)
-load(file = "Rdata/st1-post-analysis-active-working-space.Rdata")
+load(file = "Rdata/study1_quantitative_results_visualization_workspace.Rdata")
 ```
 
 
