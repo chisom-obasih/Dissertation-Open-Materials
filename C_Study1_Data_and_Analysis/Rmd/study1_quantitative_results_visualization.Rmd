@@ -305,7 +305,7 @@ MLD_scores %>%
 
 
 ```{r vas-continua-characteristics}
-continua.table.2d <- import("../../VAS/continua-table-2d.xlsx")
+continua.table.2d <- import("../B_Task_Materials/VAS/planning/continua-table-2d.xlsx")
 
 new_line_continua_header <- c(
   "indent-intent /d/-/t/"	= "indent-intent\\\n/d/-/t/",
@@ -384,7 +384,7 @@ ft.ldq
 ```{r data-n-76}
 # this is only for n = 76, so take the filtered_matlab csv file and filter it to reflect only those who were used in analysis
 
-matlab_input_trials_76 <- import("clean_data/filtered_study1_vas_matlab.txt") %>%
+matlab_input_trials_76 <- import("data/processed/filtered_study1_vas_matlab.txt") %>%
   mutate(across(where(is.character), factor)) %>%
   # add language
   mutate(language = ifelse(pair == "indent-intent" | pair == "reason-risen", "English", "Japanese")) %>%
@@ -575,7 +575,7 @@ done
 #   mutate(mean_response = mean(norm_response))
 
 # or load mean predicted response per first and second dim step, predicted by curvefitter and filter out those without MLD scores
-matlab_rl_curvefit_preds <- import("clean_data/outcome_data/study1_vas_rl_curvefit.data.txt") %>%
+matlab_rl_curvefit_preds <- import("data/VAS_curvefit_output/study1_vas_rl_curvefit.data.txt") %>%
   mutate(ID = as.factor(ID), first_dim_step = as.factor(first_dim_step), second_dim_step = as.factor(second_dim_step), pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru"))) %>%
   filter(ID %in% MLD_scores$ID) %>%
   mutate(language = case_when(
@@ -1668,7 +1668,7 @@ Maybe for supplementary material
 
 ```{r visualize-thetas-on-heatmaps}
 # load the data used for the heatmaps
-matlab_input100 <- import("clean_data/filtered_study1_vas_matlab.txt") %>%
+matlab_input100 <- import("data/processed/filtered_study1_vas_matlab.txt") %>%
   mutate(ID = as.factor(ID), as.factor(pair)) %>%
   group_by(ID, pair, first_dim_step, second_dim_step) %>%
   summarize(norm_response = mean(norm_response))

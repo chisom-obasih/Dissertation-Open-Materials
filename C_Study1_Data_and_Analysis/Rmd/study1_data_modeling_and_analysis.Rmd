@@ -638,15 +638,16 @@ Based on running regular logistic models on two-dimensional VAS data (second-dim
 
 ```{r filter-collapse-visualize-data, eval=FALSE}
 # read in data tables from MATLAB logistic curve-fitting output
-logm_estimates <- import(paste(path.to.data, "study1_vas_logisticfit.txt", sep = "/")) %>%
-  # change the ID column to be character to remove "1287" from all ID (making the ID shorter and more manageable)
-  mutate(ID = str_remove(as.character(ID), "1287")) %>%
-  # convert ID to factor
-  mutate(ID = as.factor(ID))
-
-logm_pred <- import(paste(path.to.data, "study1_vas_logisticfit.data.txt", sep = "/")) %>%
-  mutate(ID = str_remove(as.character(ID), "1287")) %>%
-  mutate(ID = as.factor(ID))
+# note: file paths are broken and the data this is referencing is obsolete
+# logm_estimates <- import(paste(path.to.data, "study1_vas_logisticfit.txt", sep = "/")) %>%
+#   # change the ID column to be character to remove "1287" from all ID (making the ID shorter and more manageable)
+#   mutate(ID = str_remove(as.character(ID), "1287")) %>%
+#   # convert ID to factor
+#   mutate(ID = as.factor(ID))
+# 
+# logm_pred <- import(paste(path.to.data, "study1_vas_logisticfit.data.txt", sep = "/")) %>%
+#   mutate(ID = str_remove(as.character(ID), "1287")) %>%
+#   mutate(ID = as.factor(ID))
 
 
 # filter out negative slopes, which is 114 data points
