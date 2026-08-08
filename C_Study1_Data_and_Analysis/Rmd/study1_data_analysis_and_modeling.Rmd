@@ -67,7 +67,7 @@ library(flextable)
 
 ```{r read-data, message = FALSE}
 # set path to the data
-path.to.data <- "clean_data/outcome_data"
+path.to.data <- "data/analyzed_results"
 
 # rotated logistic estimates, convert ID to factor, and add language column, and set factors for language and pair
 rl_estimates<-import(paste(path.to.data, "study1_vas_rl_curvefit.txt", sep = "/")) %>%
@@ -584,7 +584,7 @@ save(list = c("aggregate", # dataframe used in multivariate model (n = 304)
           "rl_estimates", # original dataframe of rotated logistic estimates
           "compare" # loo compare of different models
           ), # dataframe loaded in with original rotated logistic curvefitting output
-          file = "Rdata/study1_analysis_workspace.Rdata")
+          file = "Rdata/study1_analysis_and_modeling_workspace.Rdata")
 ```
 
 ```{r save-data-for-visualization-objects}
