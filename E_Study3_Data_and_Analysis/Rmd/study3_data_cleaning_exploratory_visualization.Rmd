@@ -1,8 +1,8 @@
 ---
-title: "Study 3 Data Cleaning and Visualization"
+title: "Study 3 Data Cleaning and Exploratory Visualization"
 author: "Chisom Obasih"
 date: "June 2025"
-subtitle: "Cleaning and wrangling raw data of pre/post-training Visual Analog Scale (VAS) task, discrimination pre/post-tests, discrimination training, and linguistic diversity questionnaire, from Study 3 of dissertation, some visualizations"
+subtitle: "Cleaning and wrangling raw data of pre/post-training Visual Analog Scale (VAS) task, discrimination pre/post-tests, discrimination training, and linguistic diversity questionnaire, from Study 3 of dissertation, with some exploratory visualizations"
 output: 
   pdf_document:
     latex_engine: xelatex
@@ -57,10 +57,10 @@ library(brms)
 # This is useful for if you need to combine data from different folders (e.g., combining conditions or versions of Gorilla experiments)
 
 # Make list of data files from the data folders of three separate conditions, list only csv files
-VAS_files <- list.files(path = "raw_data/VAS", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
-AX_test_files <- list.files(path = "raw_data/AX_test", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
-AX_training_files <- list.files(path = "raw_data/AX_training", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
-MCPD_files <- list.files(path = "raw_data/MCPD", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+VAS_files <- list.files(path = "data/raw/VAS", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_test_files <- list.files(path = "data/raw/AX_test", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_training_files <- list.files(path = "data/raw/AX_training", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+MCPD_files <- list.files(path = "data/raw/MCPD", pattern = "*.csv", all.files = FALSE, full.names = TRUE, recursive = FALSE)
 
 
 

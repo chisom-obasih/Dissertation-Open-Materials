@@ -51,7 +51,7 @@ options(scipen = 999)
 
 ```{r read-data, message = FALSE}
 
-ldq_files <- list.files(path = "raw_data/questionnaires", pattern = "ldq", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+ldq_files <- list.files(path = "data/raw/questionnaires", pattern = "ldq", all.files = FALSE, full.names = TRUE, recursive = FALSE)
 
 
 # import was complaining about something, so switched to read_csv
