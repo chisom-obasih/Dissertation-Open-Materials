@@ -131,10 +131,10 @@ conflicts_prefer(
 # folder.path <- getwd()
 
 # set path to the data
-path.to.data <- "clean_data/outcome_data"
+path.to.vas.data <- "data/VAS_curvefit_output"
 
 # logistic estimates, convert ID to factor and set factor levels for pair and prepost
-l_estimates <-import(paste(path.to.data, "study3_vas_l_curvefit.txt", sep = "/")) %>%
+l_estimates <-import(paste(path.to.vas.data, "study3_vas_l_curvefit.txt", sep = "/")) %>%
   mutate(ID = as.factor(ID),
          pair = factor(pair, levels = c("indent-intent", "reason-risen", "kata-katta", "toru-tooru")),
          prepost = factor(prepost, levels = c("pretraining", "posttraining"))) %>%
