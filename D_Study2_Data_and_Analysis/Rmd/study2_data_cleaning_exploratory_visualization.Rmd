@@ -874,7 +874,7 @@ ggplot(visualization_vas, aes(x = as.factor(first_dim_step), y = norm_response))
 #     labs(color = "Pre/Post", y = "Response/100", x = "First Dimension Step") +
 #     theme(legend.position = "top") +
 #     ggforce::facet_grid_paginate(pair~ID, ncol = 5, nrow = 4, page = i)
-#   ggsave(filename = paste0("prepost-vas/prepost_vas", i, ".png"))
+#   ggsave(filename = paste0("exploratory_visualization/prepost-vas/prepost_vas", i, ".png"))
 # }
 
 ggplot(visualization_vas, aes(x = as.factor(first_dim_step), y = norm_response)) +
@@ -983,7 +983,7 @@ ggplot(dprime_prepost_test, aes(x = prepost, y = dprime)) +
   stat_summary(aes(group = 1), geom = "line", fun = "mean", color = "red") +
   facet_wrap(vars(condition)) +
   labs(title = "Discrimination Sensitivity (D-prime) From Pre- to Post-Test \nby Condition Group")
-# ggsave(filename = "discrimination/prepost_dprime.png")
+# ggsave(filename = "exploratory_visualization/discrimination/prepost_dprime.png")
 
 ggplot(dprime_prepost_test, aes(y = dprime, x = criterion)) +
   geom_point()
@@ -1008,7 +1008,7 @@ ggplot(visualization_test_rt, aes(x = prepost, y = mean_log_rt)) +
   stat_summary(aes(group = 1), geom = "line", fun = "mean", color = "red") +
   facet_wrap(vars(condition)) +
   labs(title = "Discrimination Reaction Time From Pre- to Post-Test \nby Condition Group", y = "log of reaction time")
-#ggsave(filename = "discrimination_prepost_rt.png")
+#ggsave(filename = "exploratory_visualization/discrimination/prepost_rt.png")
 ```
 
 
