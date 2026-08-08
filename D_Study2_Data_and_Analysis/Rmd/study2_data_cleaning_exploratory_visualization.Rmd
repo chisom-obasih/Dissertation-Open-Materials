@@ -1,5 +1,5 @@
 ---
-title: "Study 2 Data Cleaning and Visualization"
+title: "Study 2 Data Cleaning and Exploratory Visualization"
 author: "Chisom Obasih"
 date: "April 2025"
 subtitle: "Cleaning and wrangling raw data of pre/post-training Visual Analog Scale (VAS) task, discrimination pre/post-tests, discrimination training, and linguistic diversity questionnaire, from Study 2 of dissertation, some visualizations - data cleaning was updated in July 2025 to better match the data cleaning process for Study 3"
@@ -56,14 +56,14 @@ library(brms)
 
 ```{r read-data}
 
-data.path <- "raw_data"
+# data.path <- "data/raw"
 
 # This is useful for if you need to combine data from different folders (e.g., combining conditions or versions of Gorilla experiments)
 
 # Make list of data files from the data folders of three separate conditions, list only csv files
-VAS_files <- list.files(path = paste(data.path, sep = "/"), pattern = "*VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
-AX_test_files <- list.files(path = paste(data.path, sep = "/"), pattern = "*test*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
-AX_training_files <- list.files(path = paste(data.path, sep = "/"), pattern = "AX_training*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+VAS_files <- list.files(path = "data/raw/VAS", pattern = "*VAS*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_test_files <- list.files(path = "data/raw/AX_discrimination", pattern = "*test*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
+AX_training_files <- list.files(path = "data/raw/AX_discrimination", pattern = "AX_training*", all.files = FALSE, full.names = TRUE, recursive = FALSE)
 
 
 # From the single list of data file names, iteratively read each csv files into a single data frame
