@@ -585,7 +585,7 @@ save(list = c("aggregate", # dataframe used in multivariate model (n = 304)
           "rl_estimates", # original dataframe of rotated logistic estimates
           "compare" # loo compare of different models
           ), # dataframe loaded in with original rotated logistic curvefitting output
-          file = "Rdata/study1_analysis_and_modeling_workspace.Rdata")
+          file = "Rdata/study1_modeling_and_analysis_workspace.Rdata")
 ```
 
 ```{r save-data-for-visualization-objects}
@@ -613,7 +613,7 @@ save(list = c("rl_estimates", # original output from MATLAB
           "theta.priors.neg", # dataframe of priors used in brm.theta.neg
           "compare" # loo compare of different models (brm.fit.default, brm.fit.dif.dist, brm.fit.1, brm.fit.2, brm.fit.3)
               ),
-     file = "Rdata/study1_dataframes_analyzed_results.Rdata")
+     file = "Rdata/study1_dataframes_modeling_analysis_results.Rdata")
 ```
 
 

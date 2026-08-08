@@ -83,7 +83,7 @@ save.tables.path <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesi
 save.data.file <- "/Users/chisomobasih/Exp-Research/Dissertation/writing/thesisdown/data/study1_data.Rdata"
 
 # load in Rdata that contains most if not all the dataframes for post-analysis data, should be in the current wd
-load(file = "Rdata/study1_dataframes_analyzed_results.Rdata")
+load(file = "Rdata/study1_dataframes_modeling_analysis_results.Rdata")
 ```
 
 ```{r save-data-to-use-in-manuscript}
