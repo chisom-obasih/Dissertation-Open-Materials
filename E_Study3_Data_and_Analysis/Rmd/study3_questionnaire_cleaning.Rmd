@@ -70,7 +70,7 @@ ldq %>%
 ```
 ```{r attach-Rdata}
 # load saved workspace if session restarts
-load("Rdata/study3_ldq_cleaning.Rdata")
+load("Rdata/study3_ldq_cleaning_workspace.Rdata")
 ```
 
 
@@ -90,7 +90,7 @@ save(ldq,
      sanity.check,
      squeaky_clean_part2,
      sanity.check2,
-  file = "Rdata/study3_ldq_cleaning.Rdata"
+  file = "Rdata/study3_ldq_cleaning_workspace.Rdata"
 )
 ```
 

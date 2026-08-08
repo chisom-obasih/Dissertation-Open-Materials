@@ -1,5 +1,5 @@
 ---
-title: "Study 3 Data Analysis"
+title: "Study 3 Data Modeling and Analysis"
 author: "Chisom"
 date: "June 2025"
 subtitle: "Data preparation and analysis of Study 3 VAS, AX discrimination, multiple-choice partial dictation (MCPD), and questionnaire data - statistical analyses"
@@ -149,18 +149,18 @@ MLD_scores <- import(file = "clean_data/outcome_data/study3_mld_scores.csv") %>%
 
 ```{r load-Rdata}
 # load in cleaned and filtered data
-load("Rdata/study3_filtered_data.Rdata")
+load("Rdata/study3_processed_dataframes_filtered_only.Rdata")
 
 # load in clean_IDs dataframe to use new IDs rather than Gorilla generated privateIDs
 clean_IDs <- readRDS("Rdata/study3_clean_IDs.rds")
 
 
 # if session restarts, load the workspace - be careful with this
-# load("Rdata/study3_analysis_workspace.Rdata")
+# load("Rdata/study3_modeling_and_analysis_workspace.Rdata")
 # alternatively use
-# attach("Rdata/study3_analysis_workspace.Rdata")
+# attach("Rdata/study3_modeling_and_analysis_workspace.Rdata")
 # or use a new environment
-# e = local({load("Rdata/study3_analysis_workspace.Rdata"); environment()})
+# e = local({load("Rdata/study3_modeling_and_analysis_workspace.Rdata"); environment()})
 ```
 
 
@@ -218,7 +218,7 @@ save(# loaded in
      mcpd.acc.centered,
      mcpd.trial.model.4,
      glm.mcpd.acc.model, # identical to mcpd.trial.model.4
-     file = "Rdata/study3_analysis_workspace.Rdata") 
+     file = "Rdata/study3_modeling_and_analysis_workspace.Rdata") 
 
 # save the large models in their own Rdata file (failed preposttest dprime and mcpd models and RT models converged but with really awful collinearity)
 save(method.table, # methods to run on allFit
@@ -296,7 +296,7 @@ save(# loaded in
      mcpd.acc,
      mcpd.acc.centered,
      glm.mcpd.acc.model, # new name for mcpd.trial.model.4
-     file = "Rdata/study3_post_analysis_visualization_workspace.Rdata")
+     file = "Rdata/study3_dataframes_modeling_analysis_results.Rdata")
 ```
 
 

@@ -101,7 +101,7 @@ MLD_scores <- import(file = "clean_data/outcome_data/study3_mld_scores.csv") %>%
 
 # for when I'm coming back to the session, load the data frames that have been collected here so I don't have to keep re-running everything
 # be careful loading this when there are already existing objects in the global environment - note that load *replaces* objects with the same names as in the Rdata file, whereas attach masks the previous object in the global environment with the object of the same name from the loaded Rdata file
-# load("Rdata/study2_data_cleaning.Rdata")
+# load("Rdata/study3_data_cleaning_workspace.Rdata")
 ```
 
 
@@ -145,7 +145,7 @@ save(VAS_df,
      filtered_training_dprime,
      highLD_training_dprime,
      lowLD_training_dprime,
-     file = "Rdata/study3_data_cleaning.Rdata")
+     file = "Rdata/study3_data_cleaning_workspace.Rdata")
 
 # save as R objects just the cleaned and filtered data frames
 save(clean_IDs,
@@ -161,7 +161,7 @@ save(clean_IDs,
      training_dprime_interim,
      lowLD_training_dprime,
      highLD_training_dprime,
-     file = "Rdata/study3_filtered_data.Rdata")
+     file = "Rdata/study3_processed_dataframes_filtered_only.Rdata")
 
 ```
 
