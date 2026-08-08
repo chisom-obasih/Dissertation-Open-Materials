@@ -96,7 +96,7 @@ MCPD_df <- MCPD_files %>%
 clean_IDs <- readRDS("Rdata/study3_clean_IDs.rds")
 
 # this is for filtering cleaned dataframes for subsequent analysis for only those with a calculated MLD scores (excluded are those who did not return for Day 2, and those who did not give usable data in the LDQ)
-MLD_scores <- import(file = "clean_data/outcome_data/study3_mld_scores.csv") %>%
+MLD_scores <- import(file = "data/analyzed_results/study3_mld_scores.csv") %>%
   mutate(ID = as.factor(ID), gender = as.factor(gender), exp_group = factor(exp_group, levels = c("Control", "Low LD", "High LD")))
 
 # for when I'm coming back to the session, load the data frames that have been collected here so I don't have to keep re-running everything
@@ -1006,6 +1006,8 @@ head(filtered_ax_test_dprime)
 
 
 ```{r save-prepost-dprime-data}
+path.to.data = "data/processed"
+
 write_excel_csv(test_dprime_interim, file = paste(path.to.data, "AX_prepost_test_bytrial_dprime_labels.csv", sep = "/"))
 
 write_excel_csv(filtered_ax_test_dprime, file = paste(path.to.data, "AX_prepost_test_dprime_scores.csv", sep = "/"))

@@ -143,7 +143,7 @@ l_estimates <-import(paste(path.to.vas.data, "study3_vas_l_curvefit.txt", sep = 
   arrange(ID, prepost, pair)
 
 # load in MLD scores
-MLD_scores <- import(file = "clean_data/outcome_data/study3_mld_scores.csv") %>%
+MLD_scores <- import(file = "data/analyzed_results/study3_mld_scores.csv") %>%
   mutate(ID = as.factor(ID), gender = as.factor(gender), exp_group = factor(exp_group, levels = c("Control", "Low LD", "High LD")))
 ```
 
