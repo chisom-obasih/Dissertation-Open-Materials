@@ -28,14 +28,18 @@ This repository contains all of the research materials, data, and data analysis 
 
 **Dissertation DOI**: *TBD*
 
-**Brief Project Description**: In this research project, I investigated the relationship between gradient categorization, linguistic diversity, and L2 speech category learning across three studies using a VAS (visual analog scale) perceptual speech rating task, AX perceptual speech discrimination task, a MCPD (multiple-choice partial dictation) listening assessment task, and a Linguistic Diversity Questionnaire (LDQ). The target L2 speech categories in this project were Japanese vowel length and consonant length.
+**Brief Project Description**: 
+
+In this research project, I investigated the relationship between gradient categorization, linguistic diversity, and L2 speech category learning across three studies using a VAS (visual analog scale) perceptual speech rating task, AX perceptual speech discrimination task, a MCPD (multiple-choice partial dictation) listening assessment task, and a Linguistic Diversity Questionnaire (LDQ). The target L2 speech categories in this project were Japanese vowel length and consonant length.
 
 **Subjects**: applied linguistics, second language acquisition, psycholinguistics, cognitive psychology, cognition and perception, phonetics and phonology
 
 **Keywords**: gradient categorization, linguistic diversity, speech perception, perceptual
 learning, L2 speech learning, phonetic training
 
-**Additional Links**: The online experimental tasks used in this research project, including the VAS task, the AX perceptual discrimination task, the MCPD task, and the LDQ, can be found at the following Gorilla Open Materials Page:  https://app.gorilla.sc/openmaterials/1089564
+**Additional Links**: 
+
+The online experimental tasks used in this research project, including the VAS task, the AX perceptual discrimination task, the MCPD task, and the LDQ, can be found at the following Gorilla Open Materials Page:  https://app.gorilla.sc/openmaterials/1089564
 
 **Frequently Used Acronyms**:
 * VAS: Visual Analog Scale
@@ -144,19 +148,19 @@ https://osf.io/4atgv/
 
 # License
 
-This work is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
 ## Citing Information
 
 If you use any of these materials in your work, please use the following citation: 
 
-Open Materials Citation:
+**Open Materials Citation**:
 
 Obasih, C. O. (2025). Gradient Categorization, Linguistic Diversity, and Second Language Acquisition: Dissertation Open Materials. https://doi.org/10.17605/OSF.IO/M6T59
 
-Dissertation Citation: 
+**Dissertation Citation**: 
 
-TBD
+*TBD*
 
 
 # Acknowledgements
