@@ -1,0 +1,197 @@
+```{r, include=FALSE}
+# because it's so complicated getting the word output to play nicely with Appendix section and figure/table numbering, I'm just manually numbering them, since there aren't many and I don't plan on changing the order
+
+# but these functions are so I don't have to keep copying and pasting
+
+# create functions for table and figure captions using officer functions
+
+# these functions use the chunk label to enable cross-referencing with bookdown syntax 
+
+table_caption <- function(caption){
+  block_caption(label = caption,
+              style = "Table Caption")
+}
+
+figure_caption <- function(caption){
+  block_caption(label = caption,
+              style = "Image Caption")
+}
+
+# an alternative to include_graphics - figures are in their original aspect ratio (but huge in the output, usually like 200% so I might have to manually go in and change everything...)
+
+officer_figure <- function(file){
+fpar(external_img(file, guess_size = T), fp_p = fp_par_lite(word_style = "Figure", keep_with_next = T))
+}
+```
+
+
+```{r appA}
+# automatically prints on new page
+block_caption("Appendix A: Linguistic Diversity Questionnaire", style = "Unnumbered Header")
+
+block_pour_docx("data/LDQ.docx")
+```
+
+<!-- Appendix A done -->
+
+
+```{r appB}
+# automatically prints on new page
+block_caption("Appendix B: Explanations and Examples of MLD-A and MLD-P Scores from LDQ", style = "Unnumbered Header")
+```
+
+The Multilingual Language Diversity score for active language use and exposure (MLD-A) is calculated as follows:
+
+$$ MLD\text{-}A = - \sum_{i = 1}^{n}{PD_{i}\log_{2}(PD_{i})} $$
+where *PD~i~* is the proportion of dominance score calculated for language *i* out of *n* languages reported.
+
+The MLD score for passive language use and exposure is calculated as follows:
+
+$$ MLD\text{-}P =  \sum_{c = \{contexts\}} \frac{HoursPerDay_{c}}{K}*H_{c} $$
+
+where *K* is a constant serving as a scaling factor to turn *HoursPerDay~c~* into a proportion. *K* was set to 24 such that each context is weighted as a proportion of time spent per full 24-hour day. Language entropy for context *c* is calculated as
+
+$$ H_{c} = - \sum_{i = 1}^{n}{P_{c,i}\log_{2}(P_{c,i})} $$
+and where *n* is the number of languages reported for context *c*, and the proportion of hours of language usage/exposure in a context is calculated from the reported number of hours spent on language *i* out of the total number of hours reported from *n* languages for context *c* using the equation
+
+$$ P_{c,i} = \frac{Hours_{c,i}}{\sum_{i=1}^{n}Hours_{c,i}} $$ 
+Here are examples for how MLD-A and MLD-P are calculated from two fictional participants.
+
+Participant A is a late-in-life bilingual that reports current equal dominance (proficiency and usage) of her L1 and L2, English and Mandarin. Her MLD-A score is the sum of 0.50\*log~2~(0.50), for English, and 0.50\*log~2~(0.50), for Mandarin, multiplied by -1, which results in **MLD-A = 1**. 
+
+<!-- need to update math -->
+For passive use and exposure, suppose that most of her entertainment and interpersonal communicative contexts are equally in English and Mandarin, but she is only sometimes exposed to Mandarin in work contexts (6 hours of English vs. 2 hours of Mandarin), and listens to K-pop music in addition to music in English and Mandarin (2 hours of Korean vs. 30 minutes of English vs. 30 minutes of Mandarin). 
+
+For the work context, *P~work,~ ~English~* = 0.75 (6/(6+2)), and *P~work,~ ~Mandarin~* = 0.25 (2/(6+2)). The language entropy for the work context is the sum of 0.75\*log~2~(0.75), for English, and 0.25\*log~2~(0.25), for Mandarin, multiplied by -1, which results in H~work~ = 0.81. For the listening context, *P~listening,~ ~Korean~* = 0.66 (2/(2+0.5+0.5)), and *P~listening,~ ~English~* and *P~listening,~ ~Mandarin~* are both equal to 0.16 (0.5/(2+0.5+0.5)). Roughly (although we would use the precise fractions in the calculations), the language entropy for the listening context is the sum of 0.66\*log~2~(0.66), for Korean, 0.16\*log~2~(0.16), for English, and 0.16\*log~2~(0.16), for Mandarin, multiplied by -1, which results in H~listening~ = 1.25. If we assume the remaining eight contexts are equal proportions of English and Mandarin, the remaining eight language entropy values are H = 1. 
+
+Participant A reported that she spends on average 8 hours a day at work and spends on average 3 hours a day listening to music. Out of simplicity, let's assume she reported to spend on average 2 hours per day on the other 8 contexts (keeping in mind that contexts can overlap in time). This means that the weighted sum of language entropy for the 10 contexts is the sum of (8/24)\*0.81 for work, (3/24)\*1.25 for listening, and (2/24)\*1 for the remaining eight contexts, which results in **MLD-P = 1.09**.
+
+The MLD-A score indicates that Participant A is a completely integrated bilingual in terms of active usage, while the MLD-P score indicates that Participant A is not only an integrated bilingual in terms of passive language use and exposure, but also is exposed to more than the two languages (MLD score above 1).
+
+Participant B considers themself a functional monolingual of their L1 English. They learned Spanish in high school for 3 years, but rates their proficiency as very poor across the four skills and reports no active usage in their daily life, resulting in proportions of language dominance of 0.98 for English and 0.02 for Spanish. Their MLD-A score is 0.98\*log~2~(0.98) + 0.02\*log~2~(0.02) multiplied by -1, which results in **MLD-A = 0.14**, which reflects their learning of a second language as some point in their life, but mainly dominance of their L1, as their score is closer to 0. 
+
+<!-- need to update math -->
+For passive use and exposure, suppose they watch films and TV for an average of 3.5 hours per day during a typical week, with 3 hours spent watching in English and 30 minutes spent watching Japanese. Suppose also their out of home context varies depending on the day of the week but averages out to roughly 1 hour per day, with 5 minutes spent in a Mexican grocery store where they are exposed to Spanish and hour spent exposed to English. Lastly, they report that they are at home 8 hours of the day on average, where they live with two roommates who speak Hindi to each other, which they hear for about 30 minutes, and they are exposed to English for another 4 hours (assume the rest of the 8 hours are spent not exposed to any verbal language). In the remaining contexts, they only passively use or are exposed to their L1 English, which results in H = 0, and thus their hours reported in each context become irrelevant, as the number of hours will be multiplied by H = 0. 
+
+For the watching context, *P~English~* = 0.86 (3/(3+0.5)) and *P~Japanese~* = 0.14 (0.5/(3+0.5)). For the out of home context, *P~English~* = 0.92 (55 minutes / (5 + 55 minutes)) and *P~Spanish~* = 0.08 (5 minutes / (5 + 55 minutes)). For the at home context, *P~English~* = 0.89 (4/(0.5+4)) and *P~Hindi~* = 0.11 (0.5/(0.5+4)). Roughly, the language entropy for the watching context is the sum of 0.86\*log~2~(0.86), for English, and 0.14\*log~2~(0.14), for Japanese, multiplied by -1, which results in H~watching~ = 0.58. The language entropy for the out of home context is the sum of 0.92\*log~2~(0.92), for English, and 0.08\*log~2~(0.08), for Spanish, multiplied by -1, which results in H~out~ ~of~ ~home~ = 0.40. The language entropy for the at home context is the sum of 0.89\*log~2~(0.89), for English, and 0.11\*log~2~(0.11), for Hindi, multiplied by -1, which results in H~at~ ~home~ = 0.51. Given the number of hours reported for each context above, this means that the weighted sum of language entropy for the 10 contexts is the sum of (3.5/24)\*0.58 for watching, (1/24)\*0.40 for out of home, (8/24)\*0.51 for at home, and 0 for the remaining seven contexts, which results in **MLD-P = 0.27**.
+
+The MLD-A score indicates that Participant B has very little active experience with an L2, and although the MLD-P score is relatively low, the MLD-P score indicates that Participant B is passively exposed an additional language besides their L1 to a greater degree compared to their active usage of language. Note that the MLD-P score is below 1 because in each context contributing to the score, Participant B is only exposed to two languages (English and another language), despite the fact that the pair of languages is different between the contexts.
+
+<!-- Appendix B done -->
+
+
+```{r appC}
+# automatically prints on new page
+block_caption("Appendix C: Visualization of Two-Dimensional VAS Continua from Study 1", style = "Unnumbered Header")
+
+officer_figure("figure/appendix-indent-intent-waveforms.png")
+
+figure_caption("Figure C1: Waveforms showing aspiration of word-medial consonant for natural speech recordings of indent and intent.")
+
+officer_figure("figure/appendix-reason-risen-continuum.png")
+
+figure_caption("Figure C2: Visualization of the 7 steps of the F1/F2/F3 formant frequency (primary dimension) continuum for reason vs. risen.")
+
+officer_figure("figure/appendix-kata-katta-continuum.png")
+
+figure_caption("Figure C3: Visualization of the 5 steps of the pitch drop (secondary dimension) continuum for kata vs. katta, at duration step 1.")
+
+officer_figure("figure/appendix-toru-tooru-continuum.png")
+
+figure_caption("Figure C4: Visualization of the 5 steps of the pitch contour (secondary dimension) continuum for toru vs. tooru, at duration steps 1 (with toru as the base word) and 7 (with tooru as the base word).")
+
+officer_figure("figure/appendix-toru-tooru-base-matrix.png")
+
+figure_caption("Figure C5: Graphical representation of the final stimuli choices for Vowel Duration x Pitch Contour continuum matrix for toru vs. tooru, based on which word served as the base word for continuum synthesis.")
+```
+
+
+<!-- Appendix C done -->
+
+
+
+
+```{r appD}
+# automatically prints on new page
+block_caption("Appendix D: AX Discrimination Task Word Lists", style = "Unnumbered Header")
+```
+
+
+```{r ax-jpn-train}
+block_pour_docx("data/jpn-ax-training-words.docx")
+```
+
+
+```{r ax-msa-train}
+block_pour_docx("data/msa-ax-training-words.docx")
+```
+
+
+```{r ax-jpn-test}
+block_pour_docx("data/jpn-ax-testing-words.docx")
+```
+
+
+<!-- Appendix D done -->
+
+```{r appE}
+# automatically prints on new page
+block_caption("Appendix E: Multiple-Choice Partial Dictation Task Sentences and Translations", style = "Unnumbered Header")
+
+block_pour_docx("data/mcpd-sentences.docx")
+```
+
+<!-- Appendix E done -->
+
+
+
+<!-- note: I'm actually not going to do Appendices F and G because the formatting is simply horrendous - this would be much better supported on a supplementary materials webpage -->
+
+
+
+
+
+
+
+
+<!-- # automatically prints on new page -->
+<!-- block_caption("Appendix F: Full Fixed Fixed-Effects Tables from Study 2", style = "Unnumbered Header") -->
+
+
+<!-- table_caption("Table F1: Full Fixed Effects Table for Multivariate Mixed-Effects Model Estimating VAS Slope and Response Variability") -->
+<!-- st2e$ft.vas.fixed.full -->
+
+<!-- table_caption("Table F2: Full Fixed Effects Table for Binomial Generalized Linear Mixed-Effects Model Estimating AX Discrimination Sensitivity") -->
+<!-- st2e$ft.dprime.full -->
+
+<!-- table_caption("Table F3: Full Fixed Effects Table for Linear Mixed-Effects Model Estimating AX Discrimination Reaction Time") -->
+<!-- st2e$ft.rt.full -->
+
+<!-- Appendix F done -->
+
+
+
+<!-- # automatically prints on new page -->
+<!-- block_caption("Appendix G: Full Fixed-Effects Tables from Study 3", style = "Unnumbered Header") -->
+
+<!-- table_caption("Table G1: Full Fixed Effects Table for the Binomial Generalized Linear Mixed-Effects Model Estimating AX Discrimination Sensitivity Across Training Sessions.") -->
+<!-- st3e$ft.training.full -->
+
+<!-- table_caption("Table G2: Full Fixed Effects Table for the Multivariate Mixed-Effects Model Estimating VAS Slope and Response Variability") -->
+<!-- st3e$ft.vas.fixed.full -->
+
+<!-- table_caption("Table G3: Full Fixed Effects Table for the the Binomial Generalized Linear Mixed-Effects Model Estimating Pre-Posttest AX Discrimination Sensitivity.") -->
+<!-- st3e$ft.dprime.full -->
+
+<!-- table_caption("Table G4: Full Fixed Effects Table for the Linear Mixed-Effects Model Estimating Pre-Posttest AX Discrimination Reaction Time") -->
+<!-- st3e$ft.rt.full -->
+
+<!-- table_caption("Table G5: Full Fixed Effects Table for the Binomial Generalized Linear Mixed-Effects Model Estimating Pre-Posttest MCPD Accuracy.") -->
+<!-- st3e$ft.mcpd.full -->
+
+
+
+<!-- Appendix G done -->
+
+
+

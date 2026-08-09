@@ -1,0 +1,169 @@
+---
+knit: bookdown::render_book
+#site: bookdown::bookdown_site
+
+# The next two lines allow you to change the spacing in your thesis. You can
+# switch out \onehalfspacing with \singlespacing or \doublespacing, if desired.
+header-includes:
+    - \usepackage{setspace}\doublespacing
+
+# Remove the hashtag to specify which version of output you would like. Can only choose one at a time.
+output:
+#  bookdown::word_document2:
+  officedown::rdocx_document:
+    base_format: "bookdown::word_document2"
+    number_sections: false
+    reference_docx: template/my-template-final-08-20-25.docx
+    keep_md: true
+    pandoc_args: ["-Fpandoc-crossref"]
+    tables:
+      topcaption: true
+      caption:
+        style: Table Caption
+        pre: 'Table'
+        sep: ': '
+        tnd: 1
+        tns: '.'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+    plots:
+      align: center
+      topcaption: false
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: ': '
+        tnd: 1
+        tns: '.'
+        fp_text: !expr officer::fp_text_lite(bold = TRUE)
+#  thesisdown::thesis_epub: default
+  # bookdown::pdf_document2:
+  #   latex_engine: xelatex
+  #   extra_dependencies: ["flafter"]
+
+# Specify the location of the bibliography below
+bibliography: ["bib/references.yaml", "bib/packages.bib"]
+link-citations: true
+csl: csl/apa7e.csl
+---
+
+<!-- NOTE: -->
+
+<!-- the apa7e.csl style was modified to remove the automatic alphabetical sorting of in-text citation groups, by removing the following from the <citation> block -->
+
+<!--     <sort> -->
+<!--       <key macro="author-sort" names-min="3" names-use-first="1"/> -->
+<!--       <key macro="date-sort-group" sort="ascending"/> -->
+<!--       <key macro="date-sort" sort="ascending"/> -->
+<!--       <key variable="status"/> -->
+<!--     </sort> -->
+
+<!-- which I think automatically enables "custom" sorting, so how they appear as I've written them here -->
+
+```{r include_packages, include = FALSE}
+# chunk options
+knitr::opts_chunk$set(echo = FALSE)
+
+# functional
+library(officedown)
+library(officer)
+
+# officedown and officer are used to make the word document output better
+# but they have issues with importing pictures, so after knitting, I made a macro in word to resize all pictures
+# using the first answer from the microsoft forum question: https://answers.microsoft.com/en-us/msoffice/forum/all/creating-a-macro-for-resizing-several-photos-in/b251f117-8d17-4522-bac4-d128c32587ba?page=1
+
+library(bookdown)
+suppressPackageStartupMessages(library(tidyverse))
+library(janitor)
+library(rio)
+library(knitr)
+
+
+# stats
+library(rstatix)
+library(lmerTest)
+library(psycho)
+library(brms)
+library(lmerTest)
+library(lme4)
+
+# stats support for tables and stuff
+library(bayestestR) # for brms output
+library(parameters) # also helps with brms and bayestestR
+library(broom.mixed) # for help with tidy output of mixed effects models
+library(insight) # for help with brms and bayestestR
+library(sjPlot) # alternative table and plotting method for regression models
+library(modelsummary)
+library(ggdist)
+library(tidybayes)
+library(fitdistrplus)
+
+
+# figures
+library(patchwork)
+library(cowplot)
+library(ggthemes)
+library(ggpubr)
+library(ggforce) # for the function geom_arc
+
+# tables
+library(flextable)
+library(ftExtra)
+library(gt)
+library(gtsummary)
+library(kableExtra)
+
+
+library(conflicted)
+# package to solve conflicts between functions of different packages that use the same name
+# use dplyr for all functions in the case of conflict between packages, output suppressed
+conflict_prefer_all("dplyr", quiet = TRUE)
+
+# load data used in this chapter (mostly tables)
+# load this as an environment since many of the st2 and st3, and maybe st1, tables are named the same things
+st1e = local({load("data/study1_data.Rdata"); environment()})
+st2e = local({load("data/study2_data.Rdata"); environment()})
+st3e = local({load("data/study3_data.Rdata"); environment()})
+
+options(scipen = 999) # avoid scientific notation
+
+knitr::write_bib(file = 'bib/packages.bib') # write package citations to bibliography file
+```
+
+
+
+
+```{r title-page}
+block_pour_docx("title_page.docx")
+```
+
+
+<!-- After knitting, I have to go into the word doc (obasih_dissertation.docx) manually and do all of the following steps: -->
+
+<!-- 1. run image resize macro -->
+
+<!-- 2. add running header: GRADIENCY, LINGUISTIC DIVERSITY, AND L2 PHONEMES -->
+
+<!-- 3. remove page numbers, then change front matter page numbers to be roman, add continuous section at start of chapter 1, and change those numbers to be Arabic numerals and include number on first page -->
+
+<!-- 4. update table of contents ("update entire table") and table of figures for both list of figures and list of tables ("update entire table") -->
+<!-- note: decided to remove list of figures and list of tables because I couldn't figure out a way to get short captions for figures and the list of figures would have been obnoxiously long, and I didn't want to only have the list of tables but no list of figures -->
+
+<!-- 5. update level 1 header style to include "Chapter" (press "update entire table" again to get the chapter title in the table of contents, and then double check that doing that didn't change the figure and table numbering and references -->
+
+<!-- 6. to avoid fields figure and table fields updating with "chapter", lock fields using keyboard shortcut Command + F11 (Command + Shift + F11 unlocks fields if I need to update them for whatever reason) -->
+
+<!-- note: currently cannot reference sections with the style "Unnumbered Header" (they are not bookmarked) -->
+
+
+<!-- July 21, 2025 final committee submission: -->
+<!-- 221 pages, 62,146 words (not including front matter, appendices, or references) -->
+
+<!-- August 8, 2025 final revised submission: -->
+<!-- 224 pages, 63,119 words (not including front matter, appendices, or references) -->
+
+<!-- August 20, 2025 final (final) version for submission to KiltHub and ProQuest: -->
+<!-- changes: fixed typo in abstract, added links to open materials to abstract, fixed incorrect Figure 3.3 caption, fixed typo in Figure 3.4 caption -->
+<!-- 224 pages, 63,123 words (not including front matter, appendices, or references) -->
+<!-- references are from page 247-276 -->
+ 
+

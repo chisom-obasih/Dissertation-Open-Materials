@@ -1,0 +1,63 @@
+```{r table-of-contents}
+# automatically starts on new page
+block_caption("Table of Contents", style = "TOC Heading")
+block_toc(level=4)
+```
+
+<!-- note: decided to remove list of figures and list of tables because I couldn't figure out a way to get short captions for figures and the list of figures would have been obnoxiously long, and I didn't want to only have the list of tables but no list of figures -->
+
+<!-- {r list-of-figures} -->
+<!-- # automatically starts on new page -->
+<!-- block_caption("List of Figures", style = "Unnumbered Header") -->
+<!-- block_toc(seq_id = c("chp2fig", "chp3fig", "chp4fig", "chp5fig")) -->
+<!-- -->
+
+
+<!-- {r list-of-tables} -->
+<!-- # automatically starts on new page -->
+<!-- block_caption("List of Tables", style = "Unnumbered Header") -->
+<!-- block_toc(seq_id = c("chp3tab", "chp4tab", "chp5tab", "chp6tab")) -->
+<!--  -->
+
+
+```{r dedication}
+# automatically starts on new page
+block_caption("Dedication", style = "Unnumbered Header")
+
+block_caption("Dedicated to my father, Dr. Kem Obasih, my inspiration. Thank you for always believing in me, for teaching me, and for loving me. You make me so proud and honored to say that I am the daughter of an immigrant.", style = "Quote")
+```
+
+
+
+
+```{r acknowledgements}
+# automatically starts on new page
+block_caption("Acknowledgements", style = "Unnumbered Header")
+```
+
+
+The past five years have not been an easy journey, but I have so many people to thank for being my village of support. My graduate experience was unique here at CMU in that I started in the Department of Psychology for three years and finishing my last two in the Department of Languages, Cultures & Applied Linguistics. That means I have the unique experience and absolute pleasure in working with double the number of amazing faculty members to learn from, double the amount of lifelong friends I have created, and double the number of people to thank. My dissertation is long enough as it is, but please allow me to indulge in a few more pages.
+
+First, I want to thank the two amazing scientists who have served as my advisors and mentors. To Dr. Lori Holt, my first advisor, thank you for setting me up for success. I started off as a clueless undergrad and you gave me opportunities to grow and develop my own research ideas. When I had no idea what I was going to do after graduation, you let me continue working in the lab. I'm not sure if you know how life changing of an opportunity that was for me, but I am forever grateful. It allowed me to stay in Pittsburgh, which has now been my home for 10 years, and allowed me to purse graduate studies at CMU. I learned so much from you and I'm so lucky to have had such a prolific scientist in the field be my mentor. Thank you for always believing in me.
+
+To Dr. Seth Wiener, my current advisor, thank you for continuing to develop my scientific career. I feel just as lucky to have met you before I even started graduate school. I was always inspired by your work and it felt like such a natural choice when the opportunity arose to transfer to LCAL. Thank you for taking me under your wing and giving me another academic home. And thank you for championing me to pursue my research and career goals.
+
+I also want to thank my other committee members. To Dr. Ethan Kutlu, thank you for doing the work that inspired this entire dissertation project, and thank you always for guiding me through the complex statistics and for your warm encouragement throughout. To Dr. Sanghee Kang, thank you for joining my committee under such short notice, and for your insightful comments whenever I presented my work that always challenged me to look at my research from a new perspective. 
+
+I also give a special shoutout to three others, Dr. Natalie Amgott, Dr. Christina Bjorndahl, and Dr. Katherine Burns. To Natalie, thank you so much for serving on my committee during your time at CMU. I appreciate how much you welcomed me during my first year at LCAL and for providing a vital qualitative perspective to my dissertation project, and I learned so much from you in such a short amount of time. To Christina, thank you so much for providing immeasurable help and support as I was prepping my research materials, both emotionally and in helping me figure out how to use Praat to create my speech stimuli. It simply would have been impossible without your help. To Katie, thank you for giving me such a wonderful introduction to SLA. Your warm guidance during the SLA theories class was part of what made the decision to transfer to LCAL all the easier.
+
+I am grateful to the individuals who recorded their voices for the Japanese and Modern Standard Arabic speech stimuli, and I am grateful to Joseph Garcia and Seth McCombie, who graciously lent me their Arabic expertise to checked over the MSA word list and help me with gaps in my knowledge. I also very much appreciate Yumiko Adachi, who provided so much help in the creation of the Japanese materials. Of course, this research could not have been carried out without the individuals who participated across the three studies. I am forever grateful for their time and effort. This material is based upon work supported in part by the National Science Foundation Graduate Research Fellowship under Grant Numbers DGE1745016 and DGE2140739. Additionally, this dissertation project was generously funded by the Duolingo Dissertation Grant for Second Language Learning, sponsored by Duolingo. I thank both of these funding bodies for providing vital financial support throughout my graduate career. 
+
+I thank all of the wonderful professors I met in both the Psych and LCAL departments, who all introduced me to the diverse ways in which science can be performed and instilled in me a deep respect for quantitative and qualitative research. I thank all of the fabulous friends I made first in the Psychology department and then the new fabulous friends I made in the LCAL department! I have the privilege of having literally a few dozen people who I get to call my friends - too many to name here, but I want you all to know how grateful I am that you are my friends. 
+
+To my LAPP Lab labmates, Adam Bramlett, Bota Tusmagambet, Yumiko Adachi, and Bianca Brown, thank you for being such brilliant lab mates. I felt behind in my knowledge of linguistics, and I learned so much from you guys. I loved nerding out with everyone, you all made me smarter. To my OG Holt Lab labmates, Austin Luor, Alana Hodson, and Jenah Black. You guys rock and you ARE my rock. I love you three so much, thank you for making graduate school so special for me! To my OG lab manager, Christi Gomez, the GOAT. You made my research life easier, and you made my personal life actively better. Thank you for being a parental support system for me when I was so far away from home, but more than that, thank you for being a friend. To my friends outside of graduate school, my Pitt family, thank you. Thank you for letting me endlessly complain about graduate school, something I did to myself, and for always supporting me in my times of need. Y'all are real ones. 
+
+To my mental health care team, my psychiatrist Dr. Gregory Thorkelson and my therapist Leigh Montgomery. Dr. Thorkelson, thank you for providing me care as a whole person. Leigh, thank you for giving me space to be my whole self and for giving me the tools I needed to truly succeed. Thank you. I don't know how else to thank you both without oversharing, as I am apt to do.
+
+To my family, my father, my siblings and their spouses, and my extended family: Thank you for supporting me always. Because of my family, I am able say: God is good, all the time. And all the time, God is good.
+
+I have one last person to thank, and that is my fiancé, Noah Satterlee. I cannot emphasize enough how much I *could not* have done *any* of this without you. You were there for me during all the hard times, you believed in me, you held me and made me laugh when I cried, you made sure I ate real food, you took care of me when I couldn't take care of myself. I love you more than I can express. Thank you.
+
+
+
+

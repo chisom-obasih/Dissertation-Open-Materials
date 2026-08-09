@@ -1,0 +1,6 @@
+```{r references}
+# automatically starts on new page
+block_caption("References", style = "Unnumbered Header")
+```
+
+<div id="refs" custom-style="Bibliography"></div>
