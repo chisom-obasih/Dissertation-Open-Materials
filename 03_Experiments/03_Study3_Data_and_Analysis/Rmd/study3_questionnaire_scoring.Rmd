@@ -65,12 +65,11 @@ part2 <- import("data/processed/study3_ldq_wide_part2_cleaned.csv")
 ## LDQ Scoring
 
 ```{r source-scoring-functions}
-# source the scoring functions from the LDQscoring.R file
-# this goes up three parent folders from the location of this Rmd file (in the subfolder named Rmd)
-# first .. goes to the parent folder data_cleaning_visualization_analysis
-# second .. goes to the parent folder Study 2
-# third ... goes to the parent folder Dissertation
-source("../B_Task_Materials/LDQ/LDQscoring.R")
+# source the scoring functions from the LDQscoring.R file, which is in the LDQ subfolder of the 02_Task_Materials subdirectory
+# this goes up two levels of folder from the location of the R project (03_Experiments/02_Study2_Data_and_Analysis)
+# the first .. goes up one level to 03_Experiments
+# the next .. goes to the top level of the Dissertation-Open-Materials repository
+source("../../02_Task_Materials/LDQ/LDQscoring.R")
 ```
 
 

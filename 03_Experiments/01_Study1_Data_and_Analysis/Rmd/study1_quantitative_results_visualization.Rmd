@@ -305,7 +305,7 @@ MLD_scores %>%
 
 
 ```{r vas-continua-characteristics}
-continua.table.2d <- import("../B_Task_Materials/VAS/planning/continua-table-2d.xlsx")
+continua.table.2d <- import("../../02_Task_Materials/VAS/planning/continua-table-2d.xlsx")
 
 new_line_continua_header <- c(
   "indent-intent /d/-/t/"	= "indent-intent\\\n/d/-/t/",

@@ -296,7 +296,7 @@ MLD_scores %>%
 
 VAS 1D continua table - done
 ```{r vas-continua-characteristics}
-continua.table.1d <- import("../B_Task_Materials/VAS/planning/continua-table-1d.xlsx")
+continua.table.1d <- import("../../02_Task_Materials/VAS/planning/continua-table-1d.xlsx")
 
 new_line_continua_header <- c(
   "indent-intent /d/-/t/"	= "indent-intent\\\n/d/-/t/",
@@ -1281,13 +1281,13 @@ cowplot::save_plot(rt.plot, filename = paste(save.figures.path, "st2-rt-model-in
 table(s) - saving for the appendix (with a better format, maybe combined)
 ```{r ax-word-pairs-table}
 # import spreadsheets
-word_pairs_test <- import("../B_Task_Materials/AX_discrimination/gorilla_spreadsheets/testing_all_groups.csv") %>%
+word_pairs_test <- import("../../02_Task_Materials/AX_discrimination/gorilla_spreadsheets/testing_all_groups.csv") %>%
   filter(!is.na(randomize_language_blocks)) %>%
   select(word_pair, word_A, word_B, transliteration_A:task) %>%
   distinct() %>%
   select(word_pair, transliteration_A:transliteration_B, orthography_A:gloss_B, phoneme_quality, segment_type, task)
 
-word_pairs_train <- import("../B_Task_Materials/AX_discrimination/gorilla_spreadsheets/training_high_LD.csv") %>%
+word_pairs_train <- import("../../02_Task_Materials/AX_discrimination/gorilla_spreadsheets/training_high_LD.csv") %>%
   filter(!is.na(randomize_language_blocks)) %>%
   select(word_pair, word_A, word_B, transliteration_A:task) %>%
   distinct() %>%
