@@ -1,6 +1,6 @@
 # Gradient Categorization, Linguistic Diversity, and Second Language Acquisition: Dissertation Open Materials 
 
-*This README file was most recently updated on 2027-08-09.*
+*This README file was most recently updated on 2026-08-09.*
 
 This repository contains all of the research materials, data, and data analysis scripts for the research dissertation project of Chisom Obasih.
 
